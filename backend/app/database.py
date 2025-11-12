@@ -1,31 +1,34 @@
-"""
-Database setup using SQLAlchemy.
-
-This file creates the engine, session factory and Base metadata.
-By default it reads `DATABASE_URL` from environment variables and falls back
-to a local SQLite file for development.
-"""
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-import os
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+import os
 
-load_dotenv()
+# Locate .env in parent folder (backend)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env_path = os.path.join(BASE_DIR, ".env")
+load_dotenv(dotenv_path=env_path)
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./agrisense_dev.db")
+# Read the environment variable
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Use check_same_thread for SQLite when using the normal (sync) SQLAlchemy
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
-)
+if not DATABASE_URL:
+    raise ValueError(
+        "❌ DATABASE_URL not found! Make sure your .env file exists in the backend folder.\n"
+        "Example: DATABASE_URL=postgresql+psycopg2://agrisense_user:abcde@localhost:5432/agrisense_db"
+    )
 
+# Create the database engine
+engine = create_engine(DATABASE_URL)
+
+# SessionLocal for DB sessions
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Base model class
 Base = declarative_base()
 
+# Dependency for DB sessions
 def get_db():
-    """Yield a database session and ensure it's closed after use."""
     db = SessionLocal()
     try:
         yield db
