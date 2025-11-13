@@ -42,7 +42,7 @@
   },
 
   "moderate_temp_low_moisture": {
-    "description": "Moderate temperature but moisture low – irrigation needed soon",
+    "description": "Moderate temperature but moisture low - irrigation needed soon",
     "conditions": [
       {"feature": "temperature", "op": "<", "value": 30},
       {"feature": "soil_moisture", "op": "<", "value": 30}

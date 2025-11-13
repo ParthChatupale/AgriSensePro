@@ -25,6 +25,7 @@ from app.services.weather import get_realtime_weather
 from app.services.geocode import reverse_geocode
 from app.services.ndvi_synthetic import synthetic_ndvi, synthetic_ndvi_history
 from app.services.market_service import fetch_market_price
+from app.services.gov_alerts import fetch_gov_alerts
 
 router = APIRouter(prefix="/fusion", tags=["Fusion Engine"])
 
@@ -396,8 +397,11 @@ async def get_dashboard_data(
         
         alerts = load_json_file(os.path.join(DATA_PATH, "alerts.json"))
         crop_health = load_json_file(os.path.join(DATA_PATH, "crop_health.json"))
+        
+        # Fetch government alerts using lat/lon
+        gov_alerts = await fetch_gov_alerts(lat, lon)
 
-        total_alerts = len(alerts) if isinstance(alerts, list) else 0
+        total_alerts = (len(alerts) if isinstance(alerts, list) else 0) + len(gov_alerts)
         high_priority_alerts = [
             alert for alert in alerts
             if isinstance(alert, dict) and alert.get("level") == "high"
@@ -413,6 +417,7 @@ async def get_dashboard_data(
                 "change": ndvi_change,
                 "history": ndvi_history,
             },
+            "gov_alerts": gov_alerts,
             "summary": {
                 "total_alerts": total_alerts,
                 "high_priority_count": len(high_priority_alerts),
@@ -466,6 +471,9 @@ async def get_advisory(
         # Fetch real market price
         market = await fetch_market_price(crop, geo_info.get("district"))
         
+        # Fetch government alerts using lat/lon (for internal use only, not returned)
+        gov_alerts = await fetch_gov_alerts(lat, lon)
+        
         mock = load_crop_mock(crop)
         if mock:
             features = {
@@ -493,6 +501,31 @@ async def get_advisory(
             }
 
             fields, score, fired_rules, breakdown = build_advisory_from_features(crop, features, user_context)
+            
+            # Check for gov alerts matching crop pests and boost score
+            crop_meta = crop_metadata.get(crop, {})
+            common_pests = [p.lower() for p in crop_meta.get("common_pests", [])]
+            
+            # Check if any gov alert mentions pests from crop metadata
+            pest_match_found = False
+            for gov_alert in gov_alerts:
+                alert_text = (gov_alert.get("title", "") + " " + gov_alert.get("description", "")).lower()
+                for pest in common_pests:
+                    if pest in alert_text:
+                        pest_match_found = True
+                        break
+                if pest_match_found:
+                    break
+            
+            if pest_match_found:
+                score = min(score * 1.2, 1.0)  # Boost score by 1.2x, cap at 1.0
+                # Escalate severity by 1 level
+                if fields["severity"] == "low":
+                    fields["severity"] = "medium"
+                elif fields["severity"] == "medium":
+                    fields["severity"] = "high"
+                # severity is already high, keep it
+            
             legacy_priority = "High" if score >= 0.8 else ("Medium" if score >= 0.6 else "Low")
             response = {
                 "crop": crop.capitalize(),
@@ -521,6 +554,32 @@ async def get_advisory(
             ndvi_change=ndvi_change,
             ndvi_history=ndvi_history,
         )
+        
+        # Check for gov alerts matching crop pests and boost score
+        crop_meta = crop_metadata.get(crop, {})
+        common_pests = [p.lower() for p in crop_meta.get("common_pests", [])]
+        
+        # Check if any gov alert mentions pests from crop metadata
+        pest_match_found = False
+        for gov_alert in gov_alerts:
+            alert_text = (gov_alert.get("title", "") + " " + gov_alert.get("description", "")).lower()
+            for pest in common_pests:
+                if pest in alert_text:
+                    pest_match_found = True
+                    break
+            if pest_match_found:
+                break
+        
+        if pest_match_found:
+            advisory["rule_score"] = min(advisory.get("rule_score", 0) * 1.2, 1.0)
+            # Escalate severity by 1 level
+            current_severity = advisory.get("severity", "low").lower()
+            if current_severity == "low":
+                advisory["severity"] = "Medium"
+            elif current_severity == "medium":
+                advisory["severity"] = "High"
+            # severity is already high, keep it
+        
         if ndvi_history and isinstance(advisory.get("metrics"), dict):
             advisory["metrics"]["ndvi_history"] = ndvi_history
         return JSONResponse(advisory)
