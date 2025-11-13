@@ -3,19 +3,44 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Download, CheckCircle, Droplets, Sprout, Eye, Loader2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { getAdvisory } from "@/services/api";
 import type { AdvisoryResponse, Recommendation } from "@/types/fusion";
 
+const AVAILABLE_CROPS = [
+  { value: "cotton", label: "Cotton" },
+  { value: "wheat", label: "Wheat" },
+  { value: "rice", label: "Rice" },
+  { value: "sugarcane", label: "Sugarcane" },
+  { value: "soybean", label: "Soybean" },
+  { value: "onion", label: "Onion" },
+];
+
 const Advisory = () => {
-  const { crop } = useParams<{ crop: string }>();
+  const { crop: cropParam } = useParams<{ crop: string }>();
   const navigate = useNavigate();
+  const [selectedCrop, setSelectedCrop] = useState<string>(cropParam || "cotton");
   const [advisory, setAdvisory] = useState<AdvisoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!crop) {
+    // Update selected crop from URL param if it changes
+    if (cropParam && cropParam !== selectedCrop) {
+      setSelectedCrop(cropParam);
+    }
+  }, [cropParam]);
+
+  useEffect(() => {
+    if (!selectedCrop) {
       setError("No crop specified. Please select a crop.");
       setIsLoading(false);
       return;
@@ -25,8 +50,10 @@ const Advisory = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getAdvisory(crop);
+        const data = await getAdvisory(selectedCrop);
         setAdvisory(data);
+        // Update URL without navigation
+        navigate(`/advisory/${selectedCrop}`, { replace: true });
       } catch (err: any) {
         setError(err.message || "Unable to load advisory data");
       } finally {
@@ -35,7 +62,7 @@ const Advisory = () => {
     };
 
     fetchAdvisory();
-  }, [crop]);
+  }, [selectedCrop, navigate]);
 
   const getPriorityVariant = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -77,16 +104,36 @@ const Advisory = () => {
     }
   };
 
+  // Loading skeleton
+  const LoadingSkeleton = () => (
+    <div className="min-h-screen py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <Skeleton className="h-10 w-32 mb-4" />
+          <Skeleton className="h-9 w-64 mb-2" />
+          <Skeleton className="h-5 w-96" />
+        </div>
+        <Card className="p-6">
+          <Skeleton className="h-6 w-48 mb-4" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-3/4 mb-6" />
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-4 rounded-lg bg-muted/50">
+                <Skeleton className="h-5 w-48 mb-2" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+
   // Loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen py-8 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading Advisory...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   // Error state
@@ -121,8 +168,29 @@ const Advisory = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-heading font-bold text-primary mb-2">Advisory Details</h1>
-          <p className="text-muted-foreground">Personalized recommendations based on your farm data</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-3xl font-heading font-bold text-primary mb-2">Advisory Details</h1>
+              <p className="text-muted-foreground">Personalized recommendations based on your farm data</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="crop-select" className="text-sm text-muted-foreground whitespace-nowrap">
+                Select Crop:
+              </label>
+              <Select value={selectedCrop} onValueChange={setSelectedCrop}>
+                <SelectTrigger id="crop-select" className="w-[180px]">
+                  <SelectValue placeholder="Select crop" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AVAILABLE_CROPS.map((crop) => (
+                    <SelectItem key={crop.value} value={crop.value}>
+                      {crop.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {/* Main Advisory Card */}

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CloudRain, TrendingUp, Satellite, AlertTriangle, RefreshCw, Sprout, Loader2 } from "lucide-react";
 import { getDashboardData } from "@/services/api";
 import type { DashboardResponse, Alert } from "@/types/fusion";
@@ -66,16 +68,37 @@ const Dashboard = () => {
     }
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen py-8 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading Dashboard...</p>
+  // Loading skeleton
+  const LoadingSkeleton = () => (
+    <div className="min-h-screen py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div>
+            <Skeleton className="h-9 w-48 mb-2" />
+            <Skeleton className="h-5 w-64" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-6">
+              <Skeleton className="h-6 w-32 mb-4" />
+              <Skeleton className="h-8 w-24 mb-4" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </Card>
+          ))}
         </div>
       </div>
-    );
+    </div>
+  );
+
+  // Loading state
+  if (isLoading) {
+    return <LoadingSkeleton />;
   }
 
   // Error state
@@ -169,6 +192,20 @@ const Dashboard = () => {
                 <span className="font-medium">{weather.rainfall}mm</span>
               </div>
             </div>
+            {/* 3-Day Forecast */}
+            {weather.forecast && weather.forecast.next_3_days && (
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-xs text-muted-foreground mb-2">3-Day Forecast</p>
+                <div className="space-y-1.5">
+                  {weather.forecast.next_3_days.map((day: any, idx: number) => (
+                    <div key={idx} className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Day {day.day}</span>
+                      <span className="font-medium">{day.temp}°C • {day.rainfall}mm</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </Card>
 
           {/* Market Prices Card */}
@@ -201,6 +238,12 @@ const Dashboard = () => {
                   {formatPrice(market.cotton.price, market.cotton.change_percent)}
                 </div>
               )}
+              {market.sugarcane && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Sugarcane</span>
+                  {formatPrice(market.sugarcane.price, market.sugarcane.change_percent)}
+                </div>
+              )}
               {Object.keys(market).length === 0 && (
                 <p className="text-sm text-muted-foreground">No market data available</p>
               )}
@@ -230,6 +273,56 @@ const Dashboard = () => {
           </Card>
         </div>
 
+        {/* Individual Crop Health Cards */}
+        {Object.keys(cropHealth).length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-heading font-bold mb-4">Crop Health Overview</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(cropHealth).map(([cropName, health]: [string, any]) => {
+                const healthScore = health.health_score || 0;
+                const healthColor = healthScore >= 80 ? "text-success" : healthScore >= 60 ? "text-warning" : "text-destructive";
+                const healthStatus = healthScore >= 80 ? "Good" : healthScore >= 60 ? "Warning" : "Risk";
+                return (
+                  <Card key={cropName} className="p-4 hover:shadow-hover transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold capitalize">{cropName}</h4>
+                      <Badge variant={healthScore >= 80 ? "default" : healthScore >= 60 ? "secondary" : "destructive"}>
+                        {healthStatus}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1.5 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">NDVI</span>
+                        <span className="font-medium">{health.ndvi?.toFixed(2) || "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Soil Moisture</span>
+                        <span className="font-medium">{health.soil_moisture || 0}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Stage</span>
+                        <span className="font-medium capitalize">{health.crop_stage || "N/A"}</span>
+                      </div>
+                      <div className="mt-2 pt-2 border-t">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground text-xs">Health Score</span>
+                          <span className={`font-bold ${healthColor}`}>{healthScore}%</span>
+                        </div>
+                        <div className="mt-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${healthScore >= 80 ? "bg-success" : healthScore >= 60 ? "bg-warning" : "bg-destructive"}`}
+                            style={{ width: `${healthScore}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Risk Alerts Section */}
         {alerts.length > 0 && (
           <div className="mb-8">
@@ -241,51 +334,45 @@ const Dashboard = () => {
               </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {alerts.map((alert: Alert) => (
-                <Card
-                  key={alert.id}
-                  className={`p-4 border-l-4 hover:shadow-hover transition-all ${
-                    alert.level === "high"
-                      ? "border-l-destructive"
-                      : alert.level === "medium"
-                      ? "border-l-warning"
-                      : "border-l-info"
-                  }`}
-                >
-                  <h4 className="font-semibold mb-2">{alert.title}</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Risk Level</span>
-                      <span
-                        className={`font-medium ${
-                          alert.level === "high"
-                            ? "text-destructive"
-                            : alert.level === "medium"
-                            ? "text-warning"
-                            : "text-info"
-                        }`}
-                      >
+              {alerts.map((alert: Alert) => {
+                const badgeVariant = alert.level === "high" ? "destructive" : alert.level === "medium" ? "secondary" : "default";
+                return (
+                  <Card
+                    key={alert.id}
+                    className={`p-4 border-l-4 hover:shadow-hover transition-all ${
+                      alert.level === "high"
+                        ? "border-l-destructive"
+                        : alert.level === "medium"
+                        ? "border-l-warning"
+                        : "border-l-info"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold">{alert.title}</h4>
+                      <Badge variant={badgeVariant} className="text-xs">
                         {alert.level.toUpperCase()}
-                      </span>
+                      </Badge>
                     </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Confidence</span>
-                      <span className="font-medium">{alert.confidence}%</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Confidence</span>
+                        <span className="font-medium">{alert.confidence}%</span>
+                      </div>
+                      {alert.description && (
+                        <p className="text-xs text-muted-foreground mt-2">{alert.description}</p>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mt-2"
+                        onClick={() => handleViewAdvisory(alert.crop)}
+                      >
+                        View Advisory
+                      </Button>
                     </div>
-                    {alert.description && (
-                      <p className="text-xs text-muted-foreground mt-2">{alert.description}</p>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-2"
-                      onClick={() => handleViewAdvisory(alert.crop)}
-                    >
-                      View Advisory
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           </div>
         )}
