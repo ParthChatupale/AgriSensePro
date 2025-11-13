@@ -9,20 +9,45 @@ from fastapi.responses import JSONResponse
 import json
 import os
 import sys
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
+from datetime import datetime, timezone
 
 # Add backend directory to path for imports
 BACKEND_DIR = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, BACKEND_DIR)
 
-from etl.make_features import evaluate_rules, load_rules, combine_features
+from etl.make_features import combine_features, load_rules
+from app.utils.loader import load_crop_metadata
+from app.services.crop_stage import detect_crop_stage
+from app.services.ndvi_utils import ndvi_stress_level, compute_ndvi_change
+from app.services.weather import get_realtime_weather
+from app.services.geocode import reverse_geocode
 
 router = APIRouter(prefix="/fusion", tags=["Fusion Engine"])
+
+# Load crop metadata once
+crop_metadata = load_crop_metadata()
 
 # Get the backend directory path (already set above)
 DATA_PATH = os.path.join(BACKEND_DIR, "data")
 RULES_PATH = os.path.join(BACKEND_DIR, "rules")
 MOCK_PATH = os.path.join(os.path.dirname(__file__), "mock_data")
+
+RULE_CACHE: Dict[str, Dict[str, Any]] = {}
+
+
+def get_rules(rule_type: str) -> Dict[str, Any]:
+    if rule_type not in RULE_CACHE:
+        RULE_CACHE[rule_type] = load_rules(rule_type) or {}
+    return RULE_CACHE[rule_type]
+
+
+def get_threshold(crop: str, key: str):
+    meta = crop_metadata.get(crop, {})
+    thresholds = meta.get("thresholds", {})
+    if key in thresholds:
+        return thresholds[key]
+    return meta.get(key)
 
 
 def load_json_file(file_path: str) -> Dict[str, Any]:
@@ -36,6 +61,85 @@ def load_json_file(file_path: str) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Invalid JSON in {file_path}: {str(e)}")
 
 
+INDIA_CENTROID_LAT = 22.59
+INDIA_CENTROID_LON = 78.96
+
+
+def parse_lat_lon(location: str | None) -> Tuple[Optional[float], Optional[float]]:
+    if not location:
+        return None, None
+    try:
+        lat_str, lon_str = location.split(",", 1)
+        return float(lat_str.strip()), float(lon_str.strip())
+    except (ValueError, AttributeError):
+        return None, None
+
+
+async def resolve_weather_context(
+    location: str | None = None,
+    latitude: float | None = None,
+    longitude: float | None = None,
+    state: str | None = None,
+    district: str | None = None,
+    village: str | None = None,
+) -> Tuple[Dict[str, Any], Dict[str, Any], float, float]:
+    lat, lon = parse_lat_lon(location)
+
+    if lat is None or lon is None:
+        if latitude is not None and longitude is not None:
+            lat, lon = latitude, longitude
+
+    if lat is None or lon is None:
+        lat, lon = INDIA_CENTROID_LAT, INDIA_CENTROID_LON
+
+    fallback_weather = load_json_file(os.path.join(DATA_PATH, "weather_data.json"))
+
+    weather = await get_realtime_weather(lat, lon)
+    if not weather:
+        weather = _load_weather_from_fallback(fallback_weather, lat, lon)
+
+    try:
+        geo_info = await reverse_geocode(lat, lon)
+    except Exception:
+        lat, lon = INDIA_CENTROID_LAT, INDIA_CENTROID_LON
+        weather = await get_realtime_weather(lat, lon)
+        geo_info = {
+            "state": state,
+            "district": district,
+            "village": village,
+        }
+
+    if not geo_info:
+        geo_info = {
+            "state": state,
+            "district": district,
+            "village": village,
+        }
+
+    if fallback_weather:
+        weather.setdefault("forecast", fallback_weather.get("forecast"))
+    weather.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
+    weather.setdefault("location", f"{lat},{lon}")
+
+    return weather, geo_info, lat, lon
+
+
+def _load_weather_from_fallback(fallback_data: Dict[str, Any], lat: float, lon: float) -> Dict[str, Any]:
+    if not fallback_data:
+        return {
+            "temperature": None,
+            "humidity": None,
+            "rainfall": None,
+            "wind_speed": None,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "location": f"{lat},{lon}",
+        }
+    result = dict(fallback_data)
+    result.setdefault("location", f"{lat},{lon}")
+    result.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
+    return result
+
+
 def load_crop_mock(crop_name: str) -> Dict[str, Any]:
     """Load mock data JSON for a given crop if available."""
     filename = f"{crop_name.lower()}.json"
@@ -45,22 +149,164 @@ def load_crop_mock(crop_name: str) -> Dict[str, Any]:
     return {}
 
 
-def build_advisory_from_features(crop: str, features: Dict[str, Any]) -> Tuple[Dict[str, Any], float, List[str]]:
-    """Evaluate rules and produce an advisory summary, severity, alerts, and metrics.
-    Returns advisory fields plus max score and fired rules for compatibility.
-    """
-    # Evaluate rules
-    pest_rules = load_rules("pest")
-    irrigation_rules = load_rules("irrigation")
-    market_rules = load_rules("market")
+def _to_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
-    fired_pest, pest_score = evaluate_rules(pest_rules, features)
-    fired_irrigation, irrigation_score = evaluate_rules(irrigation_rules, features)
-    fired_market, market_score = evaluate_rules(market_rules, features)
+
+def _evaluate_numeric(feature_value, operator: str, target_value) -> bool:
+    fv = _to_float(feature_value)
+    tv = _to_float(target_value)
+    if fv is None or tv is None:
+        return False
+    if operator == ">":
+        return fv > tv
+    if operator == "<":
+        return fv < tv
+    if operator == ">=":
+        return fv >= tv
+    if operator == "<=":
+        return fv <= tv
+    if operator == "abs_gte":
+        return abs(fv) >= tv
+    return False
+
+
+def run_rules(
+    rule_type: str,
+    context: Dict[str, Any],
+    crop: str,
+    crop_meta: Dict[str, Any],
+    detected_stage: str,
+) -> Tuple[List[str], float]:
+    rules = get_rules(rule_type)
+    fired: List[str] = []
+    max_score = 0.0
+
+    for rule_name, rule in rules.items():
+        conditions_met = True
+        for cond in rule.get("conditions", []):
+            feature = cond.get("feature")
+            operator = cond.get("op", "==")
+
+            if feature == "crop_stage":
+                expected_stage = cond.get("value")
+                if expected_stage and detected_stage != expected_stage:
+                    conditions_met = False
+                continue
+
+            if feature == "ndvi_status":
+                expected_status = cond.get("value")
+                if expected_status and context.get("ndvi_status") != expected_status:
+                    conditions_met = False
+                continue
+
+            feature_value = context.get(feature)
+            if operator == "use_threshold":
+                threshold_key = cond.get("value")
+                threshold_val = get_threshold(crop, threshold_key)
+                if threshold_val is None:
+                    conditions_met = False
+                    break
+                if feature_value is None or feature_value > threshold_val:
+                    conditions_met = False
+                continue
+
+            if feature_value is None:
+                conditions_met = False
+                break
+
+            target_value = cond.get("value")
+            if "use_threshold" in cond:
+                threshold_val = get_threshold(crop, cond["use_threshold"])
+                if threshold_val is None:
+                    conditions_met = False
+                    break
+                target_value = threshold_val
+
+            if operator in {">", "<", ">=", "<=", "abs_gte"}:
+                if not _evaluate_numeric(feature_value, operator, target_value):
+                    conditions_met = False
+                    break
+            elif operator == "==":
+                if feature_value != target_value:
+                    conditions_met = False
+                    break
+            elif operator == "!=":
+                if feature_value == target_value:
+                    conditions_met = False
+                    break
+            else:
+                # Unknown operator -> fail safe
+                conditions_met = False
+                break
+
+        if conditions_met:
+            fired.append(rule.get("description", rule_name))
+            max_score = max(max_score, rule.get("score", 0.0))
+
+    return fired, max_score
+
+
+def build_advisory_from_features(
+    crop: str,
+    raw_features: Dict[str, Any],
+    user_context: Dict[str, Any] | None = None,
+) -> Tuple[Dict[str, Any], float, List[str], Dict[str, Any]]:
+    """Evaluate rules and produce advisory fields for a crop."""
+    crop = crop.lower()
+    crop_meta = crop_metadata.get(crop, {})
+
+    context: Dict[str, Any] = {}
+    context.update(raw_features or {})
+    if user_context:
+        context.update(user_context)
+
+    ndvi_current = context.get("ndvi")
+    previous_ndvi = (
+        context.get("previous_ndvi")
+        or context.get("ndvi_previous")
+        or context.get("ndvi_prior")
+    )
+    computed_change = compute_ndvi_change(ndvi_current, previous_ndvi)
+    if computed_change != 0:
+        context["ndvi_change"] = computed_change
+    elif "ndvi_change" not in context:
+        context["ndvi_change"] = 0.0
+
+    context["ndvi_status"] = ndvi_stress_level(crop_meta, ndvi_current)
+
+    detected_stage = context.get("crop_stage") or "unknown"
+    if detected_stage == "unknown":
+        days_since_sowing = context.get("days_since_sowing")
+        if days_since_sowing is not None:
+            detected_stage = detect_crop_stage(crop_meta, days_since_sowing)
+    context["crop_stage"] = detected_stage
+
+    region_priority = crop_meta.get("region_priority", [])
+    user_district = context.get("user_district") or context.get("district")
+    context["region_priority_match"] = bool(
+        region_priority and user_district and user_district in region_priority
+    )
+
+    pest_fired, pest_score = run_rules("pest", context, crop, crop_meta, detected_stage)
+    irrigation_fired, irrigation_score = run_rules("irrigation", context, crop, crop_meta, detected_stage)
+    market_fired, market_score = run_rules("market", context, crop, crop_meta, detected_stage)
+
+    rule_breakdown = {
+        "pest": {"fired": pest_fired, "score": pest_score},
+        "irrigation": {"fired": irrigation_fired, "score": irrigation_score},
+        "market": {"fired": market_fired, "score": market_score},
+    }
 
     max_score = max(pest_score, irrigation_score, market_score, 0.0)
+    if context.get("region_priority_match") and max_score > 0:
+        max_score = min(max_score * 1.1, 1.0)
 
-    # Severity mapping
+    fired_rules = pest_fired + irrigation_fired + market_fired
+
     if max_score >= 0.8:
         severity = "high"
         summary = "High risk detected"
@@ -72,20 +318,18 @@ def build_advisory_from_features(crop: str, features: Dict[str, Any]) -> Tuple[D
         summary = "Low risk detected"
 
     alerts: List[Dict[str, str]] = []
-    for msg in fired_pest:
-        alerts.append({"type": "pest", "message": msg})
-    for msg in fired_irrigation:
-        alerts.append({"type": "soil", "message": msg})
-    for msg in fired_market:
-        alerts.append({"type": "market", "message": msg})
+    alerts.extend({"type": "pest", "message": msg} for msg in pest_fired)
+    alerts.extend({"type": "soil", "message": msg} for msg in irrigation_fired)
+    alerts.extend({"type": "market", "message": msg} for msg in market_fired)
 
     metrics = {
-        "ndvi": features.get("ndvi"),
-        "soil_moisture": features.get("soil_moisture"),
-        "market_price": features.get("price_change_percent") if features.get("price_change_percent") is not None else None,
-        "temperature": features.get("temperature"),
-        "humidity": features.get("humidity"),
-        "rainfall": features.get("rainfall"),
+        "ndvi": ndvi_current,
+        "soil_moisture": context.get("soil_moisture"),
+        "market_price": context.get("market_price") or context.get("price"),
+        "temperature": context.get("temperature"),
+        "humidity": context.get("humidity"),
+        "rainfall": context.get("rainfall"),
+        "wind_speed": context.get("wind_speed"),
     }
 
     advisory_fields = {
@@ -95,38 +339,41 @@ def build_advisory_from_features(crop: str, features: Dict[str, Any]) -> Tuple[D
         "metrics": metrics,
     }
 
-    return advisory_fields, max_score, (fired_pest + fired_irrigation + fired_market)
+    return advisory_fields, max_score, fired_rules, rule_breakdown
 
 
 @router.get("/dashboard")
-async def get_dashboard_data(crop: str = None):
+async def get_dashboard_data(
+    crop: Optional[str] = None,
+    location: Optional[str] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    state: Optional[str] = None,
+    district: Optional[str] = None,
+    village: Optional[str] = None,
+):
     """
     Combine weather, market, and alert mock data for dashboard.
-    
-    Query params:
-    - crop: Optional crop name to highlight/filter (e.g., cotton, wheat, rice)
-    
-    Returns combined overview with:
-    - Weather data (temperature, humidity, rainfall, wind)
-    - Market prices (wheat, rice, cotton, etc.)
-    - Active alerts (pest, irrigation, market)
-    - Crop health summary
-    - user_crop: The crop parameter if provided
     """
     try:
-        # Load data files
-        weather = load_json_file(os.path.join(DATA_PATH, "weather_data.json"))
+        weather, geo_info, lat, lon = await resolve_weather_context(
+            location=location,
+            latitude=latitude,
+            longitude=longitude,
+            state=state,
+            district=district,
+            village=village,
+        )
         market = load_json_file(os.path.join(DATA_PATH, "market_prices.json"))
         alerts = load_json_file(os.path.join(DATA_PATH, "alerts.json"))
         crop_health = load_json_file(os.path.join(DATA_PATH, "crop_health.json"))
-        
-        # Calculate summary statistics
+
         total_alerts = len(alerts) if isinstance(alerts, list) else 0
         high_priority_alerts = [
-            alert for alert in alerts 
+            alert for alert in alerts
             if isinstance(alert, dict) and alert.get("level") == "high"
         ] if isinstance(alerts, list) else []
-        
+
         response_data = {
             "weather": weather,
             "market": market,
@@ -135,82 +382,89 @@ async def get_dashboard_data(crop: str = None):
             "summary": {
                 "total_alerts": total_alerts,
                 "high_priority_count": len(high_priority_alerts),
-                "crops_monitored": len(crop_health) if isinstance(crop_health, dict) else 0
+                "crops_monitored": len(crop_health) if isinstance(crop_health, dict) else 0,
             },
-            "timestamp": weather.get("timestamp", "2025-11-10T16:00:00Z")
+            "timestamp": weather.get("timestamp"),
         }
-        
-        # Add user's crop if provided
+
         if crop:
             response_data["user_crop"] = crop.lower()
-        
+        if geo_info.get("district"):
+            response_data["user_district"] = geo_info.get("district")
+        response_data["coordinates"] = {"latitude": lat, "longitude": lon}
+
         return JSONResponse(response_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error loading dashboard data: {str(e)}")
 
 
 @router.get("/advisory/{crop_name}")
-async def get_advisory(crop_name: str):
-    """
-    Fetch rule-based advisory for given crop.
-    
-    Now loads per-crop mock data if available, applies rules, and returns:
-    {
-      "summary": str,
-      "severity": "low|medium|high",
-      "alerts": [ {"type": "pest|soil|market", "message": str}, ... ],
-      "metrics": { ndvi, soil_moisture, market_price, temperature, humidity, rainfall },
-      // plus legacy fields maintained for compatibility
-    }
-    """
+async def get_advisory(
+    crop_name: str,
+    location: Optional[str] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    state: Optional[str] = None,
+    district: Optional[str] = None,
+    village: Optional[str] = None,
+):
+    """Return advisory for a given crop using realtime weather."""
     try:
         crop = crop_name.lower()
+        weather, geo_info, lat, lon = await resolve_weather_context(
+            location=location,
+            latitude=latitude,
+            longitude=longitude,
+            state=state,
+            district=district,
+            village=village,
+        )
+        user_context = {
+            "user_district": geo_info.get("district") or district,
+            "district": geo_info.get("district") or district,
+            "state": geo_info.get("state") or state,
+            "village": geo_info.get("village") or village,
+            "location": weather.get("location"),
+        }
 
-        # Load mock crop data if present
         mock = load_crop_mock(crop)
         if mock:
-            # Build features directly from mock
             features = {
-                "temperature": mock.get("temperature"),
-                "humidity": mock.get("humidity"),
-                "rainfall": mock.get("rainfall"),
+                "temperature": weather.get("temperature"),
+                "humidity": weather.get("humidity"),
+                "rainfall": weather.get("rainfall"),
+                "wind_speed": weather.get("wind_speed"),
                 "ndvi": mock.get("ndvi"),
-                "ndvi_change": 0.0,  # mock may not include change
                 "soil_moisture": mock.get("soil_moisture"),
-                "crop_stage": "unknown",
-                "price_change_percent": 0,  # not provided in mock
+                "crop_stage": mock.get("crop_stage", "unknown"),
+                "price_change_percent": mock.get("price_change_percent", 0),
+                "market_price": mock.get("market_price"),
+                "days_since_sowing": mock.get("days_since_sowing"),
+                "previous_ndvi": mock.get("previous_ndvi") or mock.get("ndvi_previous"),
+                "user_district": mock.get("district") or geo_info.get("district"),
+                "district": mock.get("district") or geo_info.get("district"),
             }
 
-            advisory_fields, max_score, fired_rules = build_advisory_from_features(crop, features)
-
-            # Compose response including legacy fields
-            legacy_priority = "High" if advisory_fields["severity"] == "high" else ("Medium" if advisory_fields["severity"] == "medium" else "Low")
+            fields, score, fired_rules, breakdown = build_advisory_from_features(crop, features, user_context)
+            legacy_priority = "High" if score >= 0.8 else ("Medium" if score >= 0.6 else "Low")
             response = {
                 "crop": crop.capitalize(),
-                "analysis": advisory_fields["summary"],
+                "analysis": fields["summary"],
                 "priority": legacy_priority,
-                "severity": advisory_fields["severity"].capitalize(),
-                "rule_score": max_score,
+                "severity": fields["severity"].capitalize(),
+                "rule_score": score,
                 "fired_rules": fired_rules,
-                "recommendations": [],  # keep structure; real recs come from rules if needed
-                "rule_breakdown": {},
-                "data_sources": {"weather": "IMD", "satellite": "Bhuvan", "market": "Agmarknet"},
-                "last_updated": "recently",
-                # New fields for UI
-                "summary": advisory_fields["summary"],
-                "alerts": advisory_fields["alerts"],
-                "metrics": advisory_fields["metrics"],
+                "recommendations": [],
+                "rule_breakdown": breakdown,
+                "data_sources": {"weather": "Open-Meteo", "satellite": "Bhuvan", "market": "Agmarknet"},
+                "last_updated": weather.get("timestamp", "recently"),
+                "summary": fields["summary"],
+                "alerts": fields["alerts"],
+                "metrics": fields["metrics"],
             }
             return JSONResponse(response)
 
-        # Fallback to previous dynamic generation if no mock available
-        advisory = await generate_advisory(crop)
-
-        # Also attach new fields synthesized from features where possible (minimal)
-        advisory.setdefault("summary", advisory.get("analysis", ""))
-        advisory.setdefault("alerts", [])
-        advisory.setdefault("metrics", {})
-
+        advisory = await generate_advisory(crop, weather, user_context)
         return JSONResponse(advisory)
 
     except HTTPException:
@@ -220,74 +474,75 @@ async def get_advisory(crop_name: str):
 
 
 async def enhance_advisory_with_rules(advisory: Dict[str, Any], crop_name: str) -> Dict[str, Any]:
-    """Enhance pre-generated advisory with real-time rule evaluation."""
+    """Enhance pre-generated advisory with metadata-aware rule evaluation."""
     try:
-        # Load current data
-        weather = load_json_file(os.path.join(DATA_PATH, "weather_data.json"))
+        crop = crop_name.lower()
+        metrics = advisory.get("metrics") if isinstance(advisory.get("metrics"), dict) else {}
+        location_hint = metrics.get("location") if isinstance(metrics, dict) else None
+        weather, geo_info, lat, lon = await resolve_weather_context(
+            location=location_hint,
+            state=advisory.get("state"),
+            district=advisory.get("district"),
+            village=advisory.get("village"),
+        )
         crop_health_data = load_json_file(os.path.join(DATA_PATH, "crop_health.json"))
         market_data = load_json_file(os.path.join(DATA_PATH, "market_prices.json"))
-        
-        # Get crop-specific data
-        crop_health = crop_health_data.get(crop_name, {})
-        market = market_data.get(crop_name, {})
-        
-        # Combine features
+
+        crop_health = crop_health_data.get(crop, {})
+        market = market_data.get(crop, {})
+
         features = combine_features(weather, crop_health, market)
-        
-        # Evaluate all rule types
-        pest_rules = load_rules("pest")
-        irrigation_rules = load_rules("irrigation")
-        market_rules = load_rules("market")
-        
-        fired_pest, pest_score = evaluate_rules(pest_rules, features)
-        fired_irrigation, irrigation_score = evaluate_rules(irrigation_rules, features)
-        fired_market, market_score = evaluate_rules(market_rules, features)
-        
-        # Combine all fired rules
-        all_fired_rules = fired_pest + fired_irrigation + fired_market
-        max_score = max(pest_score, irrigation_score, market_score, advisory.get("rule_score", 0.0))
-        
-        # Update advisory with rule evaluation
-        advisory["fired_rules"] = all_fired_rules if all_fired_rules else advisory.get("fired_rules", [])
-        advisory["rule_score"] = max_score
-        advisory["rule_breakdown"] = {
-            "pest": {"fired": fired_pest, "score": pest_score},
-            "irrigation": {"fired": fired_irrigation, "score": irrigation_score},
-            "market": {"fired": fired_market, "score": market_score}
+        features["market_price"] = market.get("price")
+        features["days_since_sowing"] = crop_health.get("days_since_sowing")
+        features["previous_ndvi"] = (
+            crop_health.get("previous_ndvi")
+            or crop_health.get("ndvi_previous")
+            or crop_health.get("ndvi_prior")
+        )
+
+        user_context = {
+            "user_district": geo_info.get("district"),
+            "district": geo_info.get("district"),
+            "state": geo_info.get("state"),
+            "location": weather.get("location"),
         }
-        
+
+        fields, score, fired, breakdown = build_advisory_from_features(crop, features, user_context)
+
+        advisory["fired_rules"] = fired
+        advisory["rule_score"] = score
+        advisory["rule_breakdown"] = breakdown
+        advisory.setdefault("summary", fields["summary"])
+        advisory["alerts"] = fields["alerts"]
+        advisory.setdefault("metrics", {}).update({k: v for k, v in fields["metrics"].items() if v is not None})
+        advisory.setdefault("data_sources", {}).update({"weather": "Open-Meteo"})
+        advisory["last_updated"] = weather.get("timestamp", advisory.get("last_updated"))
         return advisory
     except Exception:
-        # If rule evaluation fails, return original advisory
         return advisory
 
 
-async def generate_advisory(crop_name: str) -> Dict[str, Any]:
+async def generate_advisory(crop_name: str, weather: Dict[str, Any], user_context: Dict[str, Any]) -> Dict[str, Any]:
     """Generate advisory dynamically for crops without pre-generated files."""
     try:
-        # Load data
-        weather = load_json_file(os.path.join(DATA_PATH, "weather_data.json"))
+        crop = crop_name.lower()
         crop_health_data = load_json_file(os.path.join(DATA_PATH, "crop_health.json"))
         market_data = load_json_file(os.path.join(DATA_PATH, "market_prices.json"))
-        
-        crop_health = crop_health_data.get(crop_name, {})
-        market = market_data.get(crop_name, {})
-        
-        # Combine features
+
+        crop_health = crop_health_data.get(crop, {})
+        market = market_data.get(crop, {})
+
         features = combine_features(weather, crop_health, market)
-        
-        # Evaluate rules
-        pest_rules = load_rules("pest")
-        irrigation_rules = load_rules("irrigation")
-        market_rules = load_rules("market")
-        
-        fired_pest, pest_score = evaluate_rules(pest_rules, features)
-        fired_irrigation, irrigation_score = evaluate_rules(irrigation_rules, features)
-        fired_market, market_score = evaluate_rules(market_rules, features)
-        
-        # Determine priority and severity
-        max_score = max(pest_score, irrigation_score, market_score, 0.0)
-        
+        features["market_price"] = market.get("price")
+        features["days_since_sowing"] = crop_health.get("days_since_sowing")
+        features["previous_ndvi"] = (
+            crop_health.get("previous_ndvi")
+            or crop_health.get("ndvi_previous")
+            or crop_health.get("ndvi_prior")
+        )
+
+        advisory_fields, max_score, fired_rules, breakdown = build_advisory_from_features(crop, features, user_context)
+
         if max_score >= 0.8:
             priority = "High"
             severity = "High"
@@ -297,69 +552,48 @@ async def generate_advisory(crop_name: str) -> Dict[str, Any]:
         else:
             priority = "Low"
             severity = "Low"
-        
-        # Generate analysis text
-        analysis_parts = []
-        if fired_pest:
-            analysis_parts.append("Pest risk detected based on environmental conditions.")
-        if fired_irrigation:
-            analysis_parts.append("Irrigation required based on temperature and soil moisture.")
-        if fired_market:
-            analysis_parts.append("Market conditions indicate price volatility.")
-        
-        analysis = " ".join(analysis_parts) if analysis_parts else "Crop conditions are normal. Continue monitoring."
-        
-        # Generate recommendations
-        recommendations = []
-        if fired_pest:
+
+        recommendations: List[Dict[str, Any]] = []
+        if "pest" in breakdown and breakdown["pest"]["fired"]:
             recommendations.append({
-                "title": "Apply pest control measures",
-                "desc": "Based on detected pest risk indicators",
-                "priority": "high" if pest_score >= 0.8 else "medium",
-                "timeline": "immediate"
+                "title": "Inspect for pests",
+                "desc": "Rule-based indicators suggest pest pressure; inspect immediately.",
+                "priority": "high" if max_score >= 0.8 else "medium",
+                "timeline": "immediate",
             })
-        if fired_irrigation:
+        if "irrigation" in breakdown and breakdown["irrigation"]["fired"]:
             recommendations.append({
-                "title": "Schedule irrigation",
-                "desc": "Based on temperature and soil moisture levels",
-                "priority": "high" if irrigation_score >= 0.8 else "medium",
-                "timeline": "within 24 hours"
-            })
-        if fired_market:
-            recommendations.append({
-                "title": "Review market timing",
-                "desc": "Market conditions suggest price changes",
+                "title": "Review irrigation schedule",
+                "desc": "Soil moisture and weather conditions warrant irrigation adjustment.",
                 "priority": "medium",
-                "timeline": "1 week"
+                "timeline": "within 24 hours",
             })
-        
         if not recommendations:
             recommendations.append({
-                "title": "Continue monitoring",
-                "desc": "Current conditions are favorable",
+                "title": "Continue standard monitoring",
+                "desc": "No immediate risks detected. Maintain regular field checks.",
                 "priority": "low",
-                "timeline": "ongoing"
+                "timeline": "ongoing",
             })
-        
+
         return {
-            "crop": crop_name.capitalize(),
-            "analysis": analysis,
+            "crop": crop.capitalize(),
+            "analysis": advisory_fields["summary"],
             "priority": priority,
             "severity": severity,
             "rule_score": max_score,
-            "fired_rules": fired_pest + fired_irrigation + fired_market,
+            "fired_rules": fired_rules,
             "recommendations": recommendations,
-            "rule_breakdown": {
-                "pest": {"fired": fired_pest, "score": pest_score},
-                "irrigation": {"fired": fired_irrigation, "score": irrigation_score},
-                "market": {"fired": fired_market, "score": market_score}
-            },
+            "rule_breakdown": breakdown,
+            "summary": advisory_fields["summary"],
+            "alerts": advisory_fields["alerts"],
+            "metrics": advisory_fields["metrics"],
             "data_sources": {
-                "weather": "IMD",
+                "weather": "Open-Meteo",
                 "satellite": "Bhuvan",
                 "market": "Agmarknet"
             },
-            "last_updated": weather.get("timestamp", "2025-11-10T16:00:00Z")
+            "last_updated": weather.get("timestamp", datetime.now(timezone.utc).isoformat()),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating advisory: {str(e)}")

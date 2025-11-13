@@ -1,0 +1,105 @@
+{
+    "meta": {
+      "generated_at": "2025-11-13T06:00:00Z",
+      "notes": "Mock real-like dataset for fusion engine testing (multiple districts, noisy/missing values)"
+    },
+    "locations": [
+      {
+        "state": "Maharashtra",
+        "district": "Pune",
+        "lat": 18.5204,
+        "lon": 73.8567,
+        "timestamp": "2025-11-13T05:00:00Z",
+        "weather": {"temperature": 33, "humidity": 72, "rainfall": 0, "wind_speed": 6},
+        "crop_health": {
+          "crop": "cotton",
+          "ndvi": 0.62,
+          "ndvi_change": -0.07,
+          "soil_moisture": 42,
+          "crop_stage_days": 60
+        },
+        "market": {"crop": "cotton", "price": 5600, "price_change_percent": -4.5, "mandi": "Pune"}
+      },
+      {
+        "state": "Maharashtra",
+        "district": "Ahmednagar",
+        "lat": 19.0952,
+        "lon": 74.7496,
+        "timestamp": "2025-11-13T05:00:00Z",
+        "weather": {"temperature": 29, "humidity": 58, "rainfall": 2, "wind_speed": 5},
+        "crop_health": {
+          "crop": "cotton",
+          "ndvi": 0.70,
+          "ndvi_change": 0.01,
+          "soil_moisture": 48,
+          "crop_stage_days": 30
+        },
+        "market": {"crop": "cotton", "price": 5800, "price_change_percent": -5.8, "mandi": "Ahmednagar"}
+      },
+      {
+        "state": "Punjab",
+        "district": "Ludhiana",
+        "lat": 30.9010,
+        "lon": 75.8573,
+        "timestamp": "2025-11-13T05:00:00Z",
+        "weather": {"temperature": 30, "humidity": 35, "rainfall": 0, "wind_speed": 8},
+        "crop_health": {
+          "crop": "wheat",
+          "ndvi": 0.75,
+          "ndvi_change": 0.02,
+          "soil_moisture": 33,
+          "crop_stage_days": 25
+        },
+        "market": {"crop": "wheat", "price": 2100, "price_change_percent": -2.3, "mandi": "Ludhiana"}
+      },
+      {
+        "state": "West Bengal",
+        "district": "Murshidabad",
+        "lat": 24.1757,
+        "lon": 88.2725,
+        "timestamp": "2025-11-13T05:00:00Z",
+        "weather": {"temperature": 28, "humidity": 85, "rainfall": 10, "wind_speed": 4},
+        "crop_health": {
+          "crop": "rice",
+          "ndvi": 0.80,
+          "ndvi_change": 0.04,
+          "soil_moisture": 62,
+          "crop_stage_days": 50
+        },
+        "market": {"crop": "rice", "price": 3200, "price_change_percent": 1.2, "mandi": "Murshidabad"}
+      },
+      {
+        "state": "Madhya Pradesh",
+        "district": "Indore",
+        "lat": 22.7196,
+        "lon": 75.8577,
+        "timestamp": "2025-11-13T05:00:00Z",
+        "weather": {"temperature": 31, "humidity": 50, "rainfall": 0, "wind_speed": 5},
+        "crop_health": {
+          "crop": "soybean",
+          "ndvi": 0.58,
+          "ndvi_change": -0.09,
+          "soil_moisture": 38,
+          "crop_stage_days": 45
+        },
+        "market": {"crop": "soybean", "price": 4800, "price_change_percent": -3.2, "mandi": "Indore"}
+      },
+      {
+        "state": "Gujarat",
+        "district": "Rajkot",
+        "lat": 22.3039,
+        "lon": 70.8022,
+        "timestamp": "2025-11-13T05:00:00Z",
+        "weather": {"temperature": 27, "humidity": 65, "rainfall": 0, "wind_speed": 7},
+        "crop_health": {
+          "crop": "onion",
+          "ndvi": 0.52,
+          "ndvi_change": -0.04,
+          "soil_moisture": 36,
+          "crop_stage_days": 80
+        },
+        "market": {"crop": "onion", "price": 1600, "price_change_percent": 2.5, "mandi": "Rajkot"}
+      }
+    ]
+  }
+  

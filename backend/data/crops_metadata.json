@@ -1,5 +1,6 @@
 {
   "cotton": {
+    "crop_id": "cotton",
     "name": "Cotton",
     "scientific_name": "Gossypium hirsutum",
     "season": "kharif",
@@ -10,12 +11,58 @@
     "optimal_humidity_max": 80,
     "optimal_soil_moisture_min": 40,
     "optimal_soil_moisture_max": 70,
-    "common_pests": ["aphids", "whitefly", "bollworm"],
-    "common_diseases": ["bacterial blight", "leaf spot"],
+    "typical_ndvi_min": 0.55,
+    "typical_ndvi_max": 0.80,
+    "ndvi_alert_drop": 0.08,
+    "ndvi_warning_drop": 0.05,
+    "monitoring_frequency_days": 3,
+    "stages": {
+      "germination": [
+        0,
+        15
+      ],
+      "vegetative": [
+        15,
+        45
+      ],
+      "flowering": [
+        45,
+        90
+      ],
+      "boll_formation": [
+        90,
+        130
+      ],
+      "maturity": [
+        130,
+        150
+      ]
+    },
+    "common_pests": [
+      "aphids",
+      "whitefly",
+      "bollworm"
+    ],
+    "common_diseases": [
+      "bacterial blight",
+      "leaf spot"
+    ],
     "irrigation_frequency_days": 7,
-    "harvest_months": ["October", "November", "December"]
+    "harvest_months": [
+      "October",
+      "November",
+      "December"
+    ],
+    "region_priority": [
+      "Maharashtra",
+      "Gujarat",
+      "Punjab",
+      "Haryana"
+    ]
   },
+
   "wheat": {
+    "crop_id": "wheat",
     "name": "Wheat",
     "scientific_name": "Triticum aestivum",
     "season": "rabi",
@@ -26,12 +73,59 @@
     "optimal_humidity_max": 70,
     "optimal_soil_moisture_min": 35,
     "optimal_soil_moisture_max": 60,
-    "common_pests": ["aphids", "armyworm", "thrips"],
-    "common_diseases": ["rust", "smut", "powdery mildew"],
+    "typical_ndvi_min": 0.65,
+    "typical_ndvi_max": 0.85,
+    "ndvi_alert_drop": 0.07,
+    "ndvi_warning_drop": 0.04,
+    "monitoring_frequency_days": 4,
+    "stages": {
+      "germination": [
+        0,
+        15
+      ],
+      "tillering": [
+        15,
+        45
+      ],
+      "stem_elongation": [
+        45,
+        75
+      ],
+      "flowering": [
+        75,
+        95
+      ],
+      "grain_filling": [
+        95,
+        120
+      ]
+    },
+    "common_pests": [
+      "aphids",
+      "armyworm",
+      "thrips"
+    ],
+    "common_diseases": [
+      "rust",
+      "smut",
+      "powdery mildew"
+    ],
     "irrigation_frequency_days": 10,
-    "harvest_months": ["March", "April", "May"]
+    "harvest_months": [
+      "March",
+      "April",
+      "May"
+    ],
+    "region_priority": [
+      "Punjab",
+      "Haryana",
+      "UP",
+      "Rajasthan"
+    ]
   },
+
   "rice": {
+    "crop_id": "rice",
     "name": "Rice",
     "scientific_name": "Oryza sativa",
     "season": "kharif",
@@ -42,12 +136,59 @@
     "optimal_humidity_max": 90,
     "optimal_soil_moisture_min": 50,
     "optimal_soil_moisture_max": 80,
-    "common_pests": ["stem borer", "leaf folder", "brown planthopper"],
-    "common_diseases": ["blast", "brown spot", "bacterial blight"],
+    "typical_ndvi_min": 0.60,
+    "typical_ndvi_max": 0.85,
+    "ndvi_alert_drop": 0.07,
+    "ndvi_warning_drop": 0.04,
+    "monitoring_frequency_days": 2,
+    "stages": {
+      "nursery": [
+        0,
+        20
+      ],
+      "vegetative": [
+        20,
+        50
+      ],
+      "tillering": [
+        50,
+        70
+      ],
+      "panicle_initiation": [
+        70,
+        90
+      ],
+      "maturity": [
+        90,
+        120
+      ]
+    },
+    "common_pests": [
+      "stem borer",
+      "leaf folder",
+      "brown planthopper"
+    ],
+    "common_diseases": [
+      "blast",
+      "brown spot",
+      "bacterial blight"
+    ],
     "irrigation_frequency_days": 3,
-    "harvest_months": ["September", "October", "November"]
+    "harvest_months": [
+      "September",
+      "October",
+      "November"
+    ],
+    "region_priority": [
+      "West Bengal",
+      "Assam",
+      "Punjab",
+      "UP"
+    ]
   },
+
   "sugarcane": {
+    "crop_id": "sugarcane",
     "name": "Sugarcane",
     "scientific_name": "Saccharum officinarum",
     "season": "year_round",
@@ -58,10 +199,166 @@
     "optimal_humidity_max": 85,
     "optimal_soil_moisture_min": 45,
     "optimal_soil_moisture_max": 75,
-    "common_pests": ["top borer", "internode borer", "white grub"],
-    "common_diseases": ["red rot", "smut", "mosaic"],
+    "typical_ndvi_min": 0.70,
+    "typical_ndvi_max": 0.90,
+    "ndvi_alert_drop": 0.10,
+    "ndvi_warning_drop": 0.06,
+    "monitoring_frequency_days": 7,
+    "stages": {
+      "germination": [
+        0,
+        45
+      ],
+      "tillering": [
+        45,
+        120
+      ],
+      "grand_growth": [
+        120,
+        270
+      ],
+      "maturity": [
+        270,
+        365
+      ]
+    },
+    "common_pests": [
+      "top borer",
+      "internode borer",
+      "white grub"
+    ],
+    "common_diseases": [
+      "red rot",
+      "smut",
+      "mosaic"
+    ],
     "irrigation_frequency_days": 5,
-    "harvest_months": ["December", "January", "February", "March"]
+    "harvest_months": [
+      "December",
+      "January",
+      "February",
+      "March"
+    ],
+    "region_priority": [
+      "UP",
+      "Maharashtra",
+      "Karnataka"
+    ]
+  },
+
+  "soybean": {
+    "crop_id": "soybean",
+    "name": "Soybean",
+    "scientific_name": "Glycine max",
+    "season": "kharif",
+    "growing_period_days": 110,
+    "optimal_temperature_min": 20,
+    "optimal_temperature_max": 30,
+    "optimal_humidity_min": 50,
+    "optimal_humidity_max": 85,
+    "optimal_soil_moisture_min": 35,
+    "optimal_soil_moisture_max": 65,
+    "typical_ndvi_min": 0.55,
+    "typical_ndvi_max": 0.80,
+    "ndvi_alert_drop": 0.07,
+    "ndvi_warning_drop": 0.04,
+    "monitoring_frequency_days": 4,
+    "stages": {
+      "germination": [
+        0,
+        10
+      ],
+      "vegetative": [
+        10,
+        40
+      ],
+      "flowering": [
+        40,
+        70
+      ],
+      "pod_development": [
+        70,
+        95
+      ],
+      "maturity": [
+        95,
+        110
+      ]
+    },
+    "common_pests": [
+      "stem fly",
+      "white grub",
+      "armyworm"
+    ],
+    "common_diseases": [
+      "rust",
+      "blight"
+    ],
+    "irrigation_frequency_days": 7,
+    "harvest_months": [
+      "October",
+      "November"
+    ],
+    "region_priority": [
+      "Madhya Pradesh",
+      "Maharashtra",
+      "Rajasthan"
+    ]
+  },
+
+  "onion": {
+    "crop_id": "onion",
+    "name": "Onion",
+    "scientific_name": "Allium cepa",
+    "season": "rabi_kharif",
+    "growing_period_days": 120,
+    "optimal_temperature_min": 18,
+    "optimal_temperature_max": 30,
+    "optimal_humidity_min": 50,
+    "optimal_humidity_max": 75,
+    "optimal_soil_moisture_min": 30,
+    "optimal_soil_moisture_max": 60,
+    "typical_ndvi_min": 0.45,
+    "typical_ndvi_max": 0.75,
+    "ndvi_alert_drop": 0.06,
+    "ndvi_warning_drop": 0.03,
+    "monitoring_frequency_days": 3,
+    "stages": {
+      "germination": [
+        0,
+        15
+      ],
+      "bulb_initiation": [
+        15,
+        60
+      ],
+      "bulb_growth": [
+        60,
+        100
+      ],
+      "maturity": [
+        100,
+        120
+      ]
+    },
+    "common_pests": [
+      "thrips",
+      "cutworm"
+    ],
+    "common_diseases": [
+      "purple blotch",
+      "downy mildew"
+    ],
+    "irrigation_frequency_days": 5,
+    "harvest_months": [
+      "March",
+      "April",
+      "May"
+    ],
+    "region_priority": [
+      "Maharashtra",
+      "MP",
+      "Gujarat"
+    ]
   }
 }
-

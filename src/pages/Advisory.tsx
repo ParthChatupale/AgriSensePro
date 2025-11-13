@@ -198,8 +198,8 @@ const Advisory = () => {
           </Button>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-heading font-bold text-primary mb-2">Advisory Details</h1>
-              <p className="text-muted-foreground">Personalized recommendations based on your farm data</p>
+          <h1 className="text-3xl font-heading font-bold text-primary mb-2">Advisory Details</h1>
+          <p className="text-muted-foreground">Personalized recommendations based on your farm data</p>
             </div>
             <div className="flex items-center gap-2">
               <label htmlFor="crop-select" className="text-sm text-muted-foreground whitespace-nowrap">
@@ -267,34 +267,34 @@ const Advisory = () => {
               advisory.recommendations.map((rec: Recommendation, idx: number) => {
                 const Icon = getRecommendationIcon(rec.title);
                 return (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <div
+                key={idx}
+                className="flex items-start gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold">{rec.title}</h4>
-                        <Badge
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold">{rec.title}</h4>
+                    <Badge
                           variant={getPriorityVariant(rec.priority)}
-                          className="text-xs"
-                        >
-                          {rec.priority}
-                        </Badge>
-                      </div>
+                      className="text-xs"
+                    >
+                      {rec.priority}
+                    </Badge>
+                  </div>
                       <p className="text-sm text-muted-foreground">{rec.desc}</p>
                       {rec.timeline && (
                         <p className="text-xs text-muted-foreground mt-1">
                           Timeline: {rec.timeline}
                         </p>
                       )}
-                    </div>
-                    <Button size="sm" variant="ghost">
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                  </div>
+                </div>
+                <Button size="sm" variant="ghost">
+                  <CheckCircle className="h-4 w-4" />
+                </Button>
+              </div>
                 );
               })
             ) : (

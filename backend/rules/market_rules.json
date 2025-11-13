@@ -1,31 +1,42 @@
 {
   "price_drop_high": {
-    "description": "Significant price drop indicates market risk",
+    "description": "Significant price drop indicates market stress",
     "conditions": [
       {"feature": "price_change_percent", "op": "<", "value": -5}
     ],
     "score": 0.85,
-    "recommendation": "Consider holding stock if storage available, or find alternative markets",
+    "recommendation": "Hold stock if storage available. Explore nearest mandis with better rates.",
     "severity": "high"
   },
+
   "price_drop_moderate": {
-    "description": "Moderate price drop suggests market volatility",
+    "description": "Moderate price drop suggests temporary volatility",
     "conditions": [
       {"feature": "price_change_percent", "op": "<", "value": -2},
       {"feature": "price_change_percent", "op": ">", "value": -5}
     ],
     "score": 0.6,
-    "recommendation": "Monitor market trends and consider timing of sale",
+    "recommendation": "Monitor daily price movement. Avoid immediate selling if not urgent.",
     "severity": "medium"
   },
+
   "price_surge": {
-    "description": "Price surge indicates favorable market conditions",
+    "description": "Positive price jump indicates good selling conditions",
     "conditions": [
       {"feature": "price_change_percent", "op": ">", "value": 5}
     ],
     "score": 0.3,
-    "recommendation": "Consider selling if crop is ready, market conditions favorable",
+    "recommendation": "If crop is ready for market, consider selling within 1–2 days.",
     "severity": "low"
+  },
+
+  "pre_harvest_expected_dip": {
+    "description": "Before harvest season, prices usually drop due to increased supply",
+    "conditions": [
+      {"feature": "days_to_harvest", "op": "<", "value": 20}
+    ],
+    "score": 0.5,
+    "recommendation": "Plan storage or staggered selling to avoid harvest-season price crash.",
+    "severity": "medium"
   }
 }
-

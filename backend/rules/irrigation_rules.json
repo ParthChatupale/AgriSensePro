@@ -1,33 +1,54 @@
 {
   "high_temp_low_moisture": {
-    "description": "High temp & low soil moisture requires irrigation",
+    "description": "High temperature & low soil moisture requires irrigation",
     "conditions": [
-      {"feature": "temperature", "op": ">", "value": 28},
-      {"feature": "soil_moisture", "op": "<", "value": 40}
-    ],
-    "score": 0.8,
-    "recommendation": "Schedule immediate irrigation in early morning",
-    "severity": "high"
-  },
-  "moderate_temp_low_moisture": {
-    "description": "Moderate temp with low moisture needs monitoring",
-    "conditions": [
-      {"feature": "temperature", "op": ">", "value": 25},
-      {"feature": "temperature", "op": "<", "value": 28},
+      {"feature": "temperature", "op": ">", "value": 30},
       {"feature": "soil_moisture", "op": "<", "value": 35}
     ],
-    "score": 0.6,
-    "recommendation": "Monitor soil moisture and prepare for irrigation",
-    "severity": "medium"
+    "score": 0.8,
+    "recommendation": "Schedule irrigation within 12 hours to reduce heat stress",
+    "severity": "high"
   },
-  "extreme_heat": {
-    "description": "Extreme heat requires immediate irrigation",
+
+  "extreme_heat_any_crop": {
+    "description": "Extreme heat (>35°C) causes immediate water stress in all crops",
     "conditions": [
       {"feature": "temperature", "op": ">", "value": 35}
     ],
     "score": 0.95,
-    "recommendation": "Urgent irrigation required to prevent crop stress",
+    "recommendation": "Urgent irrigation required to prevent crop dehydration",
     "severity": "critical"
+  },
+
+  "crop_specific_low_moisture": {
+    "description": "Soil moisture has dropped below crop-specific minimum threshold",
+    "conditions": [
+      {"feature": "soil_moisture", "op": "crop_based_min", "value": 0}
+    ],
+    "score": 0.85,
+    "recommendation": "Moisture levels are below optimal. Irrigate according to crop requirement.",
+    "severity": "high"
+  },
+
+  "rice_frequent_irrigation": {
+    "description": "Rice requires very high moisture; check ponding if moisture <50%",
+    "conditions": [
+      {"feature": "crop", "op": "==", "value": "rice"},
+      {"feature": "soil_moisture", "op": "<", "value": 50}
+    ],
+    "score": 0.9,
+    "recommendation": "Paddy fields must maintain 5–7 cm water. Irrigate immediately.",
+    "severity": "high"
+  },
+
+  "moderate_temp_low_moisture": {
+    "description": "Moderate temperature but moisture low – irrigation needed soon",
+    "conditions": [
+      {"feature": "temperature", "op": "<", "value": 30},
+      {"feature": "soil_moisture", "op": "<", "value": 30}
+    ],
+    "score": 0.6,
+    "recommendation": "Monitor soil moisture closely and irrigate within 24 hours.",
+    "severity": "medium"
   }
 }
-

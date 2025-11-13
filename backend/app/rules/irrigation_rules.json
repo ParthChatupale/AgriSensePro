@@ -1,0 +1,32 @@
+{
+  "high_temp_low_moisture": {
+    "description": "High temp & low soil moisture requires irrigation",
+    "conditions": [
+      {"feature": "temperature", "op": ">", "value": 28},
+      {"feature": "soil_moisture", "op": "<", "value": 40}
+    ],
+    "score": 0.8,
+    "recommendation": "Schedule immediate irrigation in early morning",
+    "severity": "high"
+  },
+  "moderate_temp_low_moisture": {
+    "description": "Moderate temp with low moisture needs monitoring",
+    "conditions": [
+      {"feature": "temperature", "op": ">", "value": 25},
+      {"feature": "temperature", "op": "<", "value": 28},
+      {"feature": "soil_moisture", "op": "<", "value": 35}
+    ],
+    "score": 0.6,
+    "recommendation": "Monitor soil moisture and prepare for irrigation",
+    "severity": "medium"
+  },
+  "extreme_heat": {
+    "description": "Extreme heat requires immediate irrigation",
+    "conditions": [
+      {"feature": "temperature", "op": ">", "value": 35}
+    ],
+    "score": 0.95,
+    "recommendation": "Urgent irrigation required to prevent crop stress",
+    "severity": "critical"
+  }
+}

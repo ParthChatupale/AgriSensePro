@@ -241,7 +241,7 @@ const Profile = () => {
                 <Label htmlFor="district">District</Label>
                 <Input id="district" value={formData.district} disabled className="bg-muted" />
               </div>
-              <div className="space-y-2">
+            <div className="space-y-2">
                 <Label htmlFor="village">Village / Town</Label>
                 <Input id="village" value={formData.village} disabled className="bg-muted" />
               </div>
