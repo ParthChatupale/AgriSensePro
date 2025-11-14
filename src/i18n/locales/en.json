@@ -55,5 +55,196 @@
     "install_pwa": "Install PWA",
     "connect": "Connect With Us",
     "copyright": "© {{year}} AgriSense. All rights reserved."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Welcome back! Here's your farm overview",
+    "refresh": "Refresh Data",
+    "error": {
+      "title": "Unable to Load Dashboard",
+      "load_failed": "Unable to load dashboard data",
+      "try_again": "Try Again"
+    },
+    "weather": {
+      "title": "Weather Summary",
+      "humidity": "Humidity",
+      "wind_speed": "Wind Speed",
+      "rainfall": "Rainfall"
+    },
+    "market": {
+      "title": "Market Prices",
+      "wheat": "Wheat",
+      "rice": "Rice",
+      "cotton": "Cotton",
+      "sugarcane": "Sugarcane",
+      "no_data": "No market data available"
+    },
+    "ndvi": {
+      "title": "Satellite NDVI",
+      "unavailable": "NDVI unavailable",
+      "no_history": "No history data",
+      "last_updated": "Last updated {{time}}",
+      "trend_7day": "7-day trend",
+      "status": {
+        "unknown": "Unknown",
+        "good": "Good",
+        "moderate": "Moderate",
+        "poor": "Poor"
+      },
+      "trend": {
+        "no_data": "No trend data",
+        "rising": "NDVI rising",
+        "dropping": "NDVI dropping",
+        "steady": "NDVI steady"
+      }
+    },
+    "advisory": {
+      "ndvi_title": "NDVI ({{crop}})",
+      "ndvi_desc": "Vegetation index for current crop condition",
+      "soil_moisture": "Soil Moisture",
+      "soil_moisture_desc": "Estimated root-zone moisture",
+      "weather_snapshot": "Weather (Snapshot)",
+      "pest_alerts": "Pest Alerts",
+      "no_pest": "No pest risks detected",
+      "market_price": "Market Price",
+      "market_price_desc": "Indicative mandi price for {{crop}}"
+    },
+    "crop_health": {
+      "title": "Crop Health Overview",
+      "your_crop": "(Your Crop)",
+      "stage": "Stage",
+      "status": {
+        "good": "Good",
+        "warning": "Warning",
+        "risk": "Risk"
+      }
+    },
+    "alerts": {
+      "title": "Risk Alerts",
+      "high_priority": "({{count}} high priority)",
+      "confidence": "Confidence",
+      "view_advisory": "View Advisory"
+    },
+    "motivational": {
+      "quote": "\"Healthy soil, happy harvest 🌾\"",
+      "subtitle": "Keep nurturing your land with smart decisions"
+    }
+  },
+  "advisory": {
+    "title": "Advisory Details",
+    "subtitle": "Personalized recommendations based on your farm data",
+    "loading": "Loading advisory...",
+    "back_to_dashboard": "Back to Dashboard",
+    "select_crop": "Select Crop",
+    "select_crop_placeholder": "Select crop",
+    "crop_advisory": "{{crop}} Crop Advisory",
+    "priority_label": "Priority",
+    "severity_label": "Severity",
+    "last_updated": "Last updated",
+    "confidence": "Confidence",
+    "analysis": "Analysis",
+    "triggered_rules": "Triggered Rules",
+    "recommended_actions": "Recommended Actions",
+    "timeline": "Timeline",
+    "no_recommendations": "No specific recommendations at this time.",
+    "rule_breakdown": "Rule Breakdown",
+    "mark_done": "Mark as Done",
+    "download_pdf": "Download PDF",
+    "date": {
+      "recently": "Recently"
+    },
+    "crops": {
+      "cotton": "Cotton",
+      "wheat": "Wheat",
+      "rice": "Rice",
+      "sugarcane": "Sugarcane",
+      "soybean": "Soybean",
+      "onion": "Onion"
+    },
+    "error": {
+      "title": "Unable to Load Advisory",
+      "no_crop": "No crop specified. Please select a crop.",
+      "load_failed": "Unable to load advisory data",
+      "try_again": "Try Again"
+    },
+    "breakdown": {
+      "pest": "Pest Detection",
+      "irrigation": "Irrigation",
+      "market": "Market",
+      "score": "Score",
+      "rules_triggered": "{{count}} rule(s) triggered"
+    },
+    "explainability": {
+      "title": "How we determined this:",
+      "description": "This advisory is based on a combination of weather data, satellite imagery (NDVI), and market prices. The rule-based engine evaluated multiple conditions to generate these recommendations.",
+      "description_with_sources": "This advisory is based on a combination of {{weather}} weather data, {{satellite}} satellite imagery (NDVI), and {{market}} market prices. The rule-based engine evaluated multiple conditions including temperature, humidity, soil moisture, NDVI changes, and market trends to generate these recommendations.",
+      "rules_triggered_prefix": "The following rules were triggered:",
+      "and_more": "and more."
+    }
+  },
+  "community": {
+    "title": "Community",
+    "subtitle": "Connect and share with fellow farmers",
+    "post_update": "Post Update",
+    "verified": "Verified",
+    "share": "Share",
+    "top_contributors": "Top Contributors",
+    "posts_count": "{{count}} posts",
+    "trending_topics": "Trending Topics"
+  },
+  "report": {
+    "title": "Report an Issue",
+    "subtitle": "Help us identify and solve issues in your farm",
+    "online": "Online",
+    "offline": "Offline",
+    "crop_type": "Crop Type",
+    "select_crop": "Select crop",
+    "issue_type": "Issue Type",
+    "select_issue_type": "Select issue type",
+    "severity": "Severity",
+    "select_severity": "Select severity",
+    "gps_coordinates": "GPS Coordinates",
+    "gps_placeholder": "Auto-detected coordinates",
+    "additional_notes": "Additional Notes",
+    "notes_placeholder": "Describe the issue in detail...",
+    "upload_photo": "Upload Photo (Optional)",
+    "upload_hint": "Click to upload or drag and drop",
+    "submit": "Submit Report",
+    "success": "Issue reported successfully!",
+    "saved_offline": "Saved locally. Will sync when online.",
+    "location_detected": "Location detected!",
+    "location_error": "Unable to detect location",
+    "offline_queue": "Offline Queue",
+    "offline_queue_desc": "Your reports will be automatically synced when you're back online.",
+    "issue": {
+      "pest": "Pest Infestation",
+      "disease": "Crop Disease",
+      "weather": "Weather Damage",
+      "other": "Other"
+    },
+    "severity_level": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions or need support? We're here to help you succeed in your farming journey.",
+    "email_title": "Email Us",
+    "call_title": "Call Us",
+    "visit_title": "Visit Us",
+    "form_title": "Send us a Message",
+    "name": "Name",
+    "name_placeholder": "Your name",
+    "email": "Email",
+    "email_placeholder": "your@email.com",
+    "subject": "Subject",
+    "subject_placeholder": "What's this about?",
+    "message": "Message",
+    "message_placeholder": "Tell us how we can help...",
+    "send_message": "Send Message",
+    "success": "Message sent! We'll get back to you soon."
   }
 }

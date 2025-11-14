@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle, Share2, Plus, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Community = () => {
+  const { t } = useTranslation();
   const [posts] = useState([
     {
       id: 1,
@@ -53,12 +55,12 @@ const Community = () => {
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h1 className="text-3xl font-heading font-bold text-primary mb-2">Community</h1>
-                <p className="text-muted-foreground">Connect and share with fellow farmers</p>
+                <h1 className="text-3xl font-heading font-bold text-primary mb-2">{t("community.title")}</h1>
+                <p className="text-muted-foreground">{t("community.subtitle")}</p>
               </div>
               <Button className="bg-primary hover:bg-primary/90 gap-2">
                 <Plus className="h-4 w-4" />
-                Post Update
+                {t("community.post_update")}
               </Button>
             </div>
 
@@ -76,7 +78,7 @@ const Community = () => {
                         <h3 className="font-semibold">{post.author}</h3>
                         {post.verified && (
                           <Badge variant="default" className="text-xs bg-success">
-                            ✓ Verified
+                            ✓ {t("community.verified")}
                           </Badge>
                         )}
                         <span className="text-sm text-muted-foreground">• {post.region}</span>
@@ -95,7 +97,7 @@ const Community = () => {
                         </button>
                         <button className="flex items-center gap-2 hover:text-secondary transition-colors">
                           <Share2 className="h-4 w-4" />
-                          <span>Share</span>
+                          <span>{t("community.share")}</span>
                         </button>
                       </div>
                     </div>
@@ -111,7 +113,7 @@ const Community = () => {
             <Card className="p-6 bg-gradient-card">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                <h3 className="font-heading font-bold">Top Contributors</h3>
+                <h3 className="font-heading font-bold">{t("community.top_contributors")}</h3>
               </div>
               <div className="space-y-3">
                 {topContributors.map((contributor, idx) => (
@@ -125,7 +127,7 @@ const Community = () => {
                       </Avatar>
                       <span className="font-medium">{contributor.name}</span>
                     </div>
-                    <Badge variant="secondary">{contributor.posts} posts</Badge>
+                    <Badge variant="secondary">{t("community.posts_count", { count: contributor.posts })}</Badge>
                   </div>
                 ))}
               </div>
@@ -133,7 +135,7 @@ const Community = () => {
 
             {/* Trending Topics */}
             <Card className="p-6 bg-gradient-card">
-              <h3 className="font-heading font-bold mb-4">Trending Topics</h3>
+              <h3 className="font-heading font-bold mb-4">{t("community.trending_topics")}</h3>
               <div className="space-y-2">
                 {["#OrganicFarming", "#PestControl", "#IrrigationTips", "#WeatherUpdate"].map((tag) => (
                   <button

@@ -14,23 +14,25 @@ import {
 import { Download, CheckCircle, Droplets, Sprout, Eye, Loader2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { getAdvisory, getCurrentUser } from "@/services/api";
 import type { AdvisoryResponse, Recommendation } from "@/types/fusion";
-
-const AVAILABLE_CROPS = [
-  { value: "cotton", label: "Cotton" },
-  { value: "wheat", label: "Wheat" },
-  { value: "rice", label: "Rice" },
-  { value: "sugarcane", label: "Sugarcane" },
-  { value: "soybean", label: "Soybean" },
-  { value: "onion", label: "Onion" },
-];
+import { useTranslation } from "react-i18next";
 
 const Advisory = () => {
+  const { t } = useTranslation();
   const { crop: cropParam } = useParams<{ crop: string }>();
   const navigate = useNavigate();
   const [selectedCrop, setSelectedCrop] = useState<string>(cropParam || "cotton");
   const [advisory, setAdvisory] = useState<AdvisoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const AVAILABLE_CROPS = [
+    { value: "cotton", label: t("advisory.crops.cotton") },
+    { value: "wheat", label: t("advisory.crops.wheat") },
+    { value: "rice", label: t("advisory.crops.rice") },
+    { value: "sugarcane", label: t("advisory.crops.sugarcane") },
+    { value: "soybean", label: t("advisory.crops.soybean") },
+    { value: "onion", label: t("advisory.crops.onion") },
+  ];
 
   // Load user's crop on mount if no crop param
   useEffect(() => {
@@ -58,7 +60,7 @@ const Advisory = () => {
 
   useEffect(() => {
     if (!selectedCrop) {
-      setError("No crop specified. Please select a crop.");
+      setError(t("advisory.error.no_crop"));
       setIsLoading(false);
       return;
     }
@@ -72,7 +74,7 @@ const Advisory = () => {
         // Update URL without navigation
         navigate(`/advisory/${selectedCrop}`, { replace: true });
       } catch (err: any) {
-        setError(err.message || "Unable to load advisory data");
+        setError(err.message || t("advisory.error.load_failed"));
       } finally {
         setIsLoading(false);
       }
@@ -106,7 +108,7 @@ const Advisory = () => {
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return "Recently";
+    if (!dateString) return t("advisory.date.recently");
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("en-IN", {
@@ -117,7 +119,7 @@ const Advisory = () => {
         minute: "2-digit",
       });
     } catch {
-      return "Recently";
+      return t("advisory.date.recently");
     }
   };
 
@@ -154,7 +156,7 @@ const Advisory = () => {
   }
 
   // Minimal guard to avoid crashes if advisory missing
-  if (!advisory) return <div className="p-10 text-center text-lg">Loading advisory...</div>;
+  if (!advisory) return <div className="p-10 text-center text-lg">{t("advisory.loading")}</div>;
 
   // Safe fallbacks for scores
   const pestScore = advisory?.rule_breakdown?.pest?.score || 0;
@@ -170,14 +172,14 @@ const Advisory = () => {
       <div className="min-h-screen py-8 px-4 flex items-center justify-center">
         <div className="text-center max-w-md">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive" />
-          <h2 className="text-2xl font-bold mb-2">Unable to Load Advisory</h2>
+          <h2 className="text-2xl font-bold mb-2">{t("advisory.error.title")}</h2>
           <p className="text-muted-foreground mb-4">{error}</p>
           <div className="flex gap-2 justify-center">
             <Button onClick={() => navigate("/dashboard")} variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              {t("advisory.back_to_dashboard")}
             </Button>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <Button onClick={() => window.location.reload()}>{t("advisory.error.try_again")}</Button>
           </div>
         </div>
       </div>
@@ -194,20 +196,20 @@ const Advisory = () => {
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            {t("advisory.back_to_dashboard")}
           </Button>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div>
-          <h1 className="text-3xl font-heading font-bold text-primary mb-2">Advisory Details</h1>
-          <p className="text-muted-foreground">Personalized recommendations based on your farm data</p>
+          <h1 className="text-3xl font-heading font-bold text-primary mb-2">{t("advisory.title")}</h1>
+          <p className="text-muted-foreground">{t("advisory.subtitle")}</p>
             </div>
             <div className="flex items-center gap-2">
               <label htmlFor="crop-select" className="text-sm text-muted-foreground whitespace-nowrap">
-                Select Crop:
+                {t("advisory.select_crop")}:
               </label>
               <Select value={selectedCrop} onValueChange={setSelectedCrop}>
                 <SelectTrigger id="crop-select" className="w-[180px]">
-                  <SelectValue placeholder="Select crop" />
+                  <SelectValue placeholder={t("advisory.select_crop_placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {AVAILABLE_CROPS.map((crop) => (
@@ -227,30 +229,30 @@ const Advisory = () => {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant={getPriorityVariant(advisory.priority)} className="mb-2">
-                  {advisory.priority} Priority
+                  {advisory.priority} {t("advisory.priority_label")}
                 </Badge>
                 <Badge variant="outline" className="mb-2">
-                  {advisory.severity} Severity
+                  {advisory.severity} {t("advisory.severity_label")}
                 </Badge>
               </div>
               <h2 className="text-2xl font-heading font-bold mb-2">
-                {advisory.crop} Crop Advisory
+                {t("advisory.crop_advisory", { crop: advisory.crop })}
               </h2>
               <p className="text-muted-foreground">
-                Last updated: {formatDate(advisory.last_updated)}
-                {advisory.rule_score > 0 && ` • Confidence: ${Math.round(advisory.rule_score * 100)}%`}
+                {t("advisory.last_updated")}: {formatDate(advisory.last_updated)}
+                {advisory.rule_score > 0 && ` • ${t("advisory.confidence")}: ${Math.round(advisory.rule_score * 100)}%`}
               </p>
             </div>
           </div>
 
           <div className="prose prose-sm max-w-none mb-6">
-            <h3 className="font-semibold text-lg mb-2">Analysis</h3>
+            <h3 className="font-semibold text-lg mb-2">{t("advisory.analysis")}</h3>
             <p className="text-muted-foreground mb-4">{advisory.analysis}</p>
 
             {/* Fired Rules */}
             {advisory.fired_rules && advisory.fired_rules.length > 0 && (
               <div className="mb-4">
-                <h3 className="font-semibold text-lg mb-2">Triggered Rules</h3>
+                <h3 className="font-semibold text-lg mb-2">{t("advisory.triggered_rules")}</h3>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                   {advisory.fired_rules.map((rule, idx) => (
                     <li key={idx} className="text-sm">{rule}</li>
@@ -259,7 +261,7 @@ const Advisory = () => {
               </div>
             )}
 
-            <h3 className="font-semibold text-lg mb-2">Recommended Actions</h3>
+            <h3 className="font-semibold text-lg mb-2">{t("advisory.recommended_actions")}</h3>
           </div>
 
           <div className="space-y-4 mb-6">
@@ -287,7 +289,7 @@ const Advisory = () => {
                       <p className="text-sm text-muted-foreground">{rec.desc}</p>
                       {rec.timeline && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Timeline: {rec.timeline}
+                          {t("advisory.timeline")}: {rec.timeline}
                         </p>
                       )}
                 </div>
@@ -298,34 +300,34 @@ const Advisory = () => {
                 );
               })
             ) : (
-              <p className="text-sm text-muted-foreground">No specific recommendations at this time.</p>
+              <p className="text-sm text-muted-foreground">{t("advisory.no_recommendations")}</p>
             )}
           </div>
 
           {/* Rule Breakdown */}
           {advisory?.rule_breakdown && (
             <div className="mb-6 p-4 bg-muted/30 rounded-lg">
-              <h3 className="font-semibold text-sm mb-3">Rule Breakdown</h3>
+              <h3 className="font-semibold text-sm mb-3">{t("advisory.rule_breakdown")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground mb-1">Pest Detection</p>
-                  <p className="font-medium">Score: {Math.round(pestScore * 100)}%</p>
+                  <p className="text-muted-foreground mb-1">{t("advisory.breakdown.pest")}</p>
+                  <p className="font-medium">{t("advisory.breakdown.score")}: {Math.round(pestScore * 100)}%</p>
                   {pestFired > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">{pestFired} rule(s) triggered</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("advisory.breakdown.rules_triggered", { count: pestFired })}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-muted-foreground mb-1">Irrigation</p>
-                  <p className="font-medium">Score: {Math.round(irrigationScore * 100)}%</p>
+                  <p className="text-muted-foreground mb-1">{t("advisory.breakdown.irrigation")}</p>
+                  <p className="font-medium">{t("advisory.breakdown.score")}: {Math.round(irrigationScore * 100)}%</p>
                   {irrigationFired > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">{irrigationFired} rule(s) triggered</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("advisory.breakdown.rules_triggered", { count: irrigationFired })}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-muted-foreground mb-1">Market</p>
-                  <p className="font-medium">Score: {Math.round(marketScore * 100)}%</p>
+                  <p className="text-muted-foreground mb-1">{t("advisory.breakdown.market")}</p>
+                  <p className="font-medium">{t("advisory.breakdown.score")}: {Math.round(marketScore * 100)}%</p>
                   {marketFired > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">{marketFired} rule(s) triggered</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("advisory.breakdown.rules_triggered", { count: marketFired })}</p>
                   )}
                 </div>
               </div>
@@ -335,35 +337,34 @@ const Advisory = () => {
           <div className="flex flex-col sm:flex-row gap-3">
             <Button className="flex-1 bg-primary hover:bg-primary/90">
               <CheckCircle className="h-4 w-4 mr-2" />
-              Mark as Done
+              {t("advisory.mark_done")}
             </Button>
             <Button variant="outline" className="flex-1">
               <Download className="h-4 w-4 mr-2" />
-              Download PDF
+              {t("advisory.download_pdf")}
             </Button>
-            <Button variant="outline">Translate to मराठी</Button>
           </div>
         </Card>
 
         {/* Explainability Note */}
         <Card className="p-4 bg-info/10 border-info/20">
           <p className="text-sm text-foreground">
-            <strong>How we determined this:</strong>{" "}
+            <strong>{t("advisory.explainability.title")}</strong>{" "}
             {advisory.data_sources ? (
               <>
-                This advisory is based on a combination of {advisory.data_sources.weather} weather data,{" "}
-                {advisory.data_sources.satellite} satellite imagery (NDVI), and{" "}
-                {advisory.data_sources.market} market prices. The rule-based engine evaluated multiple
-                conditions including temperature, humidity, soil moisture, NDVI changes, and market trends
-                to generate these recommendations.
+                {t("advisory.explainability.description_with_sources", {
+                  weather: advisory.data_sources.weather || "weather",
+                  satellite: advisory.data_sources.satellite || "satellite",
+                  market: advisory.data_sources.market || "market"
+                })}
               </>
             ) : (
-              "This advisory is based on a combination of weather data, satellite imagery (NDVI), and market prices. The rule-based engine evaluated multiple conditions to generate these recommendations."
+              t("advisory.explainability.description")
             )}
             {advisory.fired_rules && advisory.fired_rules.length > 0 && (
               <>
-                {" "}The following rules were triggered: {advisory.fired_rules.slice(0, 2).join(", ")}
-                {advisory.fired_rules.length > 2 && " and more."}
+                {" "}{t("advisory.explainability.rules_triggered_prefix")} {advisory.fired_rules.slice(0, 2).join(", ")}
+                {advisory.fired_rules.length > 2 && ` ${t("advisory.explainability.and_more")}`}
               </>
             )}
           </p>

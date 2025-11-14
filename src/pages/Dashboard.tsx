@@ -7,6 +7,7 @@ import { CloudRain, TrendingUp, Satellite, AlertTriangle, RefreshCw, Sprout, The
 import { getDashboardData, getCurrentUser } from "@/services/api";
 import type { DashboardResponse, Alert } from "@/types/fusion";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 // Lightweight advisory type to read new fields if present
 type AdvisoryLite = {
@@ -24,6 +25,7 @@ type AdvisoryLite = {
 };
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +63,7 @@ const Dashboard = () => {
         setAdvisory(null);
       }
     } catch (err: any) {
-      setError(err.message || "Unable to load dashboard data");
+      setError(err.message || t("dashboard.error.load_failed"));
     } finally {
       setIsLoading(false);
     }
@@ -103,28 +105,28 @@ const Dashboard = () => {
 
   const getNdviStatus = (value: number | null) => {
     if (value == null) {
-      return { label: "Unknown", badgeClass: "bg-muted text-muted-foreground" };
+      return { label: t("dashboard.ndvi.status.unknown"), badgeClass: "bg-muted text-muted-foreground" };
     }
     if (value > 0.6) {
-      return { label: "Good", badgeClass: "bg-success/15 text-success" };
+      return { label: t("dashboard.ndvi.status.good"), badgeClass: "bg-success/15 text-success" };
     }
     if (value >= 0.4) {
-      return { label: "Moderate", badgeClass: "bg-warning/15 text-warning" };
+      return { label: t("dashboard.ndvi.status.moderate"), badgeClass: "bg-warning/15 text-warning" };
     }
-    return { label: "Poor", badgeClass: "bg-destructive/15 text-destructive" };
+    return { label: t("dashboard.ndvi.status.poor"), badgeClass: "bg-destructive/15 text-destructive" };
   };
 
   const getTrendInfo = (change: number | null) => {
     if (change == null) {
-      return { icon: ArrowRight, color: "text-muted-foreground", label: "No trend data" };
+      return { icon: ArrowRight, color: "text-muted-foreground", label: t("dashboard.ndvi.trend.no_data") };
     }
     if (change > 0.02) {
-      return { icon: ArrowUpRight, color: "text-success", label: "NDVI rising" };
+      return { icon: ArrowUpRight, color: "text-success", label: t("dashboard.ndvi.trend.rising") };
     }
     if (change < -0.02) {
-      return { icon: ArrowDownRight, color: "text-destructive", label: "NDVI dropping" };
+      return { icon: ArrowDownRight, color: "text-destructive", label: t("dashboard.ndvi.trend.dropping") };
     }
-    return { icon: ArrowRight, color: "text-warning", label: "NDVI steady" };
+    return { icon: ArrowRight, color: "text-warning", label: t("dashboard.ndvi.trend.steady") };
   };
 
   const formatTimestamp = (iso?: string) => {
@@ -207,11 +209,11 @@ const Dashboard = () => {
       <div className="min-h-screen py-8 px-4 flex items-center justify-center">
         <div className="text-center max-w-md">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive" />
-          <h2 className="text-2xl font-bold mb-2">Unable to Load Dashboard</h2>
+          <h2 className="text-2xl font-bold mb-2">{t("dashboard.error.title")}</h2>
           <p className="text-muted-foreground mb-4">{error}</p>
           <Button onClick={handleRefresh} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
+            {t("dashboard.error.try_again")}
           </Button>
         </div>
       </div>
@@ -239,12 +241,12 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold text-primary mb-2">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back! Here's your farm overview</p>
+            <h1 className="text-3xl font-heading font-bold text-primary mb-2">{t("dashboard.title")}</h1>
+            <p className="text-muted-foreground">{t("dashboard.subtitle")}</p>
           </div>
           <Button variant="outline" className="gap-2" onClick={handleRefresh} disabled={isLoading}>
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh Data
+            {t("dashboard.refresh")}
           </Button>
         </div>
 
@@ -254,7 +256,7 @@ const Dashboard = () => {
           <Card className="p-6 hover:shadow-hover transition-all bg-gradient-card">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Weather Summary</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("dashboard.weather.title")}</p>
                 <h3 className="text-2xl font-bold">{weather.temperature}°C</h3>
               </div>
               <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
@@ -262,9 +264,9 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Humidity</span><span className="font-medium">{weather.humidity}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Wind Speed</span><span className="font-medium">{weather.wind_speed} km/h</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Rainfall</span><span className="font-medium">{weather.rainfall}mm</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.humidity")}</span><span className="font-medium">{weather.humidity}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.wind_speed")}</span><span className="font-medium">{weather.wind_speed} km/h</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.rainfall")}</span><span className="font-medium">{weather.rainfall}mm</span></div>
             </div>
           </Card>
 
@@ -272,7 +274,7 @@ const Dashboard = () => {
           <Card className="p-6 hover:shadow-hover transition-all bg-gradient-card">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Market Prices</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("dashboard.market.title")}</p>
                 <h3 className="text-2xl font-bold">₹{avgMarketPrice.toLocaleString("en-IN")}</h3>
               </div>
               <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
@@ -280,11 +282,11 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="space-y-2 text-sm">
-              {market.wheat && (<div className="flex justify-between"><span className="text-muted-foreground">Wheat</span>{formatPrice(market.wheat.price, market.wheat.change_percent)}</div>)}
-              {market.rice && (<div className="flex justify-between"><span className="text-muted-foreground">Rice</span>{formatPrice(market.rice.price, market.rice.change_percent)}</div>)}
-              {market.cotton && (<div className="flex justify-between"><span className="text-muted-foreground">Cotton</span>{formatPrice(market.cotton.price, market.cotton.change_percent)}</div>)}
-              {market.sugarcane && (<div className="flex justify-between"><span className="text-muted-foreground">Sugarcane</span>{formatPrice(market.sugarcane.price, market.sugarcane.change_percent)}</div>)}
-              {Object.keys(market).length === 0 && (<p className="text-sm text-muted-foreground">No market data available</p>)}
+              {market.wheat && (<div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.market.wheat")}</span>{formatPrice(market.wheat.price, market.wheat.change_percent)}</div>)}
+              {market.rice && (<div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.market.rice")}</span>{formatPrice(market.rice.price, market.rice.change_percent)}</div>)}
+              {market.cotton && (<div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.market.cotton")}</span>{formatPrice(market.cotton.price, market.cotton.change_percent)}</div>)}
+              {market.sugarcane && (<div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.market.sugarcane")}</span>{formatPrice(market.sugarcane.price, market.sugarcane.change_percent)}</div>)}
+              {Object.keys(market).length === 0 && (<p className="text-sm text-muted-foreground">{t("dashboard.market.no_data")}</p>)}
             </div>
           </Card>
 
@@ -292,7 +294,7 @@ const Dashboard = () => {
           <Card className="p-6 hover:shadow-hover transition-all bg-gradient-card">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Satellite NDVI</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("dashboard.ndvi.title")}</p>
                 {ndviLatest != null ? (
                   <div className="flex items-baseline gap-3">
                     <h3 className="text-3xl font-bold">{ndviLatest.toFixed(2)}</h3>
@@ -301,7 +303,7 @@ const Dashboard = () => {
                     </span>
                   </div>
                 ) : (
-                  <h3 className="text-2xl font-bold text-muted-foreground">NDVI unavailable</h3>
+                  <h3 className="text-2xl font-bold text-muted-foreground">{t("dashboard.ndvi.unavailable")}</h3>
                 )}
               </div>
               <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
@@ -331,20 +333,20 @@ const Dashboard = () => {
                     </svg>
                   ) : (
                     <div className="w-full h-full rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                      No history data
+                      {t("dashboard.ndvi.no_history")}
                     </div>
                   )}
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Last updated {lastUpdated}</span>
-                  <span>7-day trend</span>
+                  <span>{t("dashboard.ndvi.last_updated", { time: lastUpdated })}</span>
+                  <span>{t("dashboard.ndvi.trend_7day")}</span>
                 </div>
               </>
             ) : (
               <div className="space-y-3">
                 <div className="w-full h-16 rounded-md bg-muted" />
-                <p className="text-sm text-muted-foreground">NDVI unavailable</p>
-                <p className="text-xs text-muted-foreground">Last updated {lastUpdated}</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.ndvi.unavailable")}</p>
+                <p className="text-xs text-muted-foreground">{t("dashboard.ndvi.last_updated", { time: lastUpdated })}</p>
               </div>
             )}
           </Card>
@@ -357,38 +359,38 @@ const Dashboard = () => {
             <Card className="p-6 hover:shadow-hover transition-all">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">NDVI ({userCrop})</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.ndvi_title", { crop: userCrop })}</p>
                   <h3 className="text-2xl font-bold">{advisory.metrics?.ndvi?.toFixed(2) ?? "-"}</h3>
                 </div>
                 <Satellite className="h-6 w-6 text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground">Vegetation index for current crop condition</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.advisory.ndvi_desc")}</p>
             </Card>
 
             {/* Soil Moisture */}
             <Card className="p-6 hover:shadow-hover transition-all">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Soil Moisture</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.soil_moisture")}</p>
                   <h3 className="text-2xl font-bold">{advisory.metrics?.soil_moisture != null ? `${Math.round((advisory.metrics?.soil_moisture ?? 0)*100)}%` : "-"}</h3>
                 </div>
                 <Droplets className="h-6 w-6 text-info" />
               </div>
-              <p className="text-sm text-muted-foreground">Estimated root-zone moisture</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.advisory.soil_moisture_desc")}</p>
             </Card>
 
             {/* Weather snapshot from advisory metrics if present */}
             <Card className="p-6 hover:shadow-hover transition-all">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Weather (Snapshot)</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.weather_snapshot")}</p>
                   <h3 className="text-2xl font-bold">{advisory.metrics?.temperature ?? "-"}°C</h3>
                 </div>
                 <Thermometer className="h-6 w-6 text-secondary" />
               </div>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Humidity</span><span className="font-medium">{advisory.metrics?.humidity ?? "-"}%</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Rainfall</span><span className="font-medium">{advisory.metrics?.rainfall ?? "-"}mm</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.humidity")}</span><span className="font-medium">{advisory.metrics?.humidity ?? "-"}%</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.rainfall")}</span><span className="font-medium">{advisory.metrics?.rainfall ?? "-"}mm</span></div>
               </div>
             </Card>
 
@@ -396,7 +398,7 @@ const Dashboard = () => {
             <Card className="p-6 hover:shadow-hover transition-all">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Pest Alerts</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.pest_alerts")}</p>
                   <h3 className="text-2xl font-bold">{(advisory.alerts || []).filter(a => a.type === "pest").length}</h3>
                 </div>
                 <Bug className="h-6 w-6 text-destructive" />
@@ -406,7 +408,7 @@ const Dashboard = () => {
                   <li key={i} className="text-muted-foreground">• {a.message}</li>
                 ))}
                 {((advisory.alerts || []).filter(a => a.type === "pest").length === 0) && (
-                  <li className="text-muted-foreground">No pest risks detected</li>
+                  <li className="text-muted-foreground">{t("dashboard.advisory.no_pest")}</li>
                 )}
               </ul>
             </Card>
@@ -415,12 +417,12 @@ const Dashboard = () => {
             <Card className="p-6 hover:shadow-hover transition-all">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Market Price</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.market_price")}</p>
                   <h3 className="text-2xl font-bold">{advisory.metrics?.market_price ? `₹${advisory.metrics?.market_price.toLocaleString("en-IN")}` : "-"}</h3>
                 </div>
                 <TrendingUp className="h-6 w-6 text-success" />
               </div>
-              <p className="text-sm text-muted-foreground">Indicative mandi price for {userCrop}</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.advisory.market_price_desc", { crop: userCrop })}</p>
             </Card>
           </div>
         )}
@@ -428,12 +430,12 @@ const Dashboard = () => {
         {/* Individual Crop Health Cards */}
         {Object.keys(cropHealth).length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-heading font-bold mb-4">Crop Health Overview</h2>
+            <h2 className="text-xl font-heading font-bold mb-4">{t("dashboard.crop_health.title")}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(cropHealth).map(([cropName, health]: [string, any]) => {
                 const healthScore = health.health_score || 0;
                 const healthColor = healthScore >= 80 ? "text-success" : healthScore >= 60 ? "text-warning" : "text-destructive";
-                const healthStatus = healthScore >= 80 ? "Good" : healthScore >= 60 ? "Warning" : "Risk";
+                const healthStatus = healthScore >= 80 ? t("dashboard.crop_health.status.good") : healthScore >= 60 ? t("dashboard.crop_health.status.warning") : t("dashboard.crop_health.status.risk");
                 const isUserCrop = userCrop && cropName.toLowerCase() === userCrop.toLowerCase();
                 return (
                   <Card 
@@ -443,7 +445,7 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold capitalize">
                         {cropName}
-                        {isUserCrop && <span className="ml-2 text-xs text-primary">(Your Crop)</span>}
+                        {isUserCrop && <span className="ml-2 text-xs text-primary">{t("dashboard.crop_health.your_crop")}</span>}
                       </h4>
                       <Badge variant={healthScore >= 80 ? "default" : healthScore >= 60 ? "secondary" : "destructive"}>
                         {healthStatus}
@@ -451,8 +453,8 @@ const Dashboard = () => {
                     </div>
                     <div className="space-y-1.5 text-sm">
                       <div className="flex justify-between"><span className="text-muted-foreground">NDVI</span><span className="font-medium">{health.ndvi?.toFixed(2) || "N/A"}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Soil Moisture</span><span className="font-medium">{health.soil_moisture || 0}%</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Stage</span><span className="font-medium capitalize">{health.crop_stage || "N/A"}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.advisory.soil_moisture")}</span><span className="font-medium">{health.soil_moisture || 0}%</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.crop_health.stage")}</span><span className="font-medium capitalize">{health.crop_stage || "N/A"}</span></div>
                     </div>
                   </Card>
                 );
@@ -466,8 +468,8 @@ const Dashboard = () => {
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="h-5 w-5 text-warning" />
-              <h2 className="text-xl font-heading font-bold">Risk Alerts</h2>
-              <span className="text-sm text-muted-foreground">({dashboardData?.summary?.high_priority_count || 0} high priority)</span>
+              <h2 className="text-xl font-heading font-bold">{t("dashboard.alerts.title")}</h2>
+              <span className="text-sm text-muted-foreground">{t("dashboard.alerts.high_priority", { count: dashboardData?.summary?.high_priority_count || 0 })}</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {alerts.map((alert: Alert) => {
@@ -480,11 +482,11 @@ const Dashboard = () => {
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground">Confidence</span>
+                        <span className="text-muted-foreground">{t("dashboard.alerts.confidence")}</span>
                         <span className="font-medium">{alert.confidence}%</span>
                       </div>
                       {alert.description && (<p className="text-xs text-muted-foreground mt-2">{alert.description}</p>)}
-                      <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => handleViewAdvisory(alert.crop)}>View Advisory</Button>
+                      <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => handleViewAdvisory(alert.crop)}>{t("dashboard.alerts.view_advisory")}</Button>
                     </div>
                   </Card>
                 );
@@ -496,8 +498,8 @@ const Dashboard = () => {
         {/* Motivational Banner */}
         <Card className="p-6 bg-gradient-hero text-white text-center">
           <Sprout className="h-8 w-8 mx-auto mb-3 animate-float" />
-          <p className="text-lg font-medium">"Healthy soil, happy harvest 🌾"</p>
-          <p className="text-sm opacity-90 mt-2">Keep nurturing your land with smart decisions</p>
+          <p className="text-lg font-medium">{t("dashboard.motivational.quote")}</p>
+          <p className="text-sm opacity-90 mt-2">{t("dashboard.motivational.subtitle")}</p>
         </Card>
       </div>
     </div>
