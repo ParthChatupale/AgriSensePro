@@ -10,8 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import { isAuthenticated, logoutUser, getUser } from "@/services/api";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n/i18n";
 
 const Navbar = () => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -45,12 +48,12 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Dashboard", path: "/dashboard" },
-    { name: "Advisory", path: "/advisory" },
-    { name: "Community", path: "/community" },
-    { name: "Report Issue", path: "/report" },
-    { name: "Contact", path: "/contact" },
+    { name: t("nav.home"), path: "/", key: "home" },
+    { name: t("nav.dashboard"), path: "/dashboard", key: "dashboard" },
+    { name: t("nav.advisory"), path: "/advisory", key: "advisory" },
+    { name: t("nav.community"), path: "/community", key: "community" },
+    { name: t("nav.report"), path: "/report", key: "report" },
+    { name: t("nav.contact"), path: "/contact", key: "contact" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -66,7 +69,7 @@ const Navbar = () => {
             </div>
             <div className="hidden sm:block">
               <h1 className="font-heading font-bold text-lg text-primary">AgriSense</h1>
-              <p className="text-xs text-muted-foreground leading-none">Smarter Farming. Happier Harvest.</p>
+              <p className="text-xs text-muted-foreground leading-none">{t("navbar.tagline")}</p>
             </div>
           </Link>
 
@@ -97,8 +100,12 @@ const Navbar = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-popover">
-                <DropdownMenuItem>English</DropdownMenuItem>
-                <DropdownMenuItem>मराठी (Marathi)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => i18n.changeLanguage("en")}>
+                  English
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => i18n.changeLanguage("mr")}>
+                  मराठी (Marathi)
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -134,17 +141,17 @@ const Navbar = () => {
                     </div>
                   )}
                 <DropdownMenuItem asChild>
-                  <Link to="/profile">Profile</Link>
+                  <Link to="/profile">{t("navbar.profile")}</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem>{t("navbar.settings")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
-                    Logout
+                    {t("auth.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             ) : (
               <Button variant="ghost" asChild className="hidden md:flex">
-                <Link to="/login">Login</Link>
+                <Link to="/login">{t("auth.login")}</Link>
               </Button>
             )}
 

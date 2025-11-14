@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { WifiOff, Wifi } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const OfflineBanner = () => {
+  const { t } = useTranslation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showBanner, setShowBanner] = useState(false);
 
@@ -45,12 +47,12 @@ const OfflineBanner = () => {
         {isOnline ? (
           <>
             <Wifi className="h-4 w-4" />
-            <span>You're back online!</span>
+            <span>{t("offline.online_msg")}</span>
           </>
         ) : (
           <>
             <WifiOff className="h-4 w-4" />
-            <span>You're offline. Some features may be limited.</span>
+            <span>{t("offline.offline_msg")}</span>
           </>
         )}
       </div>

@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { Facebook, Youtube } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="bg-card border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -10,37 +12,37 @@ const Footer = () => {
           <div>
             <h3 className="font-heading font-bold text-lg mb-4 text-primary">AgriSense</h3>
             <p className="text-sm text-muted-foreground">
-              Empowering farmers through smart insights and community support.
+              {t("footer.about_text")}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
+            <h4 className="font-semibold mb-4">{t("footer.quick_links")}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About Us
+                  {t("footer.about_us")}
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
-                  Privacy Policy
+                  {t("footer.privacy_policy")}
                 </Link>
               </li>
               <li>
                 <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
-                  Terms of Service
+                  {t("footer.terms")}
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact Us
+                  {t("footer.contact_us")}
                 </Link>
               </li>
               <li>
                 <Link to="/install" className="text-muted-foreground hover:text-primary transition-colors">
-                  Install PWA
+                  {t("footer.install_pwa")}
                 </Link>
               </li>
             </ul>
@@ -48,7 +50,7 @@ const Footer = () => {
 
           {/* Social Links */}
           <div>
-            <h4 className="font-semibold mb-4">Connect With Us</h4>
+            <h4 className="font-semibold mb-4">{t("footer.connect")}</h4>
             <div className="flex space-x-4">
               <a
                 href="https://facebook.com"
@@ -81,7 +83,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} AgriSense. All rights reserved.</p>
+          <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
         </div>
       </div>
     </footer>

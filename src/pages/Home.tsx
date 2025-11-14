@@ -4,29 +4,31 @@ import { Card } from "@/components/ui/card";
 import { CloudRain, TrendingUp, Users, FileText } from "lucide-react";
 import { isAuthenticated } from "@/services/api";
 import heroImage from "@/assets/hero-farmland.jpg";
+import { useTranslation } from "react-i18next";
 
 const Home = () => {
+  const { t } = useTranslation();
   const authenticated = isAuthenticated();
   const features = [
     {
       icon: CloudRain,
-      title: "Weather Insights",
-      description: "Real-time weather forecasts and alerts tailored to your farm location",
+      title: t("home.feature_weather_title"),
+      description: t("home.feature_weather_desc"),
     },
     {
       icon: FileText,
-      title: "Smart Advisory",
-      description: "AI-powered crop recommendations and pest management solutions",
+      title: t("home.feature_advisory_title"),
+      description: t("home.feature_advisory_desc"),
     },
     {
       icon: Users,
-      title: "Community",
-      description: "Connect with fellow farmers, share experiences, and learn together",
+      title: t("home.feature_community_title"),
+      description: t("home.feature_community_desc"),
     },
     {
       icon: TrendingUp,
-      title: "Market Prices",
-      description: "Live crop market prices and trends to help you make informed decisions",
+      title: t("home.feature_market_title"),
+      description: t("home.feature_market_desc"),
     },
   ];
 
@@ -45,20 +47,20 @@ const Home = () => {
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto animate-slide-up">
           <h1 className="text-4xl md:text-6xl font-heading font-bold text-white mb-6 drop-shadow-lg">
-            Empowering Farmers Through Smart Insights
+            {t("home.hero_title")}
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-8 drop-shadow">
-            Your intelligent farming companion for weather, advisory, and community support
+            {t("home.hero_sub")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90 shadow-hover">
-              <Link to="/dashboard">Get Started</Link>
+              <Link to="/dashboard">{t("home.get_started")}</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur text-white border-white hover:bg-white/20">
-              <Link to="/install">Install App</Link>
+              <Link to="/install">{t("install.install_app")}</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur text-white border-white hover:bg-white/20">
-              <Link to="/about">Learn More</Link>
+              <Link to="/about">{t("home.learn_more")}</Link>
             </Button>
           </div>
         </div>
@@ -69,10 +71,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4 text-primary">
-              How AgriSense Helps You
+              {t("home.features_title")}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to make informed farming decisions in one place
+              {t("home.features_sub")}
             </p>
           </div>
 
@@ -97,19 +99,19 @@ const Home = () => {
       <section className="py-20 px-4 bg-gradient-hero text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">
-            Ready to Transform Your Farming?
+            {t("home.cta_title")}
           </h2>
           <p className="text-xl mb-8 opacity-90">
             {authenticated 
-              ? "Continue to your dashboard to access all features"
-              : "Join thousands of farmers already using AgriSense"
+              ? t("home.cta_authenticated")
+              : t("home.cta_unauthenticated")
             }
           </p>
           <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 shadow-hover">
             {authenticated ? (
-              <Link to="/dashboard">Go to Dashboard</Link>
+              <Link to="/dashboard">{t("home.cta_button_dashboard")}</Link>
             ) : (
-            <Link to="/signup">Create Free Account</Link>
+            <Link to="/signup">{t("home.cta_button_signup")}</Link>
             )}
           </Button>
         </div>
