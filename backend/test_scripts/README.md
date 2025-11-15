@@ -56,7 +56,34 @@ python test_scripts/test_advisory.py rice
 - Rule breakdown (pest/irrigation/market scores)
 - Data sources
 
-### 3. Test All Endpoints
+### 3. Test AI Chatbot Endpoint
+
+Tests the `/ai/chat` endpoint with Google Gemini 2.5 Pro:
+
+```bash
+# Test with default message
+python test_scripts/test_ai_chatbot.py
+
+# Test with custom message
+python test_scripts/test_ai_chatbot.py "What is the best time to plant rice?"
+
+# Test by directly importing module (bypasses HTTP)
+python test_scripts/test_ai_chatbot.py --direct
+
+# Test multiple different messages
+python test_scripts/test_ai_chatbot.py --multiple
+```
+
+**Prerequisites:**
+- `GEMINI_API_KEY` must be set in `.env` file
+- `google-generativeai` package must be installed: `pip install google-generativeai`
+
+**Expected Output:**
+- Status code 200
+- AI-generated response from Gemini 2.5 Pro
+- Response should be farmer-friendly agricultural advice
+
+### 4. Test All Endpoints
 
 Runs comprehensive tests for dashboard and all crop advisories:
 
@@ -101,6 +128,11 @@ python test_scripts/test_all.py
 2. **404 Error**: Check that the data files exist in `backend/data/` directory
 3. **500 Error**: Check backend logs for JSON parsing or file reading errors
 4. **Import Error**: Make sure you're running from the `backend/` directory
+5. **AI Chatbot Error**: 
+   - Make sure `GEMINI_API_KEY` is set in `.env` file
+   - Verify `google-generativeai` is installed: `pip install google-generativeai`
+   - Check that the API key is valid and has access to Gemini 2.5 Pro
+   - Check backend logs for detailed error messages from Gemini API
 
 ## Notes
 

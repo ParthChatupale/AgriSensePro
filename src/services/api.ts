@@ -82,12 +82,13 @@ const api = axios.create({
 // Request interceptor to add auth token if available
 api.interceptors.request.use(
   (config) => {
-    // Don't add Authorization header to public/auth endpoints
+    // Don't add Authorization header to public/auth/ai endpoints
     const url = config.url || "";
     const isPublicEndpoint = 
       url.includes("/auth/signup") ||
       url.includes("/auth/login") ||
-      url.includes("/admin/login");
+      url.includes("/admin/login") ||
+      url.includes("/ai/chat");
     
     // Only add token for protected endpoints
     if (!isPublicEndpoint) {
@@ -787,6 +788,35 @@ export const getTrendingTopics = async (limit: number = 10): Promise<TrendingTop
       throw new Error("Unable to reach server. Please check your internet connection and try again.");
     } else {
       throw new Error(error.message || "An unexpected error occurred while loading trending topics.");
+    }
+  }
+};
+
+// ============================================================================
+// AI Chatbot API Functions
+// ============================================================================
+
+/**
+ * Ask the AI chatbot a question
+ */
+export const askAI = async (message: string): Promise<string> => {
+  try {
+    const response = await api.post<{ reply: string }>("/ai/chat", { message });
+    return response.data.reply;
+  } catch (error: any) {
+    if (error.response) {
+      const status = error.response.status;
+      const detail = error.response.data?.detail || error.response.data?.message;
+      
+      if (status === 500) {
+        throw new Error("Server error while generating AI response. Please try again later.");
+      } else {
+        throw new Error(detail || "Failed to get AI response. Please try again.");
+      }
+    } else if (error.request) {
+      throw new Error("Unable to reach server. Please check your internet connection and try again.");
+    } else {
+      throw new Error(error.message || "An unexpected error occurred while getting AI response.");
     }
   }
 };

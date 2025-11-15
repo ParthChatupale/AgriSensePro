@@ -123,6 +123,25 @@ const Advisory = () => {
     }
   };
 
+  const downloadPDF = async (crop: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/advisory/pdf/${crop}`
+      );
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Advisory_${crop}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+    }
+  };
+
   // Loading skeleton
   const LoadingSkeleton = () => (
     <div className="min-h-screen py-8 px-4">
@@ -339,7 +358,7 @@ const Advisory = () => {
               <CheckCircle className="h-4 w-4 mr-2" />
               {t("advisory.mark_done")}
             </Button>
-            <Button variant="outline" className="flex-1">
+            <Button variant="outline" className="flex-1" onClick={() => downloadPDF(selectedCrop)}>
               <Download className="h-4 w-4 mr-2" />
               {t("advisory.download_pdf")}
             </Button>

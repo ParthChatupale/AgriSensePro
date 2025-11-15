@@ -4,7 +4,8 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
-from . import fusion_engine, auth, community
+from . import fusion_engine, auth, community, ai
+from .routes import advisory_pdf
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -37,6 +38,8 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(fusion_engine.router)
 app.include_router(community.router)
+app.include_router(ai.router)
+app.include_router(advisory_pdf.router)
 
 # -------------------------------------------------------------------
 # 🌐 Root Route
