@@ -1,73 +1,52 @@
-# Welcome to your Lovable project
+# krushiRakshak / AgriSense
 
-## Project info
+Smart farming assistant that unifies weather, satellite imagery, market data, and community knowledge to deliver crop-aware insights for Indian farmers.
 
-**URL**: https://lovable.dev/projects/a0780405-e2d8-455d-b30a-e72cbb000f12
+## Features
 
-## How can I edit this code?
+- Real-time dashboard with IMD weather, Agmarknet market trends, NDVI trends, and risk alerts
+- Fusion Engine backend that fuses datasets and applies rule-based agronomy logic (pest, irrigation, market)
+- Farmer advisory workflows, multilingual UI, offline-ready PWA shell, and community forum
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- Frontend: Vite, React, TypeScript, Tailwind CSS, shadcn/ui, PWA
+- Backend: FastAPI, SQLite (via SQLModel), ETL scripts for weather/market/NDVI data
+- Tooling: ESLint, Playwright + Vitest for automated checks
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a0780405-e2d8-455d-b30a-e72cbb000f12) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Development
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+git clone <repo-url>
+cd agrisense
+npm install
+npm run dev      # frontend at http://localhost:8080
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# backend (from ./backend)
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 ```
 
-**Edit a file directly in GitHub**
+Environment variables (create `.env` files) cover API keys for weather, market, Firebase auth, and optional storage providers. See `src/config.ts` and `backend/README.md` for required settings.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Deployment
 
-**Use GitHub Codespaces**
+1. Frontend: `npm run build` → deploy `dist/` to any static host (Netlify, Vercel, S3+CloudFront, etc.).
+2. Backend: Deploy FastAPI app to Render, Railway, Azure, or on-prem; set `FUSION_ENGINE_URL` env for frontend to target the deployed API.
+3. Configure HTTPS and service workers for full PWA offline support.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Testing
 
-## What technologies are used for this project?
+- Frontend unit/UI: `npm run test`
+- End-to-end smoke tests: `npm run test:e2e`
+- Backend suite: `pytest backend/app/tests`
 
-This project is built with:
+## Contributing
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Fork & create a feature branch.
+2. Follow conventional commits and run formatters/lints (`npm run lint`, `ruff check`, `black`).
+3. Open a PR with context, screenshots, or API samples when relevant.
 
-## How can I deploy this project?
+## License
 
-Simply open [Lovable](https://lovable.dev/projects/a0780405-e2d8-455d-b30a-e72cbb000f12) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Copyright © 2025 AgriSense.

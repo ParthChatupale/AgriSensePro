@@ -40,16 +40,14 @@ const Advisory = () => {
       if (!cropParam) {
         try {
           const user = await getCurrentUser();
-          if (user.crop) {
-            setSelectedCrop(user.crop);
-          }
+          if (user.crop) setSelectedCrop(user.crop);
         } catch (err) {
           // Silently fail - default to cotton
         }
       }
     };
     loadUserCrop();
-  }, [cropParam]);
+  }, []); // run once
 
   useEffect(() => {
     // Update selected crop from URL param if it changes
@@ -72,7 +70,9 @@ const Advisory = () => {
         const data = await getAdvisory(selectedCrop);
         setAdvisory(data);
         // Update URL without navigation
-        navigate(`/advisory/${selectedCrop}`, { replace: true });
+        if (cropParam !== selectedCrop) {
+          navigate(`/advisory/${selectedCrop}`, { replace: true });
+        }
       } catch (err: any) {
         setError(err.message || t("advisory.error.load_failed"));
       } finally {

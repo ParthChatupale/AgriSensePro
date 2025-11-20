@@ -11,8 +11,8 @@ from .routes import advisory_pdf
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="AgriSense Backend API",
-    description="Backend API for AgriSense PWA — Farmer advisory and risk management system",
+    title="krushiRakshak Backend API",
+    description="Backend API for krushiRakshak PWA — Farmer advisory and risk management system",
     version="1.0.0",
 )
 
@@ -46,7 +46,7 @@ app.include_router(advisory_pdf.router)
 # -------------------------------------------------------------------
 @app.get("/")
 def root():
-    return {"message": "Welcome to AgriSense Backend API"}
+    return {"message": "Welcome to krushiRakshak Backend API"}
 
 
 # -------------------------------------------------------------------

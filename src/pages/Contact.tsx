@@ -30,7 +30,7 @@ const Contact = () => {
               <Mail className="h-6 w-6 text-primary" />
             </div>
             <h3 className="font-semibold mb-2">{t("contact.email_title")}</h3>
-            <p className="text-sm text-muted-foreground">support@agrisense.com</p>
+            <p className="text-sm text-muted-foreground">support@krushiRakshak.com</p>
           </Card>
 
           <Card className="p-6 text-center hover:shadow-hover transition-all bg-gradient-card">

@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* About */}
           <div>
-            <h3 className="font-heading font-bold text-lg mb-4 text-primary">AgriSense</h3>
+            <h3 className="font-heading font-bold text-lg mb-4 text-primary">krushiRakshak</h3>
             <p className="text-sm text-muted-foreground">
               {t("footer.about_text")}
             </p>

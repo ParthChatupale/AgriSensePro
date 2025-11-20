@@ -68,7 +68,7 @@ const Navbar = () => {
               <span className="text-white font-bold text-lg">🌿</span>
             </div>
             <div className="hidden sm:block">
-              <h1 className="font-heading font-bold text-lg text-primary">AgriSense</h1>
+              <h1 className="font-heading font-bold text-lg text-primary">krushiRakshak</h1>
               <p className="text-xs text-muted-foreground leading-none">{t("navbar.tagline")}</p>
             </div>
           </Link>

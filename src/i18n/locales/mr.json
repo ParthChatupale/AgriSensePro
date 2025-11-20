@@ -29,7 +29,7 @@
     "get_started": "सुरू करा",
     "install": "इन्स्टॉल करा",
     "learn_more": "अधिक शिका",
-    "features_title": "AgriSense आपल्याला कसे मदत करते",
+    "features_title": "krushiRakshak आपल्याला कसे मदत करते",
     "features_sub": "सूचित शेती निर्णय घेण्यासाठी आपल्याला लागणारी सर्व गोष्टी एकाच ठिकाणी",
     "feature_weather_title": "हवामान अंतर्दृष्टी",
     "feature_weather_desc": "आपल्या शेताच्या स्थानासाठी अनुकूलित वास्तविक-वेळ हवामान अंदाज आणि सूचना",
@@ -41,7 +41,7 @@
     "feature_market_desc": "सूचित निर्णय घेण्यात मदत करण्यासाठी लाइव्ह पीक बाजार भाव आणि ट्रेंड",
     "cta_title": "आपली शेती बदलण्यासाठी तयार आहात?",
     "cta_authenticated": "सर्व वैशिष्ट्ये प्रवेश करण्यासाठी आपल्या डॅशबोर्डवर जा",
-    "cta_unauthenticated": "AgriSense वापरत असलेल्या हजारो शेतकऱ्यांमध्ये सामील व्हा",
+    "cta_unauthenticated": "krushiRakshak वापरत असलेल्या हजारो शेतकऱ्यांमध्ये सामील व्हा",
     "cta_button_dashboard": "डॅशबोर्डवर जा",
     "cta_button_signup": "विनामूल्य खाते तयार करा"
   },
@@ -54,7 +54,7 @@
     "contact_us": "आमच्याशी संपर्क साधा",
     "install_pwa": "PWA इंस्टॉल करा",
     "connect": "आमच्याशी जोडा",
-    "copyright": "© {{year}} AgriSense. सर्व हक्क राखीव."
+    "copyright": "© {{year}} krushiRakshak. सर्व हक्क राखीव."
   },
   "dashboard": {
     "title": "डॅशबोर्ड",

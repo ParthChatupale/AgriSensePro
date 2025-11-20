@@ -29,7 +29,7 @@
     "get_started": "Get Started",
     "install": "Install App",
     "learn_more": "Learn More",
-    "features_title": "How AgriSense Helps You",
+    "features_title": "How krushiRakshak Helps You",
     "features_sub": "Everything you need to make informed farming decisions in one place",
     "feature_weather_title": "Weather Insights",
     "feature_weather_desc": "Real-time weather forecasts and alerts tailored to your farm location",
@@ -41,7 +41,7 @@
     "feature_market_desc": "Live crop market prices and trends to help you make informed decisions",
     "cta_title": "Ready to Transform Your Farming?",
     "cta_authenticated": "Continue to your dashboard to access all features",
-    "cta_unauthenticated": "Join thousands of farmers already using AgriSense",
+    "cta_unauthenticated": "Join thousands of farmers already using krushiRakshak",
     "cta_button_dashboard": "Go to Dashboard",
     "cta_button_signup": "Create Free Account"
   },
@@ -54,7 +54,7 @@
     "contact_us": "Contact Us",
     "install_pwa": "Install PWA",
     "connect": "Connect With Us",
-    "copyright": "© {{year}} AgriSense. All rights reserved."
+    "copyright": "© {{year}} krushiRakshak. All rights reserved."
   },
   "dashboard": {
     "title": "Dashboard",

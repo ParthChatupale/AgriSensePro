@@ -85,7 +85,7 @@ const Signup = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-hero text-white mb-4">
             <span className="text-3xl">🌿</span>
           </div>
-          <h1 className="text-3xl font-heading font-bold text-primary mb-2">Join AgriSense</h1>
+          <h1 className="text-3xl font-heading font-bold text-primary mb-2">Join krushiRakshak</h1>
           <p className="text-muted-foreground">Create your account to get started</p>
         </div>
 
