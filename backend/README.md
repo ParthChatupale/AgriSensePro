@@ -1,6 +1,6 @@
-# AgriSense Backend
+# KrushiRakshak Backend
 
-This is the backend server for AgriSense, built with FastAPI. It handles user authentication, processes agricultural data, runs the Fusion Engine, and manages the community features.
+This is the backend server for KrushiRakshak, built with FastAPI. It handles user authentication, processes agricultural data, runs the Fusion Engine, and manages the community features.
 
 ## What This Backend Does
 

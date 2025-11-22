@@ -1,10 +1,10 @@
-# krushiRakshak / AgriSense
+# KrushiRakshak
 
 A smart farming platform that helps Indian farmers make better decisions by combining weather data, satellite images, market prices, and expert knowledge into one easy-to-use app.
 
-## What is AgriSense?
+## What is KrushiRakshak?
 
-AgriSense is a web application built for farmers who need quick, reliable information about their crops. Instead of checking multiple websites or apps, farmers can see everything they need in one place: weather forecasts, crop health status, market prices, and personalized advice.
+KrushiRakshak is a web application built for farmers who need quick, reliable information about their crops. Instead of checking multiple websites or apps, farmers can see everything they need in one place: weather forecasts, crop health status, market prices, and personalized advice.
 
 The app works even when internet is slow or unavailable, making it perfect for rural areas. It's available in multiple languages and designed to be simple enough for anyone to use.
 
@@ -23,7 +23,7 @@ The app works even when internet is slow or unavailable, making it perfect for r
 
 ### How It Works
 
-AgriSense has three main parts that work together:
+KrushiRakshak has three main parts that work together:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -187,7 +187,7 @@ agrisense/
 │   ├── rules/             # Rule definitions (pest, irrigation, market)
 │   └── services/           # External API integration services
 ├── docs/                   # Detailed documentation
-│   ├── Agrisense_Documentation.md  # Complete system documentation
+│   ├── Agrisense_Documentation.md  # Complete system documentation (KrushiRakshak)
 │   ├── DEMO_SCRIPT.md     # Demo presentation script
 │   └── dashboardscript.md # Dashboard walkthrough guide
 └── README.md              # This file
@@ -260,7 +260,7 @@ npm run build
 
 ## License
 
-Copyright © 2025 AgriSense. All rights reserved.
+Copyright © 2025 KrushiRakshak. All rights reserved.
 
 ## Support
 

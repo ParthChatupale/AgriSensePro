@@ -2,7 +2,7 @@
 
 ## ✅ Implementation Complete
 
-This guide provides all code changes, SQL migrations, and testing instructions for integrating persistent user crop and location into Agrisense.
+This guide provides all code changes, SQL migrations, and testing instructions for integrating persistent user crop and location into KrushiRakshak.
 
 ---
 
