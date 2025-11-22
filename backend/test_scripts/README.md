@@ -1,6 +1,6 @@
-# Fusion Engine Test Scripts
+# Backend Test Scripts
 
-Test scripts to verify the Fusion Engine endpoints are working correctly.
+Simple test scripts to check if the backend API endpoints are working correctly. These scripts help verify that the Fusion Engine, dashboard, and advisory features are functioning as expected.
 
 ## Prerequisites
 

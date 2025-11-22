@@ -11,197 +11,199 @@
 
 ## Abstract
 
-AgriSense is a comprehensive Progressive Web Application (PWA) designed to empower Indian farmers with intelligent, data-driven agricultural insights. The system integrates multiple data sources including real-time weather data from the India Meteorological Department (IMD), satellite imagery from Bhuvan, market prices from Agmarknet, and community-driven knowledge sharing to provide actionable farming advisories. Built with modern web technologies, AgriSense offers a user-friendly interface that works seamlessly both online and offline, making advanced agricultural technology accessible to farmers regardless of their technical expertise or internet connectivity.
+AgriSense is a web app built to help Indian farmers get better information about their crops. We combine weather data from IMD, satellite images from Bhuvan, market prices from Agmarknet, and let farmers share knowledge with each other. The app works on phones and computers, and it even works when there's no internet.
 
-The platform features an AI-powered chatbot (Google Gemini 2.5 Pro) for instant agricultural advice, a rule-based Fusion Engine that generates crop-specific advisories, and a community forum where farmers can share experiences, ask questions, and learn from each other. With support for multiple languages and a mobile-first design, AgriSense aims to bridge the gap between traditional farming practices and modern agricultural technology, ultimately helping farmers make informed decisions that improve crop yields, reduce risks, and increase profitability.
+The app has an AI chatbot that answers farming questions instantly, a smart system that gives crop-specific advice, and a community section where farmers can share tips and ask questions. It's available in multiple languages and designed for mobile phones first. Our goal is to help farmers make better decisions so they can grow more crops, avoid losses, and earn more money.
 
 ---
 
 ## Problem Statement
 
-Indian agriculture faces numerous challenges that impact farmer productivity and livelihoods:
+Indian farmers face many problems that hurt their crops and income:
 
-### 1. **Lack of Access to Real-Time Information**
-- Farmers often lack access to timely weather forecasts, which leads to crop damage from unexpected weather events
-- Market price information is not readily available, causing farmers to sell produce at suboptimal prices
-- Limited access to crop health monitoring tools results in delayed pest and disease detection
+### 1. **No Real-Time Information**
+- Farmers don't get weather updates on time, so crops get damaged by unexpected rain or storms
+- Market prices are hard to find, so farmers sell their crops for less money
+- There's no easy way to check if crops are healthy, so pests and diseases are found too late
 
-### 2. **Fragmented Data Sources**
-- Agricultural information is scattered across multiple government and private platforms
-- No unified system exists that combines weather, market, satellite, and advisory data
-- Farmers must consult multiple sources, making decision-making time-consuming and inefficient
+### 2. **Information is Scattered**
+- Weather, prices, and farming advice are on different websites and apps
+- No single place has everything farmers need
+- Farmers waste time checking multiple sources
 
-### 3. **Limited Technical Expertise**
-- Many farmers lack technical knowledge to interpret complex agricultural data
-- Existing solutions often require technical expertise or are not user-friendly
-- Language barriers prevent access to valuable agricultural information
+### 3. **Too Complicated**
+- Most apps are hard to understand for farmers who aren't tech-savvy
+- The information is too technical and confusing
+- Many apps are only in English, so farmers who speak other languages can't use them
 
-### 4. **Connectivity Issues**
-- Rural areas often have poor or intermittent internet connectivity
-- Existing web-based solutions fail when farmers need information most (during fieldwork)
-- Offline functionality is crucial but rarely available in agricultural applications
+### 4. **Internet Problems**
+- Villages often have slow or no internet
+- Apps stop working when farmers are in the field and need information most
+- Most farming apps don't work without internet
 
-### 5. **Lack of Community Support**
-- Farmers work in isolation without easy access to peer knowledge
-- No platform exists for farmers to share experiences, ask questions, and learn from each other
-- Regional farming knowledge is not easily accessible or shareable
+### 5. **No Community Help**
+- Farmers work alone without easy ways to talk to other farmers
+- There's no place where farmers can share tips and ask questions
+- Local farming knowledge stays in one place and doesn't spread
 
-### 6. **Inefficient Risk Management**
-- Farmers lack tools to assess and manage agricultural risks proactively
-- No integrated system provides early warnings for pests, diseases, or adverse weather
-- Crop advisory services are generic and not personalized to specific farm conditions
+### 6. **Can't Predict Problems**
+- Farmers don't have tools to see problems coming
+- No system warns farmers about pests, diseases, or bad weather early
+- Advice given to farmers is the same for everyone, not customized to their specific farm
 
-These challenges result in reduced crop yields, increased financial losses, and decreased farmer confidence in adopting modern agricultural practices. There is a critical need for an integrated, accessible, and user-friendly platform that addresses these issues comprehensively.
+Because of these problems, farmers grow less crops, lose money, and don't trust new technology. We need one simple app that solves all these problems together.
 
 ---
 
 ## Objectives
 
-The primary objectives of AgriSense are:
+What we want to achieve with AgriSense:
 
-### 1. **Provide Integrated Agricultural Intelligence**
-- Combine weather data, satellite imagery, market prices, and crop health indicators into a single, unified platform
-- Generate personalized, crop-specific advisories based on real-time data and rule-based analysis
-- Offer actionable recommendations for pest management, irrigation, and crop care
+### 1. **Put Everything in One Place**
+- Combine weather, satellite images, market prices, and crop health into one app
+- Give personalized advice for each crop based on current conditions
+- Tell farmers exactly what to do for pests, watering, and crop care
 
-### 2. **Ensure Accessibility and Usability**
-- Develop a Progressive Web Application (PWA) that works on any device without installation barriers
-- Implement offline functionality to ensure access during poor connectivity
-- Support multiple languages (English, Marathi) to reach diverse farmer communities
-- Design an intuitive, mobile-first interface that requires minimal technical knowledge
+### 2. **Make It Easy to Use**
+- Build a web app that works on phones and computers without complicated installation
+- Make it work even when there's no internet
+- Support multiple languages (English, Marathi) so more farmers can use it
+- Design it so simple that anyone can use it, even without tech knowledge
 
-### 3. **Enable Data-Driven Decision Making**
-- Provide real-time weather forecasts and alerts tailored to farm locations
-- Display live market prices and trends to help farmers make informed selling decisions
-- Monitor crop health using satellite-derived NDVI (Normalized Difference Vegetation Index) data
-- Generate risk assessments and early warnings for potential agricultural threats
+### 3. **Help Farmers Make Better Decisions**
+- Show weather forecasts and warnings for their specific location
+- Display current market prices and trends so farmers know when to sell
+- Check crop health using satellite data (NDVI)
+- Warn farmers early about pests, diseases, or bad weather
 
-### 4. **Foster Community Knowledge Sharing**
-- Create a platform where farmers can share experiences, tips, and solutions
-- Enable farmers to ask questions and receive answers from the community
-- Facilitate regional knowledge exchange and best practice sharing
-- Build a supportive network that connects farmers across different regions
+### 4. **Let Farmers Help Each Other**
+- Create a place where farmers can share tips and experiences
+- Let farmers ask questions and get answers from other farmers
+- Help farmers in different regions share knowledge
+- Build a community where farmers support each other
 
-### 5. **Leverage Artificial Intelligence**
-- Integrate an AI-powered chatbot (Google Gemini 2.5 Pro) for instant agricultural advice
-- Provide farmer-friendly, accurate responses to agricultural queries
-- Support 24/7 availability for answering farming-related questions
+### 5. **Use AI to Answer Questions**
+- Add an AI chatbot that answers farming questions instantly
+- Make sure the answers are simple and easy to understand
+- Available 24/7 so farmers can ask questions anytime
 
-### 6. **Ensure Scalability and Reliability**
-- Build a robust backend architecture that can handle multiple concurrent users
-- Implement efficient data caching and offline storage mechanisms
-- Design for scalability to support growing user base and data volumes
+### 6. **Make It Fast and Reliable**
+- Build a strong backend that can handle many users at once
+- Store data efficiently so it loads fast
+- Design it to grow as more farmers start using it
 
-### 7. **Promote Sustainable Farming Practices**
-- Encourage data-driven farming that reduces resource waste
-- Support informed decision-making that improves crop yields and farmer income
-- Contribute to food security by helping farmers optimize their agricultural practices
+### 7. **Help Farmers Use Resources Wisely**
+- Encourage farmers to use data to avoid wasting water, fertilizer, and pesticides
+- Help farmers make decisions that increase crop yields and income
+- Contribute to food security by helping farmers grow crops better
 
 ---
 
 ## Proposed Solution
 
-AgriSense addresses the identified problems through a comprehensive, integrated platform that combines multiple technologies and data sources. The solution is structured as follows:
+AgriSense solves these problems by building one app that brings together different technologies and data sources. Here's how we built it:
 
 ### **System Overview**
 
-AgriSense is built as a full-stack web application with a React-based Progressive Web App (PWA) frontend and a FastAPI-based Python backend. The system integrates with external data sources (IMD Weather, Agmarknet Market Prices, Bhuvan Satellite Imagery) and employs a rule-based Fusion Engine to generate intelligent advisories.
+AgriSense is a web app with two main parts: a frontend built with React that users see and interact with, and a backend built with FastAPI (Python) that does the heavy work. The app connects to external sources like IMD for weather, Agmarknet for market prices, and Bhuvan for satellite images. We built a smart system called the Fusion Engine that uses rules to create helpful advice for farmers.
 
 ### **Core Components**
 
-#### 1. **Fusion Engine (Intelligence Layer)**
-The Fusion Engine is the heart of AgriSense's advisory system. It:
-- Combines data from multiple sources (weather, market, satellite, crop metadata)
-- Applies rule-based logic to detect risks and opportunities
-- Generates crop-specific advisories with prioritized recommendations
-- Evaluates pest risks, irrigation needs, and market conditions
-- Provides severity assessments and actionable insights
+#### 1. **Fusion Engine (The Brain of Our System)**
+The Fusion Engine is what makes AgriSense smart. It does these things:
+- Takes data from weather, market, satellite, and crop information and puts it together
+- Uses simple rules to find problems and opportunities
+- Creates specific advice for each crop type with recommendations sorted by importance
+- Checks for pest risks, irrigation needs, and market problems
+- Tells farmers how serious problems are and what they should do about it
 
 #### 2. **User Dashboard**
-A centralized dashboard that displays:
-- Real-time weather information (temperature, humidity, rainfall, wind)
-- Current market prices for major crops (cotton, wheat, rice, etc.)
-- Active alerts and warnings
-- Crop health summaries
-- Quick access to advisories and community features
+A main screen that shows everything at once:
+- Current weather (temperature, humidity, rain, wind)
+- Today's market prices for crops like cotton, wheat, rice
+- Important alerts and warnings
+- How healthy each crop is
+- Quick links to get advice and visit the community section
 
 #### 3. **Crop Advisory System**
-Personalized advisory system that:
-- Analyzes crop-specific conditions based on location and crop type
-- Provides recommendations for pest management, irrigation, and crop care
-- Generates priority-based action items
-- Explains the reasoning behind each recommendation
-- Adapts to different crop stages and growth phases
+A system that gives personalized advice:
+- Looks at conditions specific to your location and crop type
+- Suggests what to do for pests, watering, and taking care of crops
+- Lists actions in order of importance (do this first, then this)
+- Explains why each recommendation is given
+- Changes advice based on what stage your crop is in (planting, growing, flowering, etc.)
 
 #### 4. **Community Platform**
-A social networking feature that enables:
-- Post creation with text and image support
-- Categorization of posts (tips, questions, issues, success stories)
-- Like and comment functionality
-- Crop and region-based filtering
-- Trending topics and top contributors
-- User profiles and post history
+A place where farmers can connect:
+- Write posts with text and photos
+- Organize posts by type (tips, questions, problems, success stories)
+- Like and comment on posts
+- Filter posts by crop type or region
+- See what topics are popular and who's helping the most
+- View profiles and see what other farmers have posted
 
 #### 5. **AI Chatbot (AgriBot)**
-An intelligent assistant powered by Google Gemini 2.5 Pro that:
-- Provides instant answers to agricultural questions
-- Offers farmer-friendly, accurate advice
-- Operates 24/7 without human intervention
-- Understands context and provides relevant recommendations
+A smart helper powered by Google Gemini that:
+- Answers farming questions right away
+- Gives advice in simple language that farmers can understand
+- Works all day and night without needing humans
+- Understands what farmers are asking and gives helpful answers
 
 #### 6. **Progressive Web App (PWA) Features**
-- **Offline Functionality**: Works without internet connection using service workers
-- **Installable**: Can be installed on mobile devices like a native app
-- **Responsive Design**: Optimized for mobile, tablet, and desktop
-- **Fast Loading**: Efficient caching and resource management
-- **Push Notifications**: (Future enhancement) Alert farmers about important updates
+- **Works Offline**: Uses special technology to work even without internet
+- **Can Be Installed**: Can be added to phones like a regular app
+- **Works on All Devices**: Looks good and works well on phones, tablets, and computers
+- **Loads Fast**: Stores data smartly so pages load quickly
+- **Push Notifications**: (Coming soon) Will alert farmers about important updates
 
 #### 7. **Multi-Language Support**
-- Internationalization (i18n) support for multiple languages
-- Currently supports English and Marathi
-- Easy extensibility to add more regional languages
+- Built to support multiple languages
+- Currently works in English and Marathi
+- Easy to add more languages in the future
 
 ### **Technical Architecture**
 
-The solution follows a modern, scalable architecture:
+We built the app using modern tools that can grow as more people use it:
 
-- **Frontend**: React 18 with TypeScript, Vite for build tooling, Tailwind CSS for styling
-- **Backend**: FastAPI (Python) with SQLAlchemy ORM for database operations
-- **Database**: SQLite (development) / PostgreSQL (production-ready)
-- **Authentication**: JWT-based authentication with secure password hashing
-- **API Integration**: RESTful APIs for external data sources
-- **State Management**: React Query for server state, React hooks for local state
-- **UI Components**: shadcn/ui component library for consistent, accessible UI
+- **Frontend**: React 18 with TypeScript, Vite for building, Tailwind CSS for styling
+- **Backend**: FastAPI (Python) with SQLAlchemy for database work
+- **Database**: SQLite for testing / PostgreSQL for when we launch
+- **Authentication**: JWT tokens with secure password storage
+- **API Integration**: Standard REST APIs to connect to external data sources
+- **State Management**: React Query for server data, React hooks for local data
+- **UI Components**: shadcn/ui library for consistent, easy-to-use interface
 
 ### **Data Flow**
 
-1. **Data Collection**: System fetches data from IMD (weather), Agmarknet (market), and Bhuvan (satellite)
-2. **Data Processing**: Fusion Engine processes raw data using rule-based logic
-3. **Advisory Generation**: System generates personalized advisories based on user profile and location
-4. **User Interface**: Frontend displays processed information in an intuitive format
-5. **User Interaction**: Users can view advisories, interact with community, and chat with AI
-6. **Offline Support**: Critical data is cached for offline access
+Here's how data moves through the system:
+
+1. **Getting Data**: The app fetches weather from IMD, prices from Agmarknet, and satellite images from Bhuvan
+2. **Processing Data**: The Fusion Engine takes all this raw data and uses rules to make sense of it
+3. **Creating Advice**: The system creates personalized advice based on who the farmer is and where their farm is
+4. **Showing Information**: The frontend displays everything in a way that's easy to understand
+5. **User Actions**: Farmers can read advice, talk to other farmers, and ask the AI chatbot questions
+6. **Offline Access**: Important data is saved so farmers can access it even without internet
 
 ### **Key Features**
 
-- **Real-Time Weather Monitoring**: Live weather data with forecasts and alerts
-- **Market Price Tracking**: Current and historical market prices with trend analysis
-- **Crop Health Monitoring**: NDVI-based crop health assessment using satellite data
-- **Risk Detection**: Early warning system for pests, diseases, and adverse conditions
-- **Community Engagement**: Social platform for knowledge sharing and peer support
-- **AI-Powered Assistance**: Intelligent chatbot for instant agricultural advice
-- **Offline Capability**: Full functionality even without internet connectivity
-- **Multi-Language Support**: Accessible to diverse linguistic communities
+- **Real-Time Weather**: Live weather updates with forecasts and warnings
+- **Market Prices**: Current and past prices with trend arrows showing if prices are going up or down
+- **Crop Health Check**: Uses satellite data (NDVI) to see how healthy crops are
+- **Early Warnings**: Alerts farmers about pests, diseases, and bad weather before problems get serious
+- **Community**: A place where farmers can share tips and help each other
+- **AI Helper**: A chatbot that answers farming questions instantly
+- **Works Offline**: Everything works even when there's no internet
+- **Multiple Languages**: Available in different languages so more farmers can use it
 
 ### **Expected Impact**
 
-AgriSense aims to:
-- Improve crop yields through data-driven decision making
-- Reduce agricultural losses through early risk detection
-- Increase farmer income through better market timing
-- Enhance knowledge sharing through community engagement
-- Make advanced agricultural technology accessible to all farmers
-- Support sustainable farming practices through informed resource management
+What we hope AgriSense will do:
+- Help farmers grow more crops by using data to make better decisions
+- Reduce crop losses by warning farmers about problems early
+- Help farmers earn more money by showing them the best time to sell
+- Let farmers share knowledge and learn from each other
+- Make advanced farming technology available to everyone, not just tech-savvy farmers
+- Help farmers use water, fertilizer, and pesticides more wisely
 
 ---
 
@@ -290,38 +292,38 @@ AgriSense aims to:
 ### Component Explanation
 
 #### 1. **Client Layer (Frontend)**
-The frontend is a Progressive Web Application built with React and TypeScript, providing a responsive, mobile-first user interface.
+The frontend is a web app built with React and TypeScript that works well on phones and computers.
 
-- **Pages**: Main application screens including Home, Dashboard, Advisory, Community, Profile, and authentication pages
-- **Components**: Reusable UI components including navigation, chatbot, footer, and a comprehensive UI component library (shadcn/ui)
-- **Services**: API client layer with axios, authentication helpers, and internationalization support
-- **PWA Features**: Service workers for offline functionality, install prompts, and efficient caching strategies
+- **Pages**: Main screens like Home, Dashboard, Advisory, Community, Profile, and login/signup pages
+- **Components**: Reusable pieces like navigation bar, chatbot, footer, and a full set of UI components (shadcn/ui)
+- **Services**: Code that talks to the backend API, handles login, and supports multiple languages
+- **PWA Features**: Special code that makes it work offline, allows installation, and stores data efficiently
 
 #### 2. **Application Layer (Backend)**
-The backend is built with FastAPI, providing RESTful APIs organized into modular routers.
+The backend is built with FastAPI and provides APIs organized into separate sections.
 
-- **Auth Router**: Handles user registration, login, JWT token generation, and profile management
-- **Fusion Engine Router**: Core intelligence layer that combines data sources and generates advisories
+- **Auth Router**: Handles signup, login, creating tokens, and managing user profiles
+- **Fusion Engine Router**: The smart part that combines all data sources and creates advice
 - **Community Router**: Manages posts, comments, likes, image uploads, and user interactions
-- **AI Router**: Integrates with Google Gemini 2.5 Pro for chatbot functionality
-- **Services Layer**: Modular services for weather data, market prices, NDVI processing, crop stage detection, and geocoding
-- **Utils**: Helper functions for data loading, caching, and utility operations
+- **AI Router**: Connects to Google Gemini for the chatbot
+- **Services Layer**: Separate services for weather data, market prices, NDVI processing, crop stage detection, and location services
+- **Utils**: Helper functions for loading data, caching, and other common tasks
 
 #### 3. **Data Layer**
-The data layer uses SQLAlchemy ORM for database operations, supporting both SQLite (development) and PostgreSQL (production).
+The data layer uses SQLAlchemy to work with the database. It works with SQLite for testing and PostgreSQL for production.
 
-- **Users Table**: Stores user accounts, profiles, and preferences
-- **Posts Table**: Community posts with content, metadata, and engagement metrics
-- **Comments Table**: User comments on posts
-- **PostLikes Table**: Like relationships between users and posts
+- **Users Table**: Stores user accounts, profiles, and settings
+- **Posts Table**: Stores community posts with content, metadata, and how many likes/comments they have
+- **Comments Table**: Stores comments that users write on posts
+- **PostLikes Table**: Tracks which users liked which posts
 
 #### 4. **External Services Layer**
-The system integrates with multiple external APIs to provide comprehensive agricultural data.
+The system connects to several external services to get farming data.
 
-- **IMD Weather API**: Real-time weather data and forecasts from India Meteorological Department
-- **Agmarknet API**: Current and historical market prices for agricultural commodities
-- **Bhuvan Satellite**: Satellite imagery and NDVI data for crop health monitoring
-- **Google Gemini API**: AI-powered chatbot for instant agricultural advice
+- **IMD Weather API**: Real-time weather and forecasts from India Meteorological Department
+- **Agmarknet API**: Current and past market prices for crops
+- **Bhuvan Satellite**: Satellite images and NDVI data to check crop health
+- **Google Gemini API**: AI chatbot that gives instant farming advice
 
 ### Data Flow Architecture
 
@@ -3633,44 +3635,44 @@ Based on the current implementation and identified limitations, the following en
 
 ## Conclusion
 
-AgriSense represents a significant step forward in making advanced agricultural technology accessible to Indian farmers. By integrating multiple data sources, implementing intelligent advisory systems, and fostering community engagement, the platform addresses critical challenges faced by the agricultural sector.
+AgriSense is our attempt to make advanced farming technology available to Indian farmers. We combined different data sources, built a smart advisory system, and created a community where farmers can help each other. This helps solve real problems that farmers face every day.
 
-### Key Achievements
+### What We Built
 
-The project successfully demonstrates:
+The project shows we can:
 
-1. **Technical Excellence**: Modern full-stack architecture with React, FastAPI, and PostgreSQL
-2. **Data Integration**: Seamless integration of weather, market, and satellite data sources
-3. **Intelligent Systems**: Rule-based Fusion Engine and AI-powered chatbot for agricultural advice
-4. **User-Centric Design**: Progressive Web Application with offline support and multi-language capabilities
-5. **Community Building**: Social platform for knowledge sharing and peer support
+1. **Build Modern Apps**: Used React, FastAPI, and PostgreSQL to create a solid system
+2. **Combine Data Sources**: Successfully connected weather, market, and satellite data
+3. **Make Smart Systems**: Built a rule-based Fusion Engine and AI chatbot that give useful advice
+4. **Design for Users**: Created a web app that works offline and supports multiple languages
+5. **Build Community**: Made a platform where farmers can share knowledge and help each other
 
-### Impact Potential
+### What It Can Do
 
-AgriSense has the potential to:
+AgriSense can help:
 
-- **Improve Crop Yields**: Through data-driven decision making and early risk detection
-- **Increase Farmer Income**: By optimizing market timing and reducing losses
-- **Enhance Knowledge Access**: Through community engagement and AI assistance
-- **Promote Sustainability**: By encouraging efficient resource usage
-- **Bridge Digital Divide**: By making technology accessible to all farmers
+- **Grow More Crops**: By using data to make better decisions and catch problems early
+- **Earn More Money**: By showing farmers the best time to sell and reducing losses
+- **Learn More**: Through the community and AI chatbot
+- **Use Resources Better**: By encouraging smart use of water, fertilizer, and pesticides
+- **Bridge the Gap**: By making technology simple enough for all farmers to use
 
-### Challenges Addressed
+### Problems We Solved
 
-The platform directly addresses the problems identified in the problem statement:
+The app directly fixes the problems we identified:
 
-- ✅ **Real-Time Information Access**: Integrated weather, market, and crop health data
-- ✅ **Unified Data Platform**: Single platform combining multiple data sources
-- ✅ **User-Friendly Interface**: Intuitive design requiring minimal technical knowledge
-- ✅ **Offline Functionality**: Works without constant internet connectivity
-- ✅ **Community Support**: Platform for peer knowledge sharing
-- ✅ **Risk Management**: Early warning system and proactive advisories
+- ✅ **Real-Time Information**: Combined weather, market, and crop health data in one place
+- ✅ **One Platform**: Everything farmers need in a single app
+- ✅ **Easy to Use**: Simple design that doesn't require tech knowledge
+- ✅ **Works Offline**: Functions even without internet
+- ✅ **Community Help**: A place where farmers can share knowledge
+- ✅ **Early Warnings**: Alerts farmers about problems before they get serious
 
-### Future Vision
+### Looking Ahead
 
-As AgriSense evolves, it aims to become the primary digital companion for Indian farmers, providing comprehensive support from planting to harvest. With planned enhancements in machine learning, IoT integration, and expanded community features, the platform will continue to adapt to the evolving needs of the agricultural sector.
+As we continue working on AgriSense, we want it to become the main digital tool for Indian farmers, helping them from planting to harvest. We plan to add machine learning, connect with IoT devices, and expand community features to keep up with what farmers need.
 
-The combination of technology, data, and community creates a powerful ecosystem that empowers farmers to make informed decisions, reduce risks, and improve their livelihoods. AgriSense is not just a tool—it's a movement toward smarter, more sustainable agriculture.
+By combining technology, data, and community, we're creating something that helps farmers make better decisions, avoid losses, and improve their lives. AgriSense isn't just an app—it's our way of making farming smarter and more sustainable.
 
 ---
 
