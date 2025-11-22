@@ -4,10 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Camera } from "lucide-react";
+import { Camera, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { getCurrentUser, getUser, isAuthenticated, User } from "../services/api";
+import { getCurrentUser, getUser, isAuthenticated, updateProfile, User } from "../services/api";
 
 
 const Profile = () => {
@@ -18,11 +19,13 @@ const Profile = () => {
     phone: "",
     email: "",
     userType: "",
-    region: "",
     crop: "",
-    farmSize: "",
-    address: "",
+    location: "",
+    state: "",
+    district: "",
+    village: "",
   });
+  const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,10 +47,11 @@ const Profile = () => {
           phone: userData.phone || "",
           email: userData.email || "",
           userType: userData.userType || "",
-          region: "",
-          crop: "",
-          farmSize: "",
-          address: "",
+          crop: userData.crop || "",
+          location: userData.location || "",
+          state: userData.state || "",
+          district: userData.district || "",
+          village: userData.village || "",
         });
       } catch (error: any) {
         // Fallback to stored user data
@@ -59,10 +63,11 @@ const Profile = () => {
             phone: storedUser.phone || "",
             email: storedUser.email || "",
             userType: storedUser.userType || "",
-            region: "",
-            crop: "",
-            farmSize: "",
-            address: "",
+            crop: storedUser.crop || "",
+            location: storedUser.location || "",
+            state: storedUser.state || "",
+            district: storedUser.district || "",
+            village: storedUser.village || "",
           });
         } else {
           toast.error("Failed to load user data");
@@ -76,10 +81,40 @@ const Profile = () => {
     loadUserData();
   }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement profile update API call
-    toast.success("Profile updated successfully!");
+    setIsSaving(true);
+    try {
+      const updatedUser = await updateProfile({
+        name: formData.name,
+        phone: formData.phone || undefined,
+        crop: formData.crop || undefined,
+        location: formData.location || undefined,
+      });
+      setUser(updatedUser);
+      toast.success("Profile updated successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update profile. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGeolocate = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
+          setFormData({ ...formData, location: coords });
+          toast.success("Location detected!");
+        },
+        () => {
+          toast.error("Unable to detect location");
+        }
+      );
+    } else {
+      toast.error("Geolocation is not supported by your browser");
+    }
   };
 
   if (loading) {
@@ -156,50 +191,65 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="region">Farm Region</Label>
-                <Input 
-                  id="region" 
-                  value={formData.region}
-                  onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                  placeholder="Enter your farm region"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="crop">Primary Crop</Label>
-                <Input 
-                  id="crop" 
+                <Select
                   value={formData.crop}
-                  onChange={(e) => setFormData({ ...formData, crop: e.target.value })}
-                  placeholder="Enter primary crop"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, crop: value })}
+                >
+                  <SelectTrigger id="crop">
+                    <SelectValue placeholder="Select primary crop" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cotton">Cotton</SelectItem>
+                    <SelectItem value="wheat">Wheat</SelectItem>
+                    <SelectItem value="rice">Rice</SelectItem>
+                    <SelectItem value="sugarcane">Sugarcane</SelectItem>
+                    <SelectItem value="soybean">Soybean</SelectItem>
+                    <SelectItem value="onion">Onion</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="farmSize">Farm Size (acres)</Label>
-                <Input 
-                  id="farmSize" 
-                  type="number" 
-                  value={formData.farmSize}
-                  onChange={(e) => setFormData({ ...formData, farmSize: e.target.value })}
-                  placeholder="Enter farm size"
-                />
+                <Label htmlFor="location">Farm Location</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    id="location" 
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    placeholder="Enter farm location or coordinates"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleGeolocate}
+                    title="Auto-detect location"
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Input id="state" value={formData.state} disabled className="bg-muted" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="district">District</Label>
+                <Input id="district" value={formData.district} disabled className="bg-muted" />
+              </div>
             <div className="space-y-2">
-              <Label htmlFor="address">Farm Address</Label>
-              <Input 
-                id="address" 
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Enter farm address"
-              />
+                <Label htmlFor="village">Village / Town</Label>
+                <Input id="village" value={formData.village} disabled className="bg-muted" />
+              </div>
             </div>
 
             <div className="flex gap-4">
-              <Button type="submit" className="bg-primary hover:bg-primary/90">
-                Save Changes
+              <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save Changes"}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                 Cancel

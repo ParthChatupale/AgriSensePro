@@ -1,0 +1,57 @@
+{
+  "aphid_high_humidity": {
+    "description": "High humidity + NDVI drop indicates aphid infestation risk",
+    "conditions": [
+      {"feature": "humidity", "op": ">", "value": 70},
+      {"feature": "ndvi_change", "op": "<", "value": -0.05}
+    ],
+    "score": 0.9,
+    "recommendation": "Spray neem oil (2%) early morning. Inspect underside of leaves.",
+    "severity": "high"
+  },
+
+  "bollworm_risk_flowering": {
+    "description": "NDVI drop + flowering stage indicates bollworm risk (cotton only)",
+    "conditions": [
+      {"feature": "crop", "op": "==", "value": "cotton"},
+      {"feature": "crop_stage", "op": "==", "value": "flowering"},
+      {"feature": "ndvi_change", "op": "<", "value": -0.08}
+    ],
+    "score": 0.85,
+    "recommendation": "Inspect flowers for larvae. Apply recommended pesticide if infestation confirmed.",
+    "severity": "high"
+  },
+
+  "whitefly_temp_humidity": {
+    "description": "High temp + moderate humidity increases whitefly risk",
+    "conditions": [
+      {"feature": "temperature", "op": ">", "value": 32},
+      {"feature": "humidity", "op": ">", "value": 55},
+      {"feature": "humidity", "op": "<", "value": 75}
+    ],
+    "score": 0.75,
+    "recommendation": "Use yellow sticky traps. Monitor underside of leaves.",
+    "severity": "medium"
+  },
+
+  "rice_bph_high_humidity": {
+    "description": "High humidity increases Brown Planthopper (BPH) risk in rice",
+    "conditions": [
+      {"feature": "crop", "op": "==", "value": "rice"},
+      {"feature": "humidity", "op": ">", "value": 80}
+    ],
+    "score": 0.8,
+    "recommendation": "Maintain field drainage. Avoid over-irrigation.",
+    "severity": "high"
+  },
+
+  "significant_ndvi_change": {
+    "description": "Large NDVI change means crop stress (pest or weather-related)",
+    "conditions": [
+      {"feature": "ndvi_change", "op": "abs_gte", "value": 0.08}
+    ],
+    "score": 0.7,
+    "recommendation": "Investigate field for pests, nutrient deficiency, or irrigation issues.",
+    "severity": "medium"
+  }
+}

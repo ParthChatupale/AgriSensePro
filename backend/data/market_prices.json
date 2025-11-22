@@ -1,0 +1,35 @@
+{
+  "wheat": {
+    "price": 2200,
+    "unit": "per quintal",
+    "change_percent": -2.5,
+    "trend": "down",
+    "mandi": "Ludhiana",
+    "last_updated": "2025-11-10T15:00:00Z"
+  },
+  "rice": {
+    "price": 3200,
+    "unit": "per quintal",
+    "change_percent": 1.2,
+    "trend": "up",
+    "mandi": "Amritsar",
+    "last_updated": "2025-11-10T15:00:00Z"
+  },
+  "cotton": {
+    "price": 5800,
+    "unit": "per quintal",
+    "change_percent": -5.8,
+    "trend": "down",
+    "mandi": "Bathinda",
+    "last_updated": "2025-11-10T15:00:00Z"
+  },
+  "sugarcane": {
+    "price": 310,
+    "unit": "per quintal",
+    "change_percent": 0.5,
+    "trend": "up",
+    "mandi": "Jalandhar",
+    "last_updated": "2025-11-10T15:00:00Z"
+  }
+}
+

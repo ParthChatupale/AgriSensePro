@@ -1,0 +1,44 @@
+{
+  "crop": "Cotton",
+  "analysis": "High humidity (75%) and NDVI drop (-8%) detected — possible aphid infestation. Market prices have dropped by 5.8% indicating potential supply concerns.",
+  "priority": "High",
+  "severity": "High",
+  "rule_score": 0.9,
+  "fired_rules": [
+    "High humidity & NDVI drop suggests aphids",
+    "Market price drop indicates supply risk"
+  ],
+  "recommendations": [
+    {
+      "title": "Spray neem-based pesticide",
+      "desc": "Use early morning before sunlight. Apply to both upper and lower leaf surfaces.",
+      "priority": "high",
+      "timeline": "immediate"
+    },
+    {
+      "title": "Increase soil moisture",
+      "desc": "Irrigate early morning to maintain optimal humidity levels",
+      "priority": "medium",
+      "timeline": "within 24 hours"
+    },
+    {
+      "title": "Monitor NDVI trend",
+      "desc": "Recheck satellite imagery in 3 days to assess treatment effectiveness",
+      "priority": "low",
+      "timeline": "3 days"
+    },
+    {
+      "title": "Consider market timing",
+      "desc": "Market prices are declining. Consider holding stock if storage available.",
+      "priority": "medium",
+      "timeline": "1 week"
+    }
+  ],
+  "data_sources": {
+    "weather": "IMD",
+    "satellite": "Bhuvan",
+    "market": "Agmarknet"
+  },
+  "last_updated": "2025-11-10T16:00:00Z"
+}
+

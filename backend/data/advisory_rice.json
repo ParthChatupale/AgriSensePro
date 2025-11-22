@@ -1,0 +1,28 @@
+{
+  "crop": "Rice",
+  "analysis": "Crop health is good with positive NDVI trend (+5%). Adequate soil moisture (60%) and favorable weather conditions. Continue current practices.",
+  "priority": "Low",
+  "severity": "Low",
+  "rule_score": 0.3,
+  "recommendations": [
+    {
+      "title": "Continue monitoring",
+      "desc": "Current practices are working well. Maintain regular monitoring schedule",
+      "priority": "low",
+      "timeline": "ongoing"
+    },
+    {
+      "title": "Prepare for next growth stage",
+      "desc": "Crop is in vegetative stage. Prepare for flowering phase nutrient requirements",
+      "priority": "low",
+      "timeline": "1-2 weeks"
+    }
+  ],
+  "data_sources": {
+    "weather": "IMD",
+    "satellite": "Bhuvan",
+    "market": "Agmarknet"
+  },
+  "last_updated": "2025-11-10T16:00:00Z"
+}
+

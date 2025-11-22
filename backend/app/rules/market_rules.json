@@ -1,0 +1,30 @@
+{
+  "price_drop_high": {
+    "description": "Significant price drop indicates market risk",
+    "conditions": [
+      {"feature": "price_change_percent", "op": "<", "value": -5}
+    ],
+    "score": 0.85,
+    "recommendation": "Consider holding stock if storage available, or find alternative markets",
+    "severity": "high"
+  },
+  "price_drop_moderate": {
+    "description": "Moderate price drop suggests market volatility",
+    "conditions": [
+      {"feature": "price_change_percent", "op": "<", "value": -2},
+      {"feature": "price_change_percent", "op": ">", "value": -5}
+    ],
+    "score": 0.6,
+    "recommendation": "Monitor market trends and consider timing of sale",
+    "severity": "medium"
+  },
+  "price_surge": {
+    "description": "Price surge indicates favorable market conditions",
+    "conditions": [
+      {"feature": "price_change_percent", "op": ">", "value": 5}
+    ],
+    "score": 0.3,
+    "recommendation": "Consider selling if crop is ready, market conditions favorable",
+    "severity": "low"
+  }
+}

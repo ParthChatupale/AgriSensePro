@@ -1,0 +1,37 @@
+{
+  "crop": "Wheat",
+  "analysis": "High temperature (30°C) and low soil moisture (35%) detected. Irrigation required to prevent stress during tillering stage.",
+  "priority": "Medium",
+  "severity": "Medium",
+  "rule_score": 0.7,
+  "fired_rules": [
+    "High temp & low soil moisture requires irrigation"
+  ],
+  "recommendations": [
+    {
+      "title": "Schedule irrigation",
+      "desc": "Irrigate field in early morning (6-8 AM) to minimize water loss",
+      "priority": "high",
+      "timeline": "within 12 hours"
+    },
+    {
+      "title": "Monitor soil moisture",
+      "desc": "Check soil moisture levels daily. Maintain 40-50% during tillering",
+      "priority": "medium",
+      "timeline": "ongoing"
+    },
+    {
+      "title": "Apply mulch if available",
+      "desc": "Mulching helps retain soil moisture and reduce temperature",
+      "priority": "low",
+      "timeline": "optional"
+    }
+  ],
+  "data_sources": {
+    "weather": "IMD",
+    "satellite": "Bhuvan",
+    "market": "Agmarknet"
+  },
+  "last_updated": "2025-11-10T16:00:00Z"
+}
+

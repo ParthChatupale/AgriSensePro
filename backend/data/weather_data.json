@@ -1,0 +1,16 @@
+{
+  "temperature": 30,
+  "humidity": 75,
+  "rainfall": 12,
+  "wind_speed": 8,
+  "location": "Punjab, India",
+  "timestamp": "2025-11-10T16:00:00Z",
+  "forecast": {
+    "next_3_days": [
+      {"day": 1, "temp": 32, "humidity": 70, "rainfall": 5},
+      {"day": 2, "temp": 28, "humidity": 80, "rainfall": 15},
+      {"day": 3, "temp": 29, "humidity": 75, "rainfall": 8}
+    ]
+  }
+}
+

@@ -1,0 +1,36 @@
+[
+  {
+    "id": 1,
+    "title": "Pest Alert - Cotton",
+    "level": "high",
+    "confidence": 85,
+    "type": "pest",
+    "crop": "cotton",
+    "description": "High humidity and NDVI drop detected — possible aphid infestation",
+    "timestamp": "2025-11-10T14:30:00Z",
+    "action_required": true
+  },
+  {
+    "id": 2,
+    "title": "Irrigation Needed",
+    "level": "medium",
+    "confidence": 70,
+    "type": "irrigation",
+    "crop": "wheat",
+    "description": "High temperature and low soil moisture detected",
+    "timestamp": "2025-11-10T13:00:00Z",
+    "action_required": true
+  },
+  {
+    "id": 3,
+    "title": "Market Price Drop - Cotton",
+    "level": "medium",
+    "confidence": 90,
+    "type": "market",
+    "crop": "cotton",
+    "description": "Cotton prices dropped by 5.8% in local mandi",
+    "timestamp": "2025-11-10T15:00:00Z",
+    "action_required": false
+  }
+]
+

@@ -1,0 +1,27 @@
+{
+  "cotton": {
+    "ndvi": 0.65,
+    "ndvi_change": -0.08,
+    "soil_moisture": 45,
+    "crop_stage": "flowering",
+    "health_score": 72,
+    "last_updated": "2025-11-10T14:00:00Z"
+  },
+  "wheat": {
+    "ndvi": 0.78,
+    "ndvi_change": 0.02,
+    "soil_moisture": 35,
+    "crop_stage": "tillering",
+    "health_score": 85,
+    "last_updated": "2025-11-10T14:00:00Z"
+  },
+  "rice": {
+    "ndvi": 0.82,
+    "ndvi_change": 0.05,
+    "soil_moisture": 60,
+    "crop_stage": "vegetative",
+    "health_score": 88,
+    "last_updated": "2025-11-10T14:00:00Z"
+  }
+}
+

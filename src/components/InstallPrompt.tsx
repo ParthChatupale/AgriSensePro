@@ -45,7 +45,7 @@ const InstallPrompt = () => {
     window.addEventListener("appinstalled", () => {
       setIsInstalled(true);
       setShowPrompt(false);
-      toast.success("AgriSense installed successfully! 🌿");
+      toast.success("krushiRakshak installed successfully! 🌿");
     });
 
     return () => {
@@ -63,7 +63,7 @@ const InstallPrompt = () => {
     const { outcome } = await deferredPrompt.userChoice;
 
     if (outcome === "accepted") {
-      toast.success("Installing AgriSense...");
+      toast.success("Installing krushiRakshak...");
     } else {
       localStorage.setItem("pwa-install-declined", "true");
     }
@@ -95,7 +95,7 @@ const InstallPrompt = () => {
           <span className="text-2xl">🌿</span>
         </div>
         <div className="flex-1">
-          <h3 className="font-heading font-bold text-lg mb-1">Install AgriSense</h3>
+          <h3 className="font-heading font-bold text-lg mb-1">Install krushiRakshak</h3>
           <p className="text-sm text-muted-foreground mb-3">
             Get quick access and work offline. Install our app on your device!
           </p>

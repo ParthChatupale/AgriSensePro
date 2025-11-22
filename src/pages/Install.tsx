@@ -33,7 +33,7 @@ const Install = () => {
 
     window.addEventListener("appinstalled", () => {
       setIsInstalled(true);
-      toast.success("AgriSense installed successfully! 🌿");
+      toast.success("krushiRakshak installed successfully! 🌿");
     });
 
     return () => {
@@ -51,7 +51,7 @@ const Install = () => {
     const { outcome } = await deferredPrompt.userChoice;
 
     if (outcome === "accepted") {
-      toast.success("Installing AgriSense...");
+      toast.success("Installing krushiRakshak...");
     }
 
     setDeferredPrompt(null);
@@ -61,7 +61,7 @@ const Install = () => {
     {
       icon: Smartphone,
       title: "Works Like a Native App",
-      description: "Install on your home screen and access AgriSense just like any other app",
+      description: "Install on your home screen and access krushiRakshak just like any other app",
     },
     {
       icon: CloudOff,
@@ -88,7 +88,7 @@ const Install = () => {
             <span className="text-4xl">🌿</span>
           </div>
           <h1 className="text-4xl font-heading font-bold text-primary mb-4">
-            Install AgriSense PWA
+            Install krushiRakshak PWA
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Get the full app experience on your device. Works offline, loads faster, and feels just like a native app.
@@ -102,7 +102,7 @@ const Install = () => {
             </div>
             <h2 className="text-2xl font-heading font-bold mb-2">Already Installed!</h2>
             <p className="text-muted-foreground">
-              You're using the installed version of AgriSense. Enjoy the full app experience!
+              You're using the installed version of krushiRakshak. Enjoy the full app experience!
             </p>
           </Card>
         ) : (
@@ -113,7 +113,7 @@ const Install = () => {
               className="bg-primary hover:bg-primary/90 gap-2 mb-4"
             >
               <Download className="h-5 w-5" />
-              Install AgriSense
+              Install krushiRakshak
             </Button>
             <p className="text-sm text-muted-foreground">
               Click the button above or use your browser's install option
@@ -129,7 +129,7 @@ const Install = () => {
               <li>Tap the menu icon (⋮) in your browser</li>
               <li>Select "Add to Home Screen" or "Install app"</li>
               <li>Confirm the installation</li>
-              <li>Find AgriSense on your home screen</li>
+              <li>Find krushiRakshak on your home screen</li>
             </ol>
           </Card>
 
@@ -139,7 +139,7 @@ const Install = () => {
               <li>Tap the Share button (⎙) in Safari</li>
               <li>Scroll and tap "Add to Home Screen"</li>
               <li>Name the app and tap "Add"</li>
-              <li>Find AgriSense on your home screen</li>
+              <li>Find krushiRakshak on your home screen</li>
             </ol>
           </Card>
         </div>

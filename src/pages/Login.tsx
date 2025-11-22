@@ -46,7 +46,7 @@ const Login = () => {
             <span className="text-3xl">🌿</span>
           </div>
           <h1 className="text-3xl font-heading font-bold text-primary mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to continue to AgriSense</p>
+          <p className="text-muted-foreground">Sign in to continue to krushiRakshak</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { askAI } from "@/services/api";
+import { toast } from "sonner";
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,26 +12,26 @@ const ChatBot = () => {
     { text: "Hello! I'm AgriBot. How can I help you today?", sender: "bot" },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
-    setMessages([...messages, { text: input, sender: "user" }]);
-
-    // Simple mock responses
-    setTimeout(() => {
-      let botResponse = "I'm here to help! Try asking about weather, pests, or farming advice.";
-      
-      if (input.toLowerCase().includes("weather")) {
-        botResponse = "Today's forecast: Sunny, 28°C. Perfect for farming! 🌞";
-      } else if (input.toLowerCase().includes("pest")) {
-        botResponse = "For pest control, check the Advisory page for personalized recommendations. 🐛";
-      }
-
-      setMessages((prev) => [...prev, { text: botResponse, sender: "bot" }]);
-    }, 1000);
-
+    const userMessage = input.trim();
+    setMessages((prev) => [...prev, { text: userMessage, sender: "user" }]);
     setInput("");
+    setIsLoading(true);
+
+    try {
+      const aiReply = await askAI(userMessage);
+      setMessages((prev) => [...prev, { text: aiReply, sender: "bot" }]);
+    } catch (error: any) {
+      const errorMessage = error.message || "Failed to get response. Please try again.";
+      setMessages((prev) => [...prev, { text: errorMessage, sender: "bot" }]);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -78,11 +80,21 @@ const ChatBot = () => {
               placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
+              onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
               className="flex-1"
+              disabled={isLoading}
             />
-            <Button onClick={handleSend} size="icon" className="bg-secondary hover:bg-secondary/90">
+            <Button 
+              onClick={handleSend} 
+              size="icon" 
+              className="bg-secondary hover:bg-secondary/90"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
               <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </Card>

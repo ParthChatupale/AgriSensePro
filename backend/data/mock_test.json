@@ -1,0 +1,38 @@
+{
+  "cotton": {
+    "ndvi": 0.58,
+    "previous_ndvi": 0.68,
+    "soil_moisture": 38,
+    "temperature": 32,
+    "humidity": 74,
+    "rainfall": 10,
+    "price_change_percent": -3.5,
+    "market_price": 5600,
+    "days_since_sowing": 55,
+    "district": "Punjab"
+  },
+  "onion": {
+    "ndvi": 0.46,
+    "previous_ndvi": 0.53,
+    "soil_moisture": 28,
+    "temperature": 31,
+    "humidity": 60,
+    "rainfall": 6,
+    "price_change_percent": -6.0,
+    "market_price": 2600,
+    "days_since_sowing": 65,
+    "district": "Nashik"
+  },
+  "wheat": {
+    "ndvi": 0.72,
+    "previous_ndvi": 0.80,
+    "soil_moisture": 33,
+    "temperature": 27,
+    "humidity": 55,
+    "rainfall": 12,
+    "price_change_percent": 1.5,
+    "market_price": 2150,
+    "days_since_sowing": 40,
+    "district": "Ludhiana"
+  }
+}

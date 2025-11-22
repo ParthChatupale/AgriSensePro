@@ -16,8 +16,32 @@ const Signup = () => {
     password: "",
     userType: "",
   });
+  const [coords, setCoords] = useState<{ lat?: number; lon?: number }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [detecting, setDetecting] = useState(false);
   const navigate = useNavigate();
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setDetecting(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoords({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        });
+        toast.success("Location detected successfully");
+        setDetecting(false);
+      },
+      () => {
+        toast.error("Unable to detect location");
+        setDetecting(false);
+      }
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +49,10 @@ const Signup = () => {
     if (!formData.name || !formData.email || !formData.password || !formData.userType) {
       toast.error("Please fill in all required fields");
       return;
+    }
+
+    if (!coords.lat || !coords.lon) {
+      toast.info("Detecting GPS will help customize advisories");
     }
 
     setIsLoading(true);
@@ -35,11 +63,12 @@ const Signup = () => {
         email: formData.email,
         password: formData.password,
         userType: formData.userType,
+        latitude: coords.lat,
+        longitude: coords.lon,
       });
       toast.success(response.message || "Account created successfully!");
       navigate("/dashboard");
     } catch (error: any) {
-      // Show specific error message from API
       const errorMessage = error.message || "Failed to create account. Please try again.";
       toast.error(errorMessage, {
         duration: 4000,
@@ -56,7 +85,7 @@ const Signup = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-hero text-white mb-4">
             <span className="text-3xl">🌿</span>
           </div>
-          <h1 className="text-3xl font-heading font-bold text-primary mb-2">Join AgriSense</h1>
+          <h1 className="text-3xl font-heading font-bold text-primary mb-2">Join krushiRakshak</h1>
           <p className="text-muted-foreground">Create your account to get started</p>
         </div>
 
@@ -123,6 +152,20 @@ const Signup = () => {
                 <SelectItem value="expert">Agricultural Expert</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Location (auto-detected)</Label>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" onClick={detectLocation} disabled={detecting}>
+                {detecting ? "Detecting..." : "Detect Location"}
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {coords.lat && coords.lon
+                  ? `Lat ${coords.lat.toFixed(4)}, Lon ${coords.lon.toFixed(4)}`
+                  : "GPS helps tailor advisories"}
+              </span>
+            </div>
           </div>
 
           <Button 
