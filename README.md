@@ -27,29 +27,29 @@ KrushiRakshak has three main parts that work together:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    FRONTEND LAYER                        │
-│  React App (PWA) - User Interface                        │
-│  - Dashboard, Advisory, Community, Profile pages         │
-│  - Works offline with service workers                    │
-│  - Mobile-first responsive design                         │
+│                    FRONTEND LAYER                       │
+│  React App (PWA) - User Interface                       │
+│  - Dashboard, Advisory, Community, Profile pages        │
+│  - Works offline with service workers                   │
+│  - Mobile-first responsive design                       │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        │ HTTP Requests (JSON)
                        │
 ┌──────────────────────▼──────────────────────────────────┐
-│                   BACKEND LAYER                          │
+│                   BACKEND LAYER                         │
 │  FastAPI Server - Business Logic                        │
-│  - Authentication & User Management                      │
-│  - Fusion Engine (combines data sources)                 │
-│  - Community Posts & Comments                            │
-│  - AI Chatbot Integration                                │
+│  - Authentication & User Management                     │
+│  - Fusion Engine (combines data sources)                │
+│  - Community Posts & Comments                           │
+│  - AI Chatbot Integration                               │
 │  - Database (SQLite/PostgreSQL)                         │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        │ API Calls
                        │
 ┌──────────────────────▼──────────────────────────────────┐
-│              EXTERNAL DATA SOURCES                        │
+│              EXTERNAL DATA SOURCES                      │
 │  - IMD Weather API (temperature, rain, wind)            │
 │  - Agmarknet (market prices)                            │
 │  - Bhuvan Satellite (NDVI crop health)                  │
