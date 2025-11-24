@@ -32,6 +32,15 @@ The app works even when internet is slow or unavailable, making it perfect for r
 
 ## System Architecture
 
+KrushiRakshak is organized into four practical layers so the whole story fits inside one diagram.
+
+1. **Layer 1 – Farmer Web App**: React PWA that works offline (IndexedDB + service worker), shows the dashboard, lets farmers share updates, and captures photo + GPS inputs.
+2. **Layer 2 – Middleware / API**: FastAPI handles authentication (JWT), routes Fusion Engine requests, and issues push or SMS alerts when severity is high.
+3. **Layer 3 – Intelligence & Analysis**: ETL jobs keep a feature store fresh, then the Fusion Engine blends ML scores with rule-based logic before the advisory generator packages the final response.
+4. **Layer 4 – Infrastructure & Storage**: PostgreSQL/PostGIS, MinIO/S3 buckets, and the monitoring/admin panel keep data, media, and operations in one place.
+
+External feeds (IMD weather, Agmarknet prices, Bhuvan NDVI, Gemini AI) sit under the diagram and drive the intelligence layer.
+
 ### How It Works
 
 KrushiRakshak has three main parts that work together:
