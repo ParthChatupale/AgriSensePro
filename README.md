@@ -19,6 +19,17 @@ The app works even when internet is slow or unavailable, making it perfect for r
 - **Offline Support**: Works without internet using cached data
 - **Multi-Language**: Available in English and Marathi (more languages coming soon)
 
+## Why This System Feels Different
+
+- **Hybrid Fusion Engine**: Most dashboards lean only on rule-based heuristics or only on machine learning. Our engine blends both—transparent agronomy rules catch the “must-not-miss” events while lightweight ML scores refine confidence. Farmers see advice they can trust, and we can explain why it fired.
+- **Built-in Community Support**: Shifting conversations away from scattered WhatsApp groups, the community page gives verified farmers a place to post photos, describe issues, and crowdsource fixes. That feedback loop also flows back into the Fusion Engine roadmap.
+
+### Impact in the Field
+
+- Alerts are grounded in data *and* agronomy knowledge, so farmers take action faster.
+- Discussions stay inside KrushiRakshak, helping extension workers monitor trends and respond with empathy.
+- The blended approach reduces false positives and keeps the experience relatable instead of “black-box AI.”
+
 ## System Architecture
 
 ### How It Works
