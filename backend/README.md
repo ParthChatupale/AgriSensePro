@@ -63,7 +63,7 @@ These pages show all available endpoints and let you test them directly.
 
 ## Project Structure
 
-<img width="512" height="768" alt="image" src="https://github.com/user-attachments/assets/7a17385e-dced-4177-aa91-036e43bef13e" />
+<img width="600" height="768" alt="image" src="https://github.com/user-attachments/assets/7a17385e-dced-4177-aa91-036e43bef13e" />
 
 ```
 backend/
