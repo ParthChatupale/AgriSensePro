@@ -25,6 +25,9 @@ The app works even when internet is slow or unavailable, making it perfect for r
 
 KrushiRakshak has three main parts that work together:
 
+<img width="2692" height="1514" alt="image" src="https://github.com/user-attachments/assets/9e9e4e3b-9bd1-4553-b893-ce9d30ddae9c" />
+
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    FRONTEND LAYER                       │
