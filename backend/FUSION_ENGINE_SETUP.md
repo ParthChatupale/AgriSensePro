@@ -1,108 +1,127 @@
-# Fusion Engine Setup Guide
 
-Use this page as a quick reference when you want to check that the advisory flow is ready end-to-end.
+   # ✅ What’s Already Connected
 
-## ✅ What’s Already Hooked Up
+### Data packs
+`backend/data/` contains crop metadata, sample weather snapshots, NDVI health info, market prices, and alert templates—everything the engine needs.
 
-1. **Data packs in place**  
-   `backend/data/` bundles crop metadata, sample weather snapshots, NDVI health data, market prices, and alert templates.
-2. **Rule definitions**  
-   `backend/rules/` holds pest, irrigation, and market rule sets. Every rule understands the same operators (`>`, `<`, `>=`, `<=`, `==`, `!=`, `abs_gte`).
-3. **Feature builder**  
-   `backend/etl/make_features.py` loads those JSON feeds, calculates derived metrics, and applies the rules.
-4. **FastAPI routes**  
-   `backend/app/fusion_engine.py` publishes:
-   - `GET /fusion/dashboard`
-   - `GET /fusion/advisory/{crop}`
-   The router is already registered in `backend/app/main.py`.
-5. **Test scripts**  
-   Dashboard, advisory, and full-suite scripts live in `backend/test_scripts/` with a README that explains expected output.
-6. **Frontend consumers**  
-   The React dashboard/advisory pages plus `src/services/api.ts` and `src/types/fusion.ts` depend on these endpoints today.
+### Rule definitions
+Rules live in `backend/rules/` (pest, irrigation, market) and support `>`, `<`, `>=`, `<=`, `==`, `!=`, `abs_gte`.
+
+### Feature builder
+`backend/etl/make_features.py` loads JSON inputs, computes derived values, and applies rules sequentially.
+
+### FastAPI routes
+Already exposed via:
+
+- `GET /fusion/dashboard`
+- `GET /fusion/advisory/{crop}`
+
+`backend/app/main.py` wires the router, so nothing extra is needed.
+
+### Test scripts
+`backend/test_scripts/` holds ready-made scripts plus a README with expected outputs.
+
+### Frontend usage
+React dashboard + advisory pages hit these endpoints via `src/services/api.ts` and `src/types/fusion.ts`.
+
+---
 
 ## 🚀 Quick Start
 
-### Start the backend
+Start the backend:
+
 ```bash
 cd agrisense/backend
 uvicorn app.main:app --reload
 ```
 
-### Smoke-test the endpoints
+Run basic tests:
+
 ```bash
-# Test dashboard
+# Dashboard test
 python test_scripts/test_dashboard.py
 
-# Test advisory for cotton
+# Advisory test for cotton
 python test_scripts/test_advisory.py cotton
 
-# Test all endpoints
+# Run everything
 python test_scripts/test_all.py
 ```
 
-### Explore via docs UI
-Open http://localhost:8000/docs
+API docs UI: <http://localhost:8000/docs>
+
+---
 
 ## 📊 Endpoint Details
 
-### GET /fusion/dashboard
+### `GET /fusion/dashboard`
+
 Returns:
-- Weather data (temperature, humidity, rainfall, wind)
+
+- Weather (temp, humidity, rainfall, wind)
 - Market prices (wheat, rice, cotton, sugarcane)
 - Alerts list (pest, irrigation, market)
 - Crop health summary
-- Summary statistics
+- Overall stats
 
-### GET /fusion/advisory/{crop}
-Returns:
-- Crop name, priority, severity
-- Analysis summary
-- Fired rules list
+### `GET /fusion/advisory/{crop}`
+
+Includes:
+
+- Crop name, severity, priority
+- Overall analysis
+- Triggered rules
 - Recommendations with priorities
 - Rule breakdown (pest/irrigation/market scores)
 - Data sources (IMD, Bhuvan, Agmarknet)
 
+---
+
 ## 🔧 Rule Operators
 
-Supported operators in rule conditions:
-- `>` - Greater than
-- `<` - Less than
-- `>=` - Greater than or equal
-- `<=` - Less than or equal
-- `==` - Equal to
-- `!=` - Not equal to
-- `abs_gte` - Absolute value greater than or equal (e.g., for NDVI changes)
+- `>` greater than
+- `<` less than
+- `>=` greater or equal
+- `<=` less or equal
+- `==` equal
+- `!=` not equal
+- `abs_gte` absolute value ≥ threshold (useful for NDVI change)
+
+---
 
 ## 📁 Key Files
 
-```
+```bash
 backend/
 ├── app/
 │   ├── fusion_engine.py      # Main router
 │   └── main.py               # App with router wired
 ├── data/
-│   ├── crops_metadata.json   # Crop information
-│   ├── weather_data.json     # Weather data
-│   ├── crop_health.json      # Crop health data
-│   ├── market_prices.json    # Market prices
-│   └── alerts.json           # Alert definitions
+│   ├── crops_metadata.json
+│   ├── weather_data.json
+│   ├── crop_health.json
+│   ├── market_prices.json
+│   └── alerts.json
 ├── rules/
-│   ├── pest_rules.json       # Pest detection rules
-│   ├── irrigation_rules.json # Irrigation rules
-│   └── market_rules.json     # Market rules
+│   ├── pest_rules.json
+│   ├── irrigation_rules.json
+│   └── market_rules.json
 ├── etl/
-│   └── make_features.py      # Rule evaluation engine
+│   └── make_features.py
 └── test_scripts/
-    ├── test_dashboard.py     # Dashboard tests
-    ├── test_advisory.py      # Advisory tests
-    ├── test_all.py           # All tests
-    └── README.md             # Test docs
-
-    # Additional directories used day-to-day
-├── uploads/                  # Farmer photos used by community/advisory flows
-├── templates/                # Advisory PDFs + explanation snippets
-└── migrations/               # SQL scripts and helpers
+    ├── test_dashboard.py
+    ├── test_advisory.py
+    ├── test_all.py
+    └── README.md
 ```
+
+Additional folders:
+
+- `uploads/` — farmer photos for community/advisory
+- `templates/` — advisory PDFs and snippets
+- `migrations/` — SQL scripts + helpers
+
+---
 
 ## 🎯 Example Rule
 
@@ -111,7 +130,7 @@ backend/
   "significant_ndvi_change": {
     "description": "Significant NDVI change (positive or negative) indicates stress",
     "conditions": [
-      {"feature": "ndvi_change", "op": "abs_gte", "value": 0.08}
+      { "feature": "ndvi_change", "op": "abs_gte", "value": 0.08 }
     ],
     "score": 0.7,
     "recommendation": "Investigate cause of significant NDVI change",
@@ -120,25 +139,26 @@ backend/
 }
 ```
 
-This rule fires when `abs(ndvi_change) >= 0.08`, meaning any significant change (positive or negative) in NDVI.
+Fires when `abs(ndvi_change) >= 0.08`, flagging noticeable NDVI spikes or drops.
+
+---
 
 ## ✅ Sanity Checklist
 
-- [x] JSON packs under `backend/data/` parse cleanly.
-- [x] Rule packs cover pest, irrigation, and market categories.
-- [x] `make_features.py` can evaluate every operator, including `abs_gte`.
-- [x] `backend/app/main.py` registers the fusion router.
-- [x] Dashboard/advisory test scripts succeed.
-- [x] Frontend types (`src/types/fusion.ts`) match the API responses.
+- JSON files under `backend/data/` load correctly.
+- Rules exist for pest, irrigation, market.
+- `make_features.py` evaluates every operator (including `abs_gte`).
+- Fusion router registered in `backend/app/main.py`.
+- Dashboard + advisory tests succeed.
+- Frontend fusion types match API output.
+
+---
 
 ## 🐛 Troubleshooting
 
-1. **Import error**  
-   Make sure you run commands from the `backend/` directory with the virtual environment activated.
-2. **Missing data file**  
-   Confirm the expected JSON lives under `backend/data/`; repo paths are case sensitive.
-3. **API not reachable**  
-   Ensure `uvicorn` is running on port 8000 and the port isn’t blocked.
-4. **Rule never fires**  
-   Double-check feature keys in the input payload. Names must match the rule definition exactly.
+- **Import error**: Activate venv and ensure you’re inside `backend/`.
+- **Missing file**: Confirm JSON exists under `backend/data/` (case sensitive).
+- **API unreachable**: Check if `uvicorn` runs on port 8000.
+- **Rule not firing**: Feature names must match exactly (`ndvi_change` vs `NDVIChange` will fail).
 
+   
