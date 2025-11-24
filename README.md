@@ -21,14 +21,14 @@ The app works even when internet is slow or unavailable, making it perfect for r
 
 ## Why This System Feels Different
 
-- **Hybrid Fusion Engine**: Most dashboards lean only on rule-based heuristics or only on machine learning. Our engine blends both—transparent agronomy rules catch the “must-not-miss” events while lightweight ML scores refine confidence. Farmers see advice they can trust, and we can explain why it fired.
-- **Built-in Community Support**: Shifting conversations away from scattered WhatsApp groups, the community page gives verified farmers a place to post photos, describe issues, and crowdsource fixes. That feedback loop also flows back into the Fusion Engine roadmap.
+- **Hybrid Fusion Engine**: Typical dashboards lean only on rules or only on ML. We run both. Hand-crafted agronomy rules keep the system transparent, and lightweight models provide extra context, so an alert is both explainable and confident.
+- **Community Built In**: Farmers don’t need separate chat groups. The community page lets them post photos, describe issues, and get responses from peers or extension teams. Those conversations also help us refine the advisory logic.
 
-### Impact in the Field
+### Impact on the Ground
 
-- Alerts are grounded in data *and* agronomy knowledge, so farmers take action faster.
-- Discussions stay inside KrushiRakshak, helping extension workers monitor trends and respond with empathy.
-- The blended approach reduces false positives and keeps the experience relatable instead of “black-box AI.”
+- Alerts land faster because they’re backed by both data science and agronomy know-how.
+- Discussions stay inside KrushiRakshak, giving mentors and agri experts one place to watch emerging issues.
+- The balanced approach cuts down on noisy alerts and keeps the experience easy to trust.
 
 ## System Architecture
 
