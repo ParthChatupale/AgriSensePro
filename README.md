@@ -115,8 +115,8 @@ External feeds like IMD weather, Agmarknet prices, Bhuvan NDVI, and Gemini AI fe
    ```
 6. Start frontend  
    ```bash
-npm run dev
-```
+   npm run dev
+   ```
 7. Open in browser  
    - Frontend: <http://localhost:8080>  
    - Backend docs: <http://localhost:8000/docs>
