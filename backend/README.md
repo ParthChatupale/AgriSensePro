@@ -1,224 +1,147 @@
-KrushiRakshak Backend
+# KrushiRakshak Backend
 
-Last updated: Nov 2025 — Maintainer: Parth Chatupale
+This is the backend part of the KrushiRakshak project. It’s made using FastAPI, and it basically handles all the stuff the frontend depends on — user accounts, agri-data processing, Fusion Engine logic, the farmer community routes, and the Gemini chatbot. (If you’re trying to see how everything ties together, the Fusion Engine docs are a good starting point.)
 
-This is the backend server for KrushiRakshak, built with FastAPI. It manages user authentication, agricultural data processing, the Fusion Engine, and the community section. Most of this grew gradually as the project expanded, so a few modules reflect that evolution.
+## What This Backend Does
 
-What This Backend Does
+- **User Management** – signup, login, profile updates (secured via JWT).
+- **Fusion Engine** – processes weather, NDVI, market, etc., to craft crop advisories.
+- **Community Features** – posts, likes, comments live here.
+- **AI Chatbot** – calls Google Gemini for question/answer flow.
+- **Data Services** – pulls from IMD, Agmarknet, Bhuvan, then normalizes it.
 
-User Management: Sign up, login, and profile updates using secure JWT authentication
+## Quick Start
 
-Fusion Engine: Combines weather, market and satellite inputs to generate crop advisories
+### Install Dependencies
+Start by creating a virtual environment and installing everything from `requirements.txt`.
 
-Community Features: Supports posts, comments and likes for the farmer community
-
-AI Chatbot: Integrated with Google Gemini for farming-related queries
-
-Data Services: Fetches and processes live/periodic data from IMD, Agmarknet, and Bhuvan APIs
-
-(I personally recommend checking the Fusion Engine section first if you're curious how advisories are formed.)
-
-Quick Start
-1. Install Dependencies
-
-First, create a virtual environment and install the required packages.
-I usually do this on a fresh environment to avoid dependency conflicts.
-
-Windows (PowerShell)
-
+```powershell
+# Windows (PowerShell)
 python -m venv .venv
 .\.venv\Scripts\Activate
 pip install -r requirements.txt
+```
 
-
-Linux / Mac
-
+```bash
+# Linux / macOS
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
 
-2. Set Up Environment Variables
-
-Create a .env file inside the backend/ folder (you can copy from .env.example if it exists):
-
+### Set Up Environment Variables
+Inside `backend/`, create `.env` (copy `.env.example` if it exists) and add:
+```
 SECRET_KEY=your-secret-key-here-make-it-long-and-random
 DATABASE_URL=sqlite:///./agrisense_dev.db
 GEMINI_API_KEY=your-google-gemini-api-key-optional
+```
+- `SECRET_KEY` → used for JWT, so keep it long/random.
+- SQLite works great for dev/testing (default). For Postgres use `postgresql://user:password@localhost/agrisense_db`.
+- Gemini API key only needed if you plan to hit the chatbot endpoint.
 
-
-Notes from experience:
-
-SECRET_KEY must be long—avoid short keys, they cause token issues.
-
-SQLite works perfectly for local dev.
-
-For PostgreSQL: postgresql://user:password@localhost/agrisense_db
-
-GEMINI_API_KEY is optional unless you want chatbot responses.
-
-3. Run the Server
+### Run the Server
+```bash
 uvicorn app.main:app --reload --port 8000
+```
+Backend sits at <http://127.0.0.1:8000>.
 
+### API Docs
+- Swagger UI → <http://127.0.0.1:8000/docs>  
+- ReDoc → <http://127.0.0.1:8000/redoc>  
+You can test endpoints directly from those pages.
 
-The API should be live at:
-👉 http://127.0.0.1:8000
+## Project Structure
 
-4. API Documentation
-
-You can check the auto-generated API docs:
-
-Swagger UI → http://127.0.0.1:8000/docs
-
-ReDoc → http://127.0.0.1:8000/redoc
-
-(I end up using Swagger more for quick testing.)
-
-Project Structure
+```
 backend/
 ├── app/
-│   ├── main.py              # FastAPI application entry point
-│   ├── database.py          # Database connection and session setup
-│   ├── models.py            # SQLAlchemy database models
-│   ├── schemas.py           # Pydantic models
-│   ├── crud.py              # Helper DB operations
-│   ├── auth.py              # Signup, login, profile
-│   ├── fusion_engine.py     # Dashboard & advisory
-│   ├── community.py         # Posts, comments, likes
-│   ├── ai.py                # AI chatbot integration
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── crud.py
+│   ├── auth.py
+│   ├── fusion_engine.py
+│   ├── community.py
+│   ├── ai.py
 │   ├── services/
-│   │   ├── weather.py       # IMD weather fetcher
-│   │   ├── market.py        # Agmarknet market prices
-│   │   ├── ndvi.py          # Bhuvan NDVI processing
-│   │   └── crop_stage.py    # Crop stage detection
-│   └── utils/               # Helpers
-├── data/                    # Mock JSON data
-├── rules/                   # Fusion Engine rules
-├── etl/                     # Feature extraction scripts
-├── test_scripts/            # Testing helpers
+│   │   ├── weather.py
+│   │   ├── market.py
+│   │   ├── ndvi.py
+│   │   └── crop_stage.py
+│   └── utils/
+├── data/
+│   ├── weather_data.json
+│   ├── market_prices.json
+│   ├── crop_health.json
+│   └── crops_metadata.json
+├── rules/
+│   ├── pest_rules.json
+│   ├── irrigation_rules.json
+│   └── market_rules.json
+├── etl/
+│   └── make_features.py
+├── test_scripts/
+│   └── README.md
 ├── migrations/
 ├── requirements.txt
 └── README.md
+```
 
-Main Components
-Authentication (app/auth.py)
+## Main Components
 
-Handles:
+- **Authentication (`app/auth.py`)**  
+  Routes: `POST /api/auth/signup`, `POST /api/auth/login`, `GET /api/auth/me`, `PATCH /api/auth/profile`
 
-POST /api/auth/signup
+- **Fusion Engine (`app/fusion_engine.py`)**  
+  Handles `/fusion/dashboard` and `/fusion/advisory/{crop}` using rules + incoming sensor data.
 
-POST /api/auth/login
+- **Community (`app/community.py`)**  
+  Endpoints for posts, creating posts, likes, comments.
 
-GET /api/auth/me
+- **AI Chatbot (`app/ai.py`)**  
+  `POST /ai/chat` (Gemini)
 
-PATCH /api/auth/profile
+## Database
 
-Fusion Engine (app/fusion_engine.py)
-
-GET /fusion/dashboard
-
-GET /fusion/advisory/{crop}
-
-(The advisory logic depends on a rule set + incoming sensor data.)
-
-Community (app/community.py)
-
-GET /api/community/posts
-
-POST /api/community/posts
-
-POST /api/community/posts/{post_id}/like
-
-POST /api/community/posts/{post_id}/comment
-
-AI Chatbot (app/ai.py)
-
-POST /ai/chat
-
-Database
-
-Default DB: SQLite (agrisense_dev.db).
-Works well for development and testing.
-
-For production:
-
-DATABASE_URL=postgresql://username:password@localhost/agrisense_db
+- Default DB: `SQLite (agrisense_dev.db)` – good enough for dev.  
+- Production: point `DATABASE_URL` to Postgres (`postgresql://username:password@localhost/agrisense_db`).  
+- On first run, tables are auto-created (the initialization happens inside `app/main.py`).
 
 
-Tables are auto-created when you run the server for the first time.
+## Testing
 
-Testing
-
-We have basic test scripts:
-
+Use the scripts under `test_scripts/`:
+```bash
 python test_scripts/test_dashboard.py
 python test_scripts/test_advisory.py cotton
 python test_scripts/test_all.py
+```
+Refer to `test_scripts/README.md` for expected responses.
 
+## API Endpoints Summary
 
-(If a script fails due to missing modules, reinstall dependencies.)
+- **Public**: `GET /`, `GET /fusion/health`
+- **Requires JWT**: include `Authorization: Bearer <token>` (get the token via `/api/auth/login`)
 
-API Endpoints Summary
-Public Endpoints
+## Troubleshooting
 
-GET /
+- **Module not found**: run commands from `backend/`, activate your venv, reinstall deps.  
+- **Database errors**: check file permissions (SQLite) or connection string (Postgres); tables auto-create.  
+- **Port already in use**: `uvicorn app.main:app --reload --port 8001`  
+- **CORS issues**: default allows `http://localhost:8080`. Update `main.py` if frontend origin differs.
 
-GET /fusion/health
+## More Information
 
-Auth Required
+- Fusion Engine setup → `FUSION_ENGINE_SETUP.md`
+- Testing guide → `test_scripts/README.md`
+- Migration notes → `migrations/README_MIGRATION.md`
+- Full docs → `../docs/Agrisense_Documentation.md`
 
-Use:
+## Notes
 
-Authorization: Bearer <your-jwt-token>
-
-
-Get your token via /api/auth/login.
-
-Troubleshooting
-"Module not found"
-
-Ensure you're inside backend/
-
-Activate your .venv
-
-Run pip install -r requirements.txt
-
-Database issues
-
-SQLite: folder must be writable
-
-PostgreSQL: check your connection string
-
-Tables generate on first app start
-
-Port already in use
-
-Use another port:
-uvicorn app.main:app --reload --port 8001
-
-CORS
-
-Defaults to http://localhost:8080
-
-Update in main.py if frontend URL differs
-
-More Information
-
-Fusion Engine Setup → FUSION_ENGINE_SETUP.md
-
-Testing Guide → test_scripts/README.md
-
-Database Migrations → migrations/README_MIGRATION.md
-
-Full Documentation → ../docs/Agrisense_Documentation.md
-
-Notes
-
-Designed for React frontend
-
-All endpoints return JSON
-
-Errors follow a consistent structure
-
-Fusion Engine uses rule-based JSON logic
-
-External APIs are handled via the service modules
+- Designed to work smoothly with the React frontend.
+- All responses are JSON, errors follow a consistent format.
+- Fusion Engine rules live in `backend/rules/*.json`.
+- External API integrations are handled via `app/services/`.
