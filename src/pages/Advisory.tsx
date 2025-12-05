@@ -36,52 +36,29 @@ const Advisory = () => {
 
   // Load user's crop on mount if no crop param
   useEffect(() => {
-    const loadUserCrop = async () => {
-      if (!cropParam) {
-        try {
-          const user = await getCurrentUser();
-          if (user.crop) setSelectedCrop(user.crop);
-        } catch (err) {
-          // Silently fail - default to cotton
-        }
-      }
-    };
-    loadUserCrop();
-  }, []); // run once
-
-  useEffect(() => {
-    // Update selected crop from URL param if it changes
-    if (cropParam && cropParam !== selectedCrop) {
-      setSelectedCrop(cropParam);
-    }
-  }, [cropParam]);
-
-  useEffect(() => {
     if (!selectedCrop) {
       setError(t("advisory.error.no_crop"));
       setIsLoading(false);
       return;
     }
-
+  
     const fetchAdvisory = async () => {
       setIsLoading(true);
       setError(null);
       try {
         const data = await getAdvisory(selectedCrop);
         setAdvisory(data);
-        // Update URL without navigation
-        if (cropParam !== selectedCrop) {
-          navigate(`/advisory/${selectedCrop}`, { replace: true });
-        }
+        // <-- NO navigate() here. URL updates are handled by user action handler.
       } catch (err: any) {
         setError(err.message || t("advisory.error.load_failed"));
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     fetchAdvisory();
-  }, [selectedCrop, navigate]);
+  }, [selectedCrop]); // only depends on selectedCrop
+  
 
   const getPriorityVariant = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -141,6 +118,14 @@ const Advisory = () => {
       console.error("Error downloading PDF:", err);
     }
   };
+
+  const handleCropChange = (val: string) => {
+    // user initiated change -> update local state and update URL
+    setSelectedCrop(val);
+    // update URL so browser reflects current crop; this is only triggered by user actions
+    navigate(`/advisory/${val}`, { replace: true });
+  };
+  
 
   // Loading skeleton
   const LoadingSkeleton = () => (
@@ -226,7 +211,8 @@ const Advisory = () => {
               <label htmlFor="crop-select" className="text-sm text-muted-foreground whitespace-nowrap">
                 {t("advisory.select_crop")}:
               </label>
-              <Select value={selectedCrop} onValueChange={setSelectedCrop}>
+
+              <Select value={selectedCrop} onValueChange={handleCropChange}>
                 <SelectTrigger id="crop-select" className="w-[180px]">
                   <SelectValue placeholder={t("advisory.select_crop_placeholder")} />
                 </SelectTrigger>
