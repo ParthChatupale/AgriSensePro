@@ -100,13 +100,28 @@ const Profile = () => {
     }
   };
 
-  const handleGeolocate = () => {
+  const handleGeolocate = async () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const coords = `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
           setFormData({ ...formData, location: coords });
           toast.success("Location detected!");
+          
+          // Auto-save location to profile
+          try {
+            const updatedUser = await updateProfile({
+              name: formData.name,
+              phone: formData.phone || undefined,
+              crop: formData.crop || undefined,
+              location: coords,
+            });
+            setUser(updatedUser);
+            toast.success("Location saved automatically!");
+          } catch (error: any) {
+            // Silently fail - location is in form, user can save manually
+            console.log("Auto-save location failed:", error);
+          }
         },
         () => {
           toast.error("Unable to detect location");

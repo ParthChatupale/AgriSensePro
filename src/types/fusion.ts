@@ -57,17 +57,33 @@ export interface CropHealthData {
   [crop: string]: CropHealth;
 }
 
+export interface NDVIData {
+  latest: number;
+  change: number | null;
+  history: Array<{
+    date: string;
+    ndvi: number;
+  }>;
+}
+
 export interface DashboardResponse {
   weather: WeatherData;
   market: MarketPrices;
   alerts: Alert[];
   crop_health: CropHealthData;
+  ndvi?: NDVIData;
   summary: {
     total_alerts: number;
     high_priority_count: number;
     crops_monitored: number;
   };
   timestamp?: string;
+  user_crop?: string;
+  user_district?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 export interface Recommendation {

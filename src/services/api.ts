@@ -357,11 +357,30 @@ export const updateProfile = async (userData: UserUpdate): Promise<User> => {
 /**
  * Fetch dashboard data from Fusion Engine
  * @param crop - Optional crop name to filter/highlight
+ * @param latitude - Optional latitude coordinate
+ * @param longitude - Optional longitude coordinate
+ * @param location - Optional location string in format "lat,lon"
  * Returns weather, market prices, alerts, and crop health data
  */
-export const getDashboardData = async (crop?: string): Promise<DashboardResponse> => {
+export const getDashboardData = async (
+  crop?: string,
+  latitude?: number,
+  longitude?: number,
+  location?: string
+): Promise<DashboardResponse> => {
   try {
-    const url = crop ? `/fusion/dashboard?crop=${encodeURIComponent(crop)}` : "/fusion/dashboard";
+    const params = new URLSearchParams();
+    if (crop) {
+      params.append("crop", crop);
+    }
+    if (latitude !== undefined && longitude !== undefined) {
+      params.append("latitude", latitude.toString());
+      params.append("longitude", longitude.toString());
+    } else if (location) {
+      params.append("location", location);
+    }
+    const queryString = params.toString();
+    const url = queryString ? `/fusion/dashboard?${queryString}` : "/fusion/dashboard";
     const response = await api.get<DashboardResponse>(url);
     return response.data;
   } catch (error: any) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,29 +30,26 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userCrop, setUserCrop] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<string | null>(null);
+  const [userCoords, setUserCoords] = useState<{ lat?: number; lon?: number }>({});
   const [advisory, setAdvisory] = useState<AdvisoryLite | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      try {
-        const user = await getCurrentUser();
-        if (user.crop) setUserCrop(user.crop);
-      } catch {}
-    };
-    loadUserProfile();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async (crop?: string | null, coords?: { lat?: number; lon?: number }, location?: string | null) => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getDashboardData(userCrop || undefined);
+      const data = await getDashboardData(
+        crop || undefined,
+        coords?.lat,
+        coords?.lon,
+        location || undefined
+      );
       setDashboardData(data);
 
       // Fetch advisory for user's crop if set
-      if (userCrop) {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/fusion/advisory/${encodeURIComponent(userCrop)}`);
+      if (crop) {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/fusion/advisory/${encodeURIComponent(crop)}`);
         if (res.ok) {
           const adv = (await res.json()) as AdvisoryLite;
           setAdvisory(adv);
@@ -67,13 +64,53 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [userCrop]);
+    const loadUserProfile = async () => {
+      try {
+        const user = await getCurrentUser();
+        let crop: string | null = null;
+        let coords: { lat?: number; lon?: number } = {};
+        let location: string | null = null;
+        
+        if (user.crop) crop = user.crop;
+        if (user.location) {
+          location = user.location;
+          // Parse location string (format: "lat, lon" or "lat,lon")
+          const locationStr = user.location.trim();
+          const parts = locationStr.split(/[,\s]+/).filter(p => p);
+          if (parts.length >= 2) {
+            const lat = parseFloat(parts[0]);
+            const lon = parseFloat(parts[1]);
+            if (!isNaN(lat) && !isNaN(lon)) {
+              coords = { lat, lon };
+            }
+          }
+        }
+        
+        setUserCrop(crop);
+        setUserLocation(location);
+        setUserCoords(coords);
+        
+        // Fetch dashboard data with loaded profile info
+        await fetchDashboardData(crop, coords, location);
+      } catch {
+        // If profile load fails, still fetch dashboard with defaults
+        await fetchDashboardData(null, {}, null);
+      }
+    };
+    loadUserProfile();
+  }, []);
 
-  const handleRefresh = () => fetchDashboardData();
+  useEffect(() => {
+    // Refetch when userCrop or coordinates change (e.g., after profile update)
+    if (userCrop !== null || userCoords.lat !== undefined || userCoords.lon !== undefined) {
+      fetchDashboardData(userCrop, userCoords, userLocation);
+    }
+  }, [userCrop, userCoords.lat, userCoords.lon, userLocation, fetchDashboardData]);
+
+  const handleRefresh = () => fetchDashboardData(userCrop, userCoords, userLocation);
 
   const handleViewAdvisory = (crop?: string) => {
     if (crop) navigate(`/advisory/${crop.toLowerCase()}`);
