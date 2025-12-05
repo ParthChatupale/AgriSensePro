@@ -20,6 +20,7 @@ export interface WeatherData {
 }
 
 export interface MarketPrice {
+  crop: string;
   price: number;
   unit: string;
   change_percent: number;
@@ -28,9 +29,7 @@ export interface MarketPrice {
   last_updated?: string;
 }
 
-export interface MarketPrices {
-  [crop: string]: MarketPrice;
-}
+export type MarketPrices = MarketPrice[];
 
 export interface Alert {
   id: number;
@@ -69,6 +68,7 @@ export interface NDVIData {
 export interface DashboardResponse {
   weather: WeatherData;
   market: MarketPrices;
+  market_primary_price?: number;
   alerts: Alert[];
   crop_health: CropHealthData;
   ndvi?: NDVIData;

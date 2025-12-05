@@ -12,6 +12,7 @@ import sys
 import asyncio
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Tuple, Optional
+from collections import OrderedDict
 
 # Add backend directory to path for imports
 BACKEND_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -462,14 +463,78 @@ async def get_dashboard_data(
         crop_name_for_ndvi = crop.lower() if crop else "cotton"
         ndvi_latest, ndvi_change, ndvi_history = await fetch_ndvi_context(lat, lon, crop_name_for_ndvi)
         
-        # Fetch real market prices with fallback
-        market_data = {}
+        # Market handling: consistent structure with primary crop first, then top 2 trending
+        # Step 1: Always load fallback market_prices.json first
+        all_market = load_json_file(os.path.join(DATA_PATH, "market_prices.json"))
+        if not isinstance(all_market, dict):
+            all_market = {}
+        
+        # Step 2: If crop param provided, fetch real-time price and replace that crop's entry
+        primary_crop = None
         if crop:
-            market_price_data = await fetch_market_price(crop, geo_info.get("district"))
-            market_data[crop.lower()] = market_price_data
+            primary_crop = crop.lower()
+            try:
+                market_price_data = await fetch_market_price(crop, geo_info.get("district"))
+                if market_price_data:
+                    all_market[primary_crop] = market_price_data
+            except Exception:
+                # If fetch fails, keep fallback data
+                pass
+        
+        # Step 3: Build final_market as an ordered array
+        final_market = []
+        
+        if primary_crop and primary_crop in all_market:
+            # Case 1: Primary crop exists
+            # Add primary crop first
+            primary_entry = dict(all_market[primary_crop])
+            primary_entry["crop"] = primary_crop
+            final_market.append(primary_entry)
+            
+            # Find top 2 trending crops (excluding primary crop)
+            remaining_crops = {
+                k: v for k, v in all_market.items() 
+                if k != primary_crop and isinstance(v, dict) and isinstance(v.get("change_percent"), (int, float))
+            }
+            
+            # Sort by abs(change_percent) descending
+            trending_crops = sorted(
+                remaining_crops.items(),
+                key=lambda x: abs(x[1].get("change_percent", 0)),
+                reverse=True
+            )
+            
+            # Add top 2 trending crops
+            for crop_name, crop_data in trending_crops[:2]:
+                entry = dict(crop_data)
+                entry["crop"] = crop_name
+                final_market.append(entry)
         else:
-            # Load all crops from fallback if no specific crop
-            market_data = load_json_file(os.path.join(DATA_PATH, "market_prices.json"))
+            # Case 2: No primary crop - return top 3 trending crops
+            all_crops_with_change = {
+                k: v for k, v in all_market.items()
+                if isinstance(v, dict) and isinstance(v.get("change_percent"), (int, float))
+            }
+            
+            # Sort by abs(change_percent) descending
+            trending_crops = sorted(
+                all_crops_with_change.items(),
+                key=lambda x: abs(x[1].get("change_percent", 0)),
+                reverse=True
+            )
+            
+            # Add top 3 trending crops
+            for crop_name, crop_data in trending_crops[:3]:
+                entry = dict(crop_data)
+                entry["crop"] = crop_name
+                final_market.append(entry)
+        
+        # Ensure maximum 3 items (should already be enforced, but double-check)
+        if len(final_market) > 3:
+            final_market = final_market[:3]
+        
+        # Extract primary price (first item's price)
+        market_primary_price = final_market[0].get("price") if final_market else None
         
         alerts = load_json_file(os.path.join(DATA_PATH, "alerts.json"))
         crop_health = load_json_file(os.path.join(DATA_PATH, "crop_health.json"))
@@ -482,7 +547,8 @@ async def get_dashboard_data(
 
         response_data = {
             "weather": weather,
-            "market": market_data,
+            "market": final_market,
+            "market_primary_price": market_primary_price,
             "alerts": alerts,
             "crop_health": crop_health,
             "ndvi": {

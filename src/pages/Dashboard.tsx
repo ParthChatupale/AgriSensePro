@@ -35,7 +35,7 @@ const Dashboard = () => {
   const [advisory, setAdvisory] = useState<AdvisoryLite | null>(null);
   const navigate = useNavigate();
 
-  const fetchDashboardData = useCallback(async (crop?: string | null, coords?: { lat?: number; lon?: number }, location?: string | null) => {
+  const fetchDashboardData = async (crop?: string | null, coords?: { lat?: number; lon?: number }, location?: string | null) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -64,7 +64,7 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  };
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -108,9 +108,9 @@ const Dashboard = () => {
     if (userCrop !== null || userCoords.lat !== undefined || userCoords.lon !== undefined) {
       fetchDashboardData(userCrop, userCoords, userLocation);
     }
-  }, [userCrop, userCoords.lat, userCoords.lon, userLocation, fetchDashboardData]);
+  }, [userCrop, userCoords.lat, userCoords.lon]);
 
-  const handleRefresh = () => fetchDashboardData(userCrop, userCoords, userLocation);
+  const handleRefresh = () => fetchDashboardData();
 
   const handleViewAdvisory = (crop?: string) => {
     if (crop) navigate(`/advisory/${crop.toLowerCase()}`);
@@ -118,12 +118,18 @@ const Dashboard = () => {
   };
 
   const formatPrice = (price: number, changePercent: number) => {
-    const trend = changePercent >= 0 ? "↑" : "↓";
-    const color = changePercent >= 0 ? "text-success" : "text-destructive";
+    const isUp = changePercent >= 0;
+    const TrendIcon = isUp ? ArrowUpRight : ArrowDownRight;
+    const color = isUp ? "text-success" : "text-destructive";
+
     return (
-      <span className={`font-medium ${color}`}>
-        {trend} ₹{price.toLocaleString("en-IN")}
-      </span>
+      <div className="flex items-center gap-2">
+        <span className="font-medium">₹{price.toLocaleString("en-IN")}</span>
+        <span className={`flex items-center gap-1 text-xs ${color}`}>
+          <TrendIcon className="h-3 w-3" />
+          {Math.abs(changePercent).toFixed(1)}%
+        </span>
+      </div>
     );
   };
 
@@ -258,7 +264,7 @@ const Dashboard = () => {
   }
 
   const weather = dashboardData?.weather || { temperature: 28, humidity: 65, rainfall: 5, wind_speed: 12 };
-  const market = dashboardData?.market || {};
+  const marketList = Array.isArray(dashboardData?.market) ? dashboardData.market : [];
   const alerts = dashboardData?.alerts || [];
   const cropHealth = dashboardData?.crop_health || {};
 
@@ -269,8 +275,7 @@ const Dashboard = () => {
   const lastUpdated = formatTimestamp(dashboardData?.weather?.timestamp);
   const sparklineColor = ndviStatus.label === "Good" ? "text-success" : ndviStatus.label === "Moderate" ? "text-warning" : ndviStatus.label === "Poor" ? "text-destructive" : "text-muted-foreground";
 
-  const marketPrices = Object.values(market);
-  const avgMarketPrice = marketPrices.length > 0 ? Math.round(marketPrices.reduce((sum: number, crop: any) => sum + (crop.price || 0), 0) / marketPrices.length) : 2450;
+  const marketPrimaryPrice = dashboardData?.market_primary_price || (marketList.length > 0 ? marketList[0]?.price : 2450);
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -312,18 +317,23 @@ const Dashboard = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">{t("dashboard.market.title")}</p>
-                <h3 className="text-2xl font-bold">₹{avgMarketPrice.toLocaleString("en-IN")}</h3>
+                <h3 className="text-2xl font-bold">₹{marketPrimaryPrice.toLocaleString("en-IN")}</h3>
               </div>
               <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-success" />
               </div>
             </div>
             <div className="space-y-2 text-sm">
-              {market.wheat && (<div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.market.wheat")}</span>{formatPrice(market.wheat.price, market.wheat.change_percent)}</div>)}
-              {market.rice && (<div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.market.rice")}</span>{formatPrice(market.rice.price, market.rice.change_percent)}</div>)}
-              {market.cotton && (<div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.market.cotton")}</span>{formatPrice(market.cotton.price, market.cotton.change_percent)}</div>)}
-              {market.sugarcane && (<div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.market.sugarcane")}</span>{formatPrice(market.sugarcane.price, market.sugarcane.change_percent)}</div>)}
-              {Object.keys(market).length === 0 && (<p className="text-sm text-muted-foreground">{t("dashboard.market.no_data")}</p>)}
+              {marketList.length > 0 ? (
+                marketList.map((entry) => (
+                  <div key={entry.crop} className="flex justify-between">
+                    <span className="text-muted-foreground capitalize">{entry.crop}</span>
+                    {formatPrice(entry.price, entry.change_percent)}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">{t("dashboard.market.no_data")}</p>
+              )}
             </div>
           </Card>
 
