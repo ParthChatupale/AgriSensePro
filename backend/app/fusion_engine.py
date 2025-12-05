@@ -124,6 +124,83 @@ async def resolve_weather_context(
     weather.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
     weather.setdefault("location", f"{lat},{lon}")
 
+    # Compute weather insights
+    temp = weather.get("temperature")
+    humidity = weather.get("humidity")
+    rainfall = weather.get("rainfall")
+    wind_speed = weather.get("wind_speed")
+    
+    # Heat index calculation (simplified approximation)
+    heat_index = None
+    if temp is not None and humidity is not None:
+        # Simple heat index approximation: HI = 0.5 * (T + 61.0 + ((T - 68.0) * 1.2) + (RH * 0.094))
+        # Simplified version for quick calculation
+        try:
+            t_f = (temp * 9/5) + 32  # Convert to Fahrenheit for formula
+            hi_f = 0.5 * (t_f + 61.0 + ((t_f - 68.0) * 1.2) + (humidity * 0.094))
+            heat_index = round(((hi_f - 32) * 5/9), 2)  # Convert back to Celsius
+        except (TypeError, ValueError):
+            heat_index = None
+    
+    # Rain category
+    rain_category = "none"
+    if rainfall is not None:
+        if rainfall == 0:
+            rain_category = "none"
+        elif rainfall < 2:
+            rain_category = "light"
+        elif rainfall <= 15:
+            rain_category = "moderate"
+        else:
+            rain_category = "heavy"
+    
+    # Pest risk
+    pest_risk = "low"
+    if temp is not None and humidity is not None:
+        if humidity > 75 and 24 <= temp <= 32:
+            pest_risk = "high"
+        elif humidity > 60:
+            pest_risk = "medium"
+        else:
+            pest_risk = "low"
+    
+    # Wind risk
+    wind_risk = "low"
+    if wind_speed is not None:
+        if wind_speed < 10:
+            wind_risk = "low"
+        elif wind_speed <= 25:
+            wind_risk = "medium"
+        else:
+            wind_risk = "high"
+    
+    # Irrigation need
+    irrigation_need = "medium"
+    if rainfall is not None and temp is not None and humidity is not None:
+        if rainfall > 10:
+            irrigation_need = "low"
+        elif humidity < 40 and temp > 30:
+            irrigation_need = "high"
+        else:
+            irrigation_need = "medium"
+    
+    # Attach insights to weather dict
+    weather["insights"] = {
+        "heat_index": heat_index,
+        "rain_category": rain_category,
+        "pest_risk": pest_risk,
+        "wind_risk": wind_risk,
+        "irrigation_need": irrigation_need,
+    }
+    
+    # Ensure fallback weather insights are used if computed values are missing
+    if fallback_weather:
+        fallback_insights = fallback_weather.get("insights", {})
+        if fallback_insights:
+            for key, value in fallback_insights.items():
+                if weather["insights"].get(key) is None:
+                    weather["insights"][key] = value
+
     return weather, geo_info, lat, lon
 
 

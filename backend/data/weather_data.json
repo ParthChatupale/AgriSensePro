@@ -11,6 +11,13 @@
       {"day": 2, "temp": 28, "humidity": 80, "rainfall": 15},
       {"day": 3, "temp": 29, "humidity": 75, "rainfall": 8}
     ]
+  },
+  "insights": {
+    "heat_index": 35.2,
+    "rain_category": "moderate",
+    "pest_risk": "high",
+    "wind_risk": "low",
+    "irrigation_need": "low"
   }
 }
 
