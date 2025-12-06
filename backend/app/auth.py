@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from . import schemas, crud
 from .database import get_db
 from .services.geocode import reverse_geocode
+from .services.geocode import reverse_geocode
 
 load_dotenv()
 
@@ -162,7 +163,36 @@ async def update_profile(
     """Update current user's profile.
 
     Requires header: Authorization: Bearer <token>
+    
+    If location coordinates are provided, automatically reverse geocodes
+    to update state, district, and village fields.
     """
+    # Parse location coordinates if provided
+    location = user_update.location
+    lat = None
+    lon = None
+    
+    if location:
+        # Try to parse "lat, lon" format
+        try:
+            parts = location.split(",")
+            if len(parts) == 2:
+                lat = float(parts[0].strip())
+                lon = float(parts[1].strip())
+        except (ValueError, AttributeError):
+            pass
+    
+    # If we have valid coordinates, reverse geocode to get state/district/village
+    if lat is not None and lon is not None:
+        geo = await reverse_geocode(lat, lon)
+        # Update user_update with geocoded data
+        if geo.get("state"):
+            user_update.state = geo["state"]
+        if geo.get("district"):
+            user_update.district = geo["district"]
+        if geo.get("village"):
+            user_update.village = geo["village"]
+    
     updated_user = crud.update_user(db, current_user.id, user_update)
     if not updated_user:
         raise HTTPException(status_code=404, detail="User not found")

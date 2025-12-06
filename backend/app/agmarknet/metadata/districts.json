@@ -1,0 +1,1964 @@
+[
+  {
+    "district_id": 344,
+    "markets": [
+      {
+        "id": 4022,
+        "mkt_name": "ACF Agro Marketing  APMC"
+      },
+      {
+        "id": 4010,
+        "mkt_name": "BSK Krishi Bazar Private Ltd APMC"
+      },
+      {
+        "id": 2160,
+        "mkt_name": "Buldhana APMC"
+      },
+      {
+        "id": 1923,
+        "mkt_name": "Buldhana(Dhad) APMC"
+      },
+      {
+        "id": 572,
+        "mkt_name": "Chikali APMC"
+      },
+      {
+        "id": 3977,
+        "mkt_name": "Dand Brothers Agro  APMC"
+      },
+      {
+        "id": 1646,
+        "mkt_name": "Deoulgaon Raja APMC"
+      },
+      {
+        "id": 4008,
+        "mkt_name": "Deulgaon Raja Balaji Agro Marketing Private Market APMC"
+      },
+      {
+        "id": 2158,
+        "mkt_name": "Jalgaon Jamod(Aasalgaon) APMC"
+      },
+      {
+        "id": 573,
+        "mkt_name": "Jalgaon(Jamod) APMC"
+      },
+      {
+        "id": 4012,
+        "mkt_name": "Jaykissan Krushi Uttpan Khajgi Bazar  APMC"
+      },
+      {
+        "id": 148,
+        "mkt_name": "Khamgaon APMC"
+      },
+      {
+        "id": 1332,
+        "mkt_name": "Lonar APMC"
+      },
+      {
+        "id": 4004,
+        "mkt_name": "Maharaja Agresen Private Krushi Utappan Bazar Sama APMC"
+      },
+      {
+        "id": 574,
+        "mkt_name": "Malkapur APMC"
+      },
+      {
+        "id": 1333,
+        "mkt_name": "Mehekar APMC"
+      },
+      {
+        "id": 1922,
+        "mkt_name": "Motala APMC"
+      },
+      {
+        "id": 1334,
+        "mkt_name": "Nandura APMC"
+      },
+      {
+        "id": 1335,
+        "mkt_name": "Sangrampur APMC"
+      },
+      {
+        "id": 2159,
+        "mkt_name": "Sangrampur(Varvatbakal) APMC"
+      },
+      {
+        "id": 1336,
+        "mkt_name": "Shegaon APMC"
+      },
+      {
+        "id": 1924,
+        "mkt_name": "Sindkhed Raja APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 374,
+    "markets": [
+      {
+        "id": 2048,
+        "mkt_name": "Aarni APMC"
+      },
+      {
+        "id": 1929,
+        "mkt_name": "Babhulgaon APMC"
+      },
+      {
+        "id": 3986,
+        "mkt_name": "Balaji Krushi Market APMC"
+      },
+      {
+        "id": 1925,
+        "mkt_name": "Bori Arab APMC"
+      },
+      {
+        "id": 4027,
+        "mkt_name": "Cottoncity Agro Foods Private Ltd APMC"
+      },
+      {
+        "id": 1337,
+        "mkt_name": "Darwha APMC"
+      },
+      {
+        "id": 575,
+        "mkt_name": "Digras APMC"
+      },
+      {
+        "id": 1338,
+        "mkt_name": "Ghatanji APMC"
+      },
+      {
+        "id": 3987,
+        "mkt_name": "Jagdamba Agrocare APMC"
+      },
+      {
+        "id": 1931,
+        "mkt_name": "Kalamb APMC"
+      },
+      {
+        "id": 3979,
+        "mkt_name": "Kisan Market Yard APMC"
+      },
+      {
+        "id": 1339,
+        "mkt_name": "Mahagaon APMC"
+      },
+      {
+        "id": 3985,
+        "mkt_name": "Mahavir Agriculture Produce Market  APMC"
+      },
+      {
+        "id": 3978,
+        "mkt_name": "Mahavira Agricare APMC"
+      },
+      {
+        "id": 4018,
+        "mkt_name": "Mahesh Krushi Utpanna Bazar, Digras APMC"
+      },
+      {
+        "id": 1926,
+        "mkt_name": "Maregoan APMC"
+      },
+      {
+        "id": 1927,
+        "mkt_name": "Ner Parasopant APMC"
+      },
+      {
+        "id": 1340,
+        "mkt_name": "Pandhakawada APMC"
+      },
+      {
+        "id": 1341,
+        "mkt_name": "Pusad APMC"
+      },
+      {
+        "id": 1928,
+        "mkt_name": "Ralegaon APMC"
+      },
+      {
+        "id": 3995,
+        "mkt_name": "Ramdev Krushi Bazaar APMC"
+      },
+      {
+        "id": 4021,
+        "mkt_name": "Renukadevi Private Market Yard  APMC"
+      },
+      {
+        "id": 3997,
+        "mkt_name": "Shekari Krushi Khajgi Bazar APMC"
+      },
+      {
+        "id": 2161,
+        "mkt_name": "Umarked(Danki) APMC"
+      },
+      {
+        "id": 1342,
+        "mkt_name": "Umarkhed APMC"
+      },
+      {
+        "id": 576,
+        "mkt_name": "Vani APMC"
+      },
+      {
+        "id": 577,
+        "mkt_name": "Yeotmal APMC"
+      },
+      {
+        "id": 1930,
+        "mkt_name": "ZariZamini APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 367,
+    "markets": [
+      {
+        "id": 1901,
+        "mkt_name": "Aatpadi APMC"
+      },
+      {
+        "id": 1308,
+        "mkt_name": "Islampur APMC"
+      },
+      {
+        "id": 1903,
+        "mkt_name": "Palus APMC"
+      },
+      {
+        "id": 166,
+        "mkt_name": "Sangli APMC"
+      },
+      {
+        "id": 2710,
+        "mkt_name": "Sangli(Miraj) APMC"
+      },
+      {
+        "id": 2150,
+        "mkt_name": "Sangli(Phale, Bhajipura Market) APMC"
+      },
+      {
+        "id": 3454,
+        "mkt_name": "Shirala APMC"
+      },
+      {
+        "id": 1640,
+        "mkt_name": "Tasgaon APMC"
+      },
+      {
+        "id": 1902,
+        "mkt_name": "Vita APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 340,
+    "markets": [
+      {
+        "id": 570,
+        "mkt_name": "Achalpur APMC"
+      },
+      {
+        "id": 147,
+        "mkt_name": "Amarawati APMC"
+      },
+      {
+        "id": 2704,
+        "mkt_name": "Amrawati(Frui & Veg. Market) APMC"
+      },
+      {
+        "id": 571,
+        "mkt_name": "Anajngaon APMC"
+      },
+      {
+        "id": 1329,
+        "mkt_name": "Chandur Bazar APMC"
+      },
+      {
+        "id": 1918,
+        "mkt_name": "Chandur Railway APMC"
+      },
+      {
+        "id": 1638,
+        "mkt_name": "Daryapur APMC"
+      },
+      {
+        "id": 1639,
+        "mkt_name": "Dhamngaon-Railway APMC"
+      },
+      {
+        "id": 1919,
+        "mkt_name": "Dharni APMC"
+      },
+      {
+        "id": 1330,
+        "mkt_name": "Morshi APMC"
+      },
+      {
+        "id": 1920,
+        "mkt_name": "Nandgaon Khandeshwar APMC"
+      },
+      {
+        "id": 3972,
+        "mkt_name": "Shetkari Khushi Bazar APMC"
+      },
+      {
+        "id": 1921,
+        "mkt_name": "Tiwasa APMC"
+      },
+      {
+        "id": 1331,
+        "mkt_name": "Varud APMC"
+      },
+      {
+        "id": 2157,
+        "mkt_name": "Varud(Rajura Bazar) APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 351,
+    "markets": [
+      {
+        "id": 3992,
+        "mkt_name": "Adarsh Krushi Bazar APMC"
+      },
+      {
+        "id": 1912,
+        "mkt_name": "Akhadabalapur APMC"
+      },
+      {
+        "id": 1913,
+        "mkt_name": "Basmat APMC"
+      },
+      {
+        "id": 3138,
+        "mkt_name": "Basmat(Kurunda) APMC"
+      },
+      {
+        "id": 4020,
+        "mkt_name": "Gajanaan Krushi Bazar APMC"
+      },
+      {
+        "id": 4017,
+        "mkt_name": "Gajanan Krushi Utpanna Bazar (India) Pvt Ltd  APMC"
+      },
+      {
+        "id": 565,
+        "mkt_name": "Hingoli APMC"
+      },
+      {
+        "id": 2156,
+        "mkt_name": "Hingoli(Kanegoan Naka) APMC"
+      },
+      {
+        "id": 1915,
+        "mkt_name": "Jawala-Bajar APMC"
+      },
+      {
+        "id": 1657,
+        "mkt_name": "Kalamnuri APMC"
+      },
+      {
+        "id": 4000,
+        "mkt_name": "Marathawada Shetkari Khajgi Bazar Parisar APMC"
+      },
+      {
+        "id": 4007,
+        "mkt_name": "Sant Namdev Krushi Bazar,  APMC"
+      },
+      {
+        "id": 1914,
+        "mkt_name": "Sengoan APMC"
+      },
+      {
+        "id": 3990,
+        "mkt_name": "Vitthal Krushi Utpanna Bazar  APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 349,
+    "markets": [
+      {
+        "id": 1937,
+        "mkt_name": "Aheri APMC"
+      },
+      {
+        "id": 1642,
+        "mkt_name": "Armori APMC"
+      },
+      {
+        "id": 2164,
+        "mkt_name": "Armori(Desaiganj) APMC"
+      },
+      {
+        "id": 1647,
+        "mkt_name": "Chamorshi APMC"
+      },
+      {
+        "id": 581,
+        "mkt_name": "Gandchiroli APMC"
+      },
+      {
+        "id": 3464,
+        "mkt_name": "Sironcha APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 338,
+    "markets": [
+      {
+        "id": 4686,
+        "mkt_name": "Ahilyanagar APMC"
+      },
+      {
+        "id": 145,
+        "mkt_name": "Ahmednagar APMC"
+      },
+      {
+        "id": 1601,
+        "mkt_name": "Akole APMC"
+      },
+      {
+        "id": 1282,
+        "mkt_name": "Jamkhed APMC"
+      },
+      {
+        "id": 1297,
+        "mkt_name": "Karjat APMC"
+      },
+      {
+        "id": 2129,
+        "mkt_name": "Karjat(Rashin) APMC"
+      },
+      {
+        "id": 1283,
+        "mkt_name": "Kopargaon APMC"
+      },
+      {
+        "id": 1649,
+        "mkt_name": "Newasa APMC"
+      },
+      {
+        "id": 2708,
+        "mkt_name": "Newasa(Ghodegaon) APMC"
+      },
+      {
+        "id": 4025,
+        "mkt_name": "Om Chaitanya Multistate Agro Purpose CoOp Society  APMC"
+      },
+      {
+        "id": 1894,
+        "mkt_name": "Parner APMC"
+      },
+      {
+        "id": 1284,
+        "mkt_name": "Pathardi APMC"
+      },
+      {
+        "id": 4003,
+        "mkt_name": "Prasanna Krushi Market APMC"
+      },
+      {
+        "id": 2039,
+        "mkt_name": "Rahata APMC"
+      },
+      {
+        "id": 1634,
+        "mkt_name": "Rahuri APMC"
+      },
+      {
+        "id": 2707,
+        "mkt_name": "Rahuri(Songaon) APMC"
+      },
+      {
+        "id": 2130,
+        "mkt_name": "Rahuri(Vambori) APMC"
+      },
+      {
+        "id": 813,
+        "mkt_name": "Sangamner APMC"
+      },
+      {
+        "id": 1285,
+        "mkt_name": "Shevgaon APMC"
+      },
+      {
+        "id": 2131,
+        "mkt_name": "Shevgaon(Bodhegaon) APMC"
+      },
+      {
+        "id": 4024,
+        "mkt_name": "Shree Sairaj Krushi Market APMC"
+      },
+      {
+        "id": 1286,
+        "mkt_name": "Shrigonda APMC"
+      },
+      {
+        "id": 2709,
+        "mkt_name": "Shrigonda(Gogargaon) APMC"
+      },
+      {
+        "id": 1287,
+        "mkt_name": "Shrirampur APMC"
+      },
+      {
+        "id": 2132,
+        "mkt_name": "Shrirampur(Belapur) APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 355,
+    "markets": [
+      {
+        "id": 1652,
+        "mkt_name": "Ahmedpur APMC"
+      },
+      {
+        "id": 1949,
+        "mkt_name": "Aurad Shahajani APMC"
+      },
+      {
+        "id": 1946,
+        "mkt_name": "Ausa APMC"
+      },
+      {
+        "id": 1948,
+        "mkt_name": "Chakur APMC"
+      },
+      {
+        "id": 3455,
+        "mkt_name": "Devani APMC"
+      },
+      {
+        "id": 2705,
+        "mkt_name": "Jalkot APMC"
+      },
+      {
+        "id": 153,
+        "mkt_name": "Latur APMC"
+      },
+      {
+        "id": 2167,
+        "mkt_name": "Latur(Murud) APMC"
+      },
+      {
+        "id": 1947,
+        "mkt_name": "Nilanga APMC"
+      },
+      {
+        "id": 3999,
+        "mkt_name": "Rangrao Patil Krushi Utpanna Khajgi Bazar  APMC"
+      },
+      {
+        "id": 1950,
+        "mkt_name": "Renapur APMC"
+      },
+      {
+        "id": 2049,
+        "mkt_name": "Shirur Anantpal APMC"
+      },
+      {
+        "id": 561,
+        "mkt_name": "Udgir APMC"
+      },
+      {
+        "id": 3132,
+        "mkt_name": "Udgir(Hali) APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 369,
+    "markets": [
+      {
+        "id": 1636,
+        "mkt_name": "Akkalkot APMC"
+      },
+      {
+        "id": 1637,
+        "mkt_name": "Akluj APMC"
+      },
+      {
+        "id": 167,
+        "mkt_name": "Barshi APMC"
+      },
+      {
+        "id": 2151,
+        "mkt_name": "Barshi(Vairag) APMC"
+      },
+      {
+        "id": 3141,
+        "mkt_name": "Dudhani APMC"
+      },
+      {
+        "id": 1316,
+        "mkt_name": "Karmala APMC"
+      },
+      {
+        "id": 1317,
+        "mkt_name": "Kurdwadi APMC"
+      },
+      {
+        "id": 2152,
+        "mkt_name": "Kurdwadi(Modnimb) APMC"
+      },
+      {
+        "id": 3996,
+        "mkt_name": "Laxmi Sopan Agriculture Produce Marketing Co Ltd APMC"
+      },
+      {
+        "id": 1318,
+        "mkt_name": "Mangal Wedha APMC"
+      },
+      {
+        "id": 1905,
+        "mkt_name": "Mohol APMC"
+      },
+      {
+        "id": 555,
+        "mkt_name": "Pandharpur APMC"
+      },
+      {
+        "id": 4028,
+        "mkt_name": "Perfect Krishi Market Yard Pvt Ltd  APMC"
+      },
+      {
+        "id": 556,
+        "mkt_name": "Sangola APMC"
+      },
+      {
+        "id": 168,
+        "mkt_name": "Solapur APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 360,
+    "markets": [
+      {
+        "id": 1898,
+        "mkt_name": "Akkalkuwa APMC"
+      },
+      {
+        "id": 2041,
+        "mkt_name": "Dhadgaon APMC"
+      },
+      {
+        "id": 3131,
+        "mkt_name": "Nandubar(Koparli) APMC"
+      },
+      {
+        "id": 157,
+        "mkt_name": "Nandurbar APMC"
+      },
+      {
+        "id": 1896,
+        "mkt_name": "Navapur APMC"
+      },
+      {
+        "id": 1301,
+        "mkt_name": "Shahada APMC"
+      },
+      {
+        "id": 1897,
+        "mkt_name": "Taloda APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 339,
+    "markets": [
+      {
+        "id": 146,
+        "mkt_name": "Akola APMC"
+      },
+      {
+        "id": 3447,
+        "mkt_name": "Akola(Borgaon Manju) APMC"
+      },
+      {
+        "id": 1207,
+        "mkt_name": "Akot APMC"
+      },
+      {
+        "id": 1327,
+        "mkt_name": "Balapur APMC"
+      },
+      {
+        "id": 1916,
+        "mkt_name": "Barshi Takli APMC"
+      },
+      {
+        "id": 4009,
+        "mkt_name": "Late Vasantraoji Dandale Khajgi Krushi Bazar APMC"
+      },
+      {
+        "id": 569,
+        "mkt_name": "Murtizapur APMC"
+      },
+      {
+        "id": 1917,
+        "mkt_name": "Patur APMC"
+      },
+      {
+        "id": 4005,
+        "mkt_name": "Shri Gajanan Maharaj Khajagi Krushi Utpanna Bazar APMC"
+      },
+      {
+        "id": 1328,
+        "mkt_name": "Telhara APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 365,
+    "markets": [
+      {
+        "id": 1276,
+        "mkt_name": "Alibagh APMC"
+      },
+      {
+        "id": 1277,
+        "mkt_name": "Karjat(Raigad) APMC"
+      },
+      {
+        "id": 1884,
+        "mkt_name": "Khalapur (Shil-Phata) APMC"
+      },
+      {
+        "id": 1885,
+        "mkt_name": "Mahad APMC"
+      },
+      {
+        "id": 1886,
+        "mkt_name": "Mangaon APMC"
+      },
+      {
+        "id": 1887,
+        "mkt_name": "Murud APMC"
+      },
+      {
+        "id": 1631,
+        "mkt_name": "Panvel APMC"
+      },
+      {
+        "id": 1888,
+        "mkt_name": "Pen APMC"
+      },
+      {
+        "id": 1278,
+        "mkt_name": "Roha APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 356,
+    "markets": [
+      {
+        "id": 2037,
+        "mkt_name": "All India Cottonseed Crushers Association APMC"
+      },
+      {
+        "id": 154,
+        "mkt_name": "Mumbai APMC"
+      },
+      {
+        "id": 2128,
+        "mkt_name": "Mumbai- Fruit Market APMC"
+      },
+      {
+        "id": 2127,
+        "mkt_name": "Mumbai- Thane Market APMC"
+      },
+      {
+        "id": 3970,
+        "mkt_name": "NCDEX Spot Exchange  APMC"
+      },
+      {
+        "id": 2703,
+        "mkt_name": "Vashi New Mumbai APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 353,
+    "markets": [
+      {
+        "id": 546,
+        "mkt_name": "Amalner APMC"
+      },
+      {
+        "id": 1290,
+        "mkt_name": "Bhusaval APMC"
+      },
+      {
+        "id": 1291,
+        "mkt_name": "Bodwad APMC"
+      },
+      {
+        "id": 2134,
+        "mkt_name": "Bodwad(Varangaon) APMC"
+      },
+      {
+        "id": 547,
+        "mkt_name": "Chalisgaon APMC"
+      },
+      {
+        "id": 548,
+        "mkt_name": "Chopada APMC"
+      },
+      {
+        "id": 1292,
+        "mkt_name": "Dharangaon APMC"
+      },
+      {
+        "id": 3975,
+        "mkt_name": "Gopal Krishna Agro APMC"
+      },
+      {
+        "id": 3971,
+        "mkt_name": "Govardhan Farm Produce Market  APMC"
+      },
+      {
+        "id": 3974,
+        "mkt_name": "J S K Agro Market  APMC"
+      },
+      {
+        "id": 151,
+        "mkt_name": "Jalgaon APMC"
+      },
+      {
+        "id": 2135,
+        "mkt_name": "Jalgaon(Masawat) APMC"
+      },
+      {
+        "id": 1293,
+        "mkt_name": "Jamner APMC"
+      },
+      {
+        "id": 2136,
+        "mkt_name": "Jamner(Neri) APMC"
+      },
+      {
+        "id": 3980,
+        "mkt_name": "Laxmi Krushi Utpanna Khjgi Bajar APMC"
+      },
+      {
+        "id": 4015,
+        "mkt_name": "Mahavir Agri Market APMC"
+      },
+      {
+        "id": 549,
+        "mkt_name": "Pachora APMC"
+      },
+      {
+        "id": 2137,
+        "mkt_name": "Pachora(Bhadgaon) APMC"
+      },
+      {
+        "id": 1294,
+        "mkt_name": "Parola APMC"
+      },
+      {
+        "id": 1295,
+        "mkt_name": "Raver APMC"
+      },
+      {
+        "id": 2138,
+        "mkt_name": "Raver(Sauda) APMC"
+      },
+      {
+        "id": 3988,
+        "mkt_name": "Sanghavi Agriculture Marketing  APMC"
+      },
+      {
+        "id": 3981,
+        "mkt_name": "Shantilal Jain Agro APMC"
+      },
+      {
+        "id": 3982,
+        "mkt_name": "Vijaya Agri Private Market APMC"
+      },
+      {
+        "id": 4002,
+        "mkt_name": "Yashika Agro Marketing APMC"
+      },
+      {
+        "id": 1296,
+        "mkt_name": "Yawal APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 352,
+    "markets": [
+      {
+        "id": 1650,
+        "mkt_name": "Ambad (Vadigodri) APMC"
+      },
+      {
+        "id": 2045,
+        "mkt_name": "Ashti(Jalna) APMC"
+      },
+      {
+        "id": 560,
+        "mkt_name": "Bhokardan APMC"
+      },
+      {
+        "id": 2154,
+        "mkt_name": "Bhokardan(Pimpalgaon Renu) APMC"
+      },
+      {
+        "id": 2046,
+        "mkt_name": "Ghansawangi APMC"
+      },
+      {
+        "id": 3453,
+        "mkt_name": "Jafrabad APMC"
+      },
+      {
+        "id": 150,
+        "mkt_name": "Jalana APMC"
+      },
+      {
+        "id": 2155,
+        "mkt_name": "Jalna(Badnapur) APMC"
+      },
+      {
+        "id": 1907,
+        "mkt_name": "Mantha APMC"
+      },
+      {
+        "id": 1323,
+        "mkt_name": "Partur APMC"
+      },
+      {
+        "id": 3135,
+        "mkt_name": "Partur(Vatur) APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 342,
+    "markets": [
+      {
+        "id": 1363,
+        "mkt_name": "Ambejaogai APMC"
+      },
+      {
+        "id": 559,
+        "mkt_name": "Beed APMC"
+      },
+      {
+        "id": 1364,
+        "mkt_name": "Gevrai APMC"
+      },
+      {
+        "id": 1365,
+        "mkt_name": "Kada APMC"
+      },
+      {
+        "id": 3136,
+        "mkt_name": "Kada(Ashti) APMC"
+      },
+      {
+        "id": 4013,
+        "mkt_name": "Kai Madhavrao Pawar Khajgi Krushi Utappan Bazar Sa APMC"
+      },
+      {
+        "id": 1367,
+        "mkt_name": "Kaij APMC"
+      },
+      {
+        "id": 4724,
+        "mkt_name": "Kej APMC"
+      },
+      {
+        "id": 1944,
+        "mkt_name": "Kille Dharur APMC"
+      },
+      {
+        "id": 1648,
+        "mkt_name": "Majalgaon APMC"
+      },
+      {
+        "id": 1366,
+        "mkt_name": "Parali Vaijyanath APMC"
+      },
+      {
+        "id": 1945,
+        "mkt_name": "Patoda APMC"
+      },
+      {
+        "id": 3140,
+        "mkt_name": "Vadvani APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 350,
+    "markets": [
+      {
+        "id": 578,
+        "mkt_name": "Amgaon APMC"
+      },
+      {
+        "id": 579,
+        "mkt_name": "Arjuni APMC"
+      },
+      {
+        "id": 3460,
+        "mkt_name": "Devri APMC"
+      },
+      {
+        "id": 1361,
+        "mkt_name": "Gondiya APMC"
+      },
+      {
+        "id": 1943,
+        "mkt_name": "Goregaon APMC"
+      },
+      {
+        "id": 3459,
+        "mkt_name": "Sadak Arjuni APMC"
+      },
+      {
+        "id": 1362,
+        "mkt_name": "Tiroda APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 373,
+    "markets": [
+      {
+        "id": 3984,
+        "mkt_name": "Arihant Krishi Utpan Bazar  APMC"
+      },
+      {
+        "id": 1358,
+        "mkt_name": "Arvi APMC"
+      },
+      {
+        "id": 1941,
+        "mkt_name": "Ashti APMC"
+      },
+      {
+        "id": 2166,
+        "mkt_name": "Ashti(Karanja) APMC"
+      },
+      {
+        "id": 3998,
+        "mkt_name": "Higanghat Infrastructure Private Limited APMC"
+      },
+      {
+        "id": 170,
+        "mkt_name": "Hinganghat APMC"
+      },
+      {
+        "id": 1359,
+        "mkt_name": "Pulgaon APMC"
+      },
+      {
+        "id": 3994,
+        "mkt_name": "Sai Agro Infratrade Pvt Agri Market APMC"
+      },
+      {
+        "id": 1942,
+        "mkt_name": "Samudrapur APMC"
+      },
+      {
+        "id": 1360,
+        "mkt_name": "Sindi APMC"
+      },
+      {
+        "id": 3139,
+        "mkt_name": "Sindi(Selu) APMC"
+      },
+      {
+        "id": 1635,
+        "mkt_name": "Wardha APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 361,
+    "markets": [
+      {
+        "id": 4014,
+        "mkt_name": "Baphana Agro Market Inc APMC"
+      },
+      {
+        "id": 163,
+        "mkt_name": "Baswant APMC"
+      },
+      {
+        "id": 550,
+        "mkt_name": "Chandvad APMC"
+      },
+      {
+        "id": 1895,
+        "mkt_name": "Devala APMC"
+      },
+      {
+        "id": 1300,
+        "mkt_name": "Dindori APMC"
+      },
+      {
+        "id": 2141,
+        "mkt_name": "Dindori(Vani) APMC"
+      },
+      {
+        "id": 1653,
+        "mkt_name": "Ghoti APMC"
+      },
+      {
+        "id": 1298,
+        "mkt_name": "Kalvan APMC"
+      },
+      {
+        "id": 161,
+        "mkt_name": "Lasalgaon APMC"
+      },
+      {
+        "id": 2139,
+        "mkt_name": "Lasalgaon(Niphad) APMC"
+      },
+      {
+        "id": 3448,
+        "mkt_name": "Lasalgaon(Vinchur) APMC"
+      },
+      {
+        "id": 158,
+        "mkt_name": "Malegaon APMC"
+      },
+      {
+        "id": 4037,
+        "mkt_name": "Malharshree Farmers Producer Co Ltd APMC"
+      },
+      {
+        "id": 4036,
+        "mkt_name": "Mankamneshwar Farmar Producer CoLtd Sanchalit Mank APMC"
+      },
+      {
+        "id": 551,
+        "mkt_name": "Manmad APMC"
+      },
+      {
+        "id": 3462,
+        "mkt_name": "Nampur APMC"
+      },
+      {
+        "id": 1299,
+        "mkt_name": "Nandgaon APMC"
+      },
+      {
+        "id": 2140,
+        "mkt_name": "Nashik(Devlali) APMC"
+      },
+      {
+        "id": 160,
+        "mkt_name": "Nasik APMC"
+      },
+      {
+        "id": 3993,
+        "mkt_name": "Perfect Krishi Market Yard APMC"
+      },
+      {
+        "id": 162,
+        "mkt_name": "Pimpalgaon APMC"
+      },
+      {
+        "id": 2142,
+        "mkt_name": "Pimpalgaon Baswant(Saykheda) APMC"
+      },
+      {
+        "id": 4035,
+        "mkt_name": "Premium Krushi Utpanna Bazar  APMC"
+      },
+      {
+        "id": 1633,
+        "mkt_name": "Satana APMC"
+      },
+      {
+        "id": 4038,
+        "mkt_name": "Shivsiddha Govind Producer Company Limited Sanchal APMC"
+      },
+      {
+        "id": 4033,
+        "mkt_name": "Shree Rameshwar Krushi Market  APMC"
+      },
+      {
+        "id": 1644,
+        "mkt_name": "Sinner APMC"
+      },
+      {
+        "id": 2040,
+        "mkt_name": "Suragana APMC"
+      },
+      {
+        "id": 3458,
+        "mkt_name": "Umrane APMC"
+      },
+      {
+        "id": 159,
+        "mkt_name": "Yeola APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 364,
+    "markets": [
+      {
+        "id": 552,
+        "mkt_name": "Baramati APMC"
+      },
+      {
+        "id": 1899,
+        "mkt_name": "Bhor APMC"
+      },
+      {
+        "id": 1305,
+        "mkt_name": "Dound APMC"
+      },
+      {
+        "id": 1118,
+        "mkt_name": "Indapur APMC"
+      },
+      {
+        "id": 2145,
+        "mkt_name": "Indapur(Bhigwan) APMC"
+      },
+      {
+        "id": 3134,
+        "mkt_name": "Indapur(Nimgaon Ketki) APMC"
+      },
+      {
+        "id": 1306,
+        "mkt_name": "Junnar APMC"
+      },
+      {
+        "id": 3128,
+        "mkt_name": "Junnar(Alephata) APMC"
+      },
+      {
+        "id": 3129,
+        "mkt_name": "Junnar(Bhlhe) APMC"
+      },
+      {
+        "id": 3130,
+        "mkt_name": "Junnar(Narayangaon) APMC"
+      },
+      {
+        "id": 2146,
+        "mkt_name": "Junnar(Otur) APMC"
+      },
+      {
+        "id": 165,
+        "mkt_name": "Khed APMC"
+      },
+      {
+        "id": 2147,
+        "mkt_name": "Khed(Chakan) APMC"
+      },
+      {
+        "id": 3451,
+        "mkt_name": "Khed(Shel Pimpalgaon) APMC"
+      },
+      {
+        "id": 553,
+        "mkt_name": "Manchar APMC"
+      },
+      {
+        "id": 2042,
+        "mkt_name": "Mulshi APMC"
+      },
+      {
+        "id": 1307,
+        "mkt_name": "Nira APMC"
+      },
+      {
+        "id": 2706,
+        "mkt_name": "Nira(Saswad) APMC"
+      },
+      {
+        "id": 164,
+        "mkt_name": "Pune APMC"
+      },
+      {
+        "id": 2149,
+        "mkt_name": "Pune(Khadiki) APMC"
+      },
+      {
+        "id": 3449,
+        "mkt_name": "Pune(Manjri) APMC"
+      },
+      {
+        "id": 3450,
+        "mkt_name": "Pune(Moshi) APMC"
+      },
+      {
+        "id": 2148,
+        "mkt_name": "Pune(Pimpri) APMC"
+      },
+      {
+        "id": 1654,
+        "mkt_name": "Shirur APMC"
+      },
+      {
+        "id": 1900,
+        "mkt_name": "Talegaon Dabhade APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 345,
+    "markets": [
+      {
+        "id": 1935,
+        "mkt_name": "Bhadrawati APMC"
+      },
+      {
+        "id": 1348,
+        "mkt_name": "Brahmpuri APMC"
+      },
+      {
+        "id": 580,
+        "mkt_name": "Chandrapur APMC"
+      },
+      {
+        "id": 2163,
+        "mkt_name": "Chandrapur(Ganjwad) APMC"
+      },
+      {
+        "id": 1349,
+        "mkt_name": "Chimur APMC"
+      },
+      {
+        "id": 1352,
+        "mkt_name": "Gondpimpri APMC"
+      },
+      {
+        "id": 1936,
+        "mkt_name": "Korpana APMC"
+      },
+      {
+        "id": 1350,
+        "mkt_name": "Mul APMC"
+      },
+      {
+        "id": 1351,
+        "mkt_name": "Nagbhid APMC"
+      },
+      {
+        "id": 3456,
+        "mkt_name": "Pombhurni APMC"
+      },
+      {
+        "id": 1933,
+        "mkt_name": "Rajura APMC"
+      },
+      {
+        "id": 1353,
+        "mkt_name": "Savali APMC"
+      },
+      {
+        "id": 1934,
+        "mkt_name": "Sindevahi APMC"
+      },
+      {
+        "id": 1641,
+        "mkt_name": "Varora APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 346,
+    "markets": [
+      {
+        "id": 4026,
+        "mkt_name": "Bhagyoday Cotton and Agri Market APMC"
+      },
+      {
+        "id": 557,
+        "mkt_name": "Chattrapati Sambhajinagar APMC"
+      },
+      {
+        "id": 1906,
+        "mkt_name": "Fulmbri APMC"
+      },
+      {
+        "id": 1319,
+        "mkt_name": "Gangapur APMC"
+      },
+      {
+        "id": 1320,
+        "mkt_name": "Kannad APMC"
+      },
+      {
+        "id": 2044,
+        "mkt_name": "Khultabad APMC"
+      },
+      {
+        "id": 3989,
+        "mkt_name": "Kisan Seva Private Market APMC"
+      },
+      {
+        "id": 1321,
+        "mkt_name": "Lasur Station APMC"
+      },
+      {
+        "id": 3976,
+        "mkt_name": "Maharashtra Agricultural Farm APMC"
+      },
+      {
+        "id": 1645,
+        "mkt_name": "Paithan APMC"
+      },
+      {
+        "id": 558,
+        "mkt_name": "Sillod APMC"
+      },
+      {
+        "id": 2153,
+        "mkt_name": "Sillod(Bharadi) APMC"
+      },
+      {
+        "id": 2043,
+        "mkt_name": "Soygaon APMC"
+      },
+      {
+        "id": 1322,
+        "mkt_name": "Vaijpur APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 343,
+    "markets": [
+      {
+        "id": 1208,
+        "mkt_name": "Bhandara APMC"
+      },
+      {
+        "id": 1346,
+        "mkt_name": "Lakhandur APMC"
+      },
+      {
+        "id": 1347,
+        "mkt_name": "Lakhani APMC"
+      },
+      {
+        "id": 1643,
+        "mkt_name": "Pavani APMC"
+      },
+      {
+        "id": 1117,
+        "mkt_name": "Tumsar APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 371,
+    "markets": [
+      {
+        "id": 1279,
+        "mkt_name": "Bhivandi APMC"
+      },
+      {
+        "id": 1893,
+        "mkt_name": "Dahanu APMC"
+      },
+      {
+        "id": 169,
+        "mkt_name": "Kalyan APMC"
+      },
+      {
+        "id": 3133,
+        "mkt_name": "Kalyan(Cattle Market) APMC"
+      },
+      {
+        "id": 4745,
+        "mkt_name": "Mumbai-Onion And Potato Mkt APMC"
+      },
+      {
+        "id": 1889,
+        "mkt_name": "Murbad APMC"
+      },
+      {
+        "id": 1890,
+        "mkt_name": "Palghar APMC"
+      },
+      {
+        "id": 1891,
+        "mkt_name": "Shahapur APMC"
+      },
+      {
+        "id": 1281,
+        "mkt_name": "Ulhasnagar APMC"
+      },
+      {
+        "id": 1280,
+        "mkt_name": "Vasai APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 358,
+    "markets": [
+      {
+        "id": 1354,
+        "mkt_name": "Bhiwapur APMC"
+      },
+      {
+        "id": 3452,
+        "mkt_name": "Hingna APMC"
+      },
+      {
+        "id": 1355,
+        "mkt_name": "Kalmeshwar APMC"
+      },
+      {
+        "id": 3142,
+        "mkt_name": "Kamthi APMC"
+      },
+      {
+        "id": 1356,
+        "mkt_name": "Katol APMC"
+      },
+      {
+        "id": 3983,
+        "mkt_name": "MS Kalpana Agri Commodities Marketing APMC"
+      },
+      {
+        "id": 1938,
+        "mkt_name": "Mandhal APMC"
+      },
+      {
+        "id": 3461,
+        "mkt_name": "Mauda APMC"
+      },
+      {
+        "id": 155,
+        "mkt_name": "Nagpur APMC"
+      },
+      {
+        "id": 2165,
+        "mkt_name": "Nagpur(Mahatma Phule Market) APMC"
+      },
+      {
+        "id": 1357,
+        "mkt_name": "Narkhed APMC"
+      },
+      {
+        "id": 1940,
+        "mkt_name": "Parshiwani APMC"
+      },
+      {
+        "id": 1939,
+        "mkt_name": "Ramtek APMC"
+      },
+      {
+        "id": 582,
+        "mkt_name": "Savner APMC"
+      },
+      {
+        "id": 156,
+        "mkt_name": "Umared APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 359,
+    "markets": [
+      {
+        "id": 562,
+        "mkt_name": "Bhokar APMC"
+      },
+      {
+        "id": 1958,
+        "mkt_name": "Biloli APMC"
+      },
+      {
+        "id": 563,
+        "mkt_name": "Deglur APMC"
+      },
+      {
+        "id": 1206,
+        "mkt_name": "Dharmabad APMC"
+      },
+      {
+        "id": 1368,
+        "mkt_name": "Hadgaon APMC"
+      },
+      {
+        "id": 2168,
+        "mkt_name": "Hadgaon(Tamsa) APMC"
+      },
+      {
+        "id": 2050,
+        "mkt_name": "Hanegaon APMC"
+      },
+      {
+        "id": 1955,
+        "mkt_name": "Himalyatnagar APMC"
+      },
+      {
+        "id": 2051,
+        "mkt_name": "Islapur APMC"
+      },
+      {
+        "id": 1369,
+        "mkt_name": "Kandhar APMC"
+      },
+      {
+        "id": 1951,
+        "mkt_name": "Kinwat APMC"
+      },
+      {
+        "id": 1656,
+        "mkt_name": "Kundalwadi APMC"
+      },
+      {
+        "id": 1957,
+        "mkt_name": "Kuntur APMC"
+      },
+      {
+        "id": 1370,
+        "mkt_name": "Loha APMC"
+      },
+      {
+        "id": 1956,
+        "mkt_name": "Mahur APMC"
+      },
+      {
+        "id": 1952,
+        "mkt_name": "Mudkhed APMC"
+      },
+      {
+        "id": 1953,
+        "mkt_name": "Mukhed APMC"
+      },
+      {
+        "id": 3137,
+        "mkt_name": "Mukhed(Mukkambad) APMC"
+      },
+      {
+        "id": 1371,
+        "mkt_name": "Naigaon APMC"
+      },
+      {
+        "id": 564,
+        "mkt_name": "Nanded APMC"
+      },
+      {
+        "id": 4031,
+        "mkt_name": "Navratna Krishi Utpanna Khajgi Bazar  APMC"
+      },
+      {
+        "id": 3991,
+        "mkt_name": "Shetkari Khajgi Bajar APMC"
+      },
+      {
+        "id": 1954,
+        "mkt_name": "Umari APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 347,
+    "markets": [
+      {
+        "id": 1959,
+        "mkt_name": "Bhoom APMC"
+      },
+      {
+        "id": 1655,
+        "mkt_name": "Dharashiv APMC"
+      },
+      {
+        "id": 1599,
+        "mkt_name": "Kalamb (Dharashiv) APMC"
+      },
+      {
+        "id": 2052,
+        "mkt_name": "Lohara APMC"
+      },
+      {
+        "id": 1600,
+        "mkt_name": "Murum APMC"
+      },
+      {
+        "id": 1960,
+        "mkt_name": "Paranda APMC"
+      },
+      {
+        "id": 1961,
+        "mkt_name": "Tuljapur APMC"
+      },
+      {
+        "id": 1962,
+        "mkt_name": "Umarga APMC"
+      },
+      {
+        "id": 2053,
+        "mkt_name": "Washi (Dharashiv) APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 363,
+    "markets": [
+      {
+        "id": 3463,
+        "mkt_name": "Bori APMC"
+      },
+      {
+        "id": 1324,
+        "mkt_name": "Gangakhed APMC"
+      },
+      {
+        "id": 4023,
+        "mkt_name": "Hari Har Khajagi Bazar Parisar APMC"
+      },
+      {
+        "id": 566,
+        "mkt_name": "Jintur APMC"
+      },
+      {
+        "id": 1325,
+        "mkt_name": "Manwat APMC"
+      },
+      {
+        "id": 1911,
+        "mkt_name": "Palam APMC"
+      },
+      {
+        "id": 567,
+        "mkt_name": "Parbhani APMC"
+      },
+      {
+        "id": 1909,
+        "mkt_name": "Pathari APMC"
+      },
+      {
+        "id": 1908,
+        "mkt_name": "Purna APMC"
+      },
+      {
+        "id": 4778,
+        "mkt_name": "Sailu APMC"
+      },
+      {
+        "id": 4006,
+        "mkt_name": "Samartha Krushi Bajar Private Limited  APMC"
+      },
+      {
+        "id": 1326,
+        "mkt_name": "Selu APMC"
+      },
+      {
+        "id": 4019,
+        "mkt_name": "Shree Salasar Krushi Bazar  APMC"
+      },
+      {
+        "id": 3457,
+        "mkt_name": "Sirsam APMC"
+      },
+      {
+        "id": 2047,
+        "mkt_name": "Sonpeth APMC"
+      },
+      {
+        "id": 1910,
+        "mkt_name": "Tadkalas APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 368,
+    "markets": [
+      {
+        "id": 1309,
+        "mkt_name": "Dahivadi APMC"
+      },
+      {
+        "id": 1904,
+        "mkt_name": "Jawali APMC"
+      },
+      {
+        "id": 1310,
+        "mkt_name": "Karad APMC"
+      },
+      {
+        "id": 1311,
+        "mkt_name": "Koregaon APMC"
+      },
+      {
+        "id": 554,
+        "mkt_name": "Lonand APMC"
+      },
+      {
+        "id": 1658,
+        "mkt_name": "Patan APMC"
+      },
+      {
+        "id": 1312,
+        "mkt_name": "Phaltan APMC"
+      },
+      {
+        "id": 1313,
+        "mkt_name": "Satara APMC"
+      },
+      {
+        "id": 1314,
+        "mkt_name": "Vaduj APMC"
+      },
+      {
+        "id": 1315,
+        "mkt_name": "Vai APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 348,
+    "markets": [
+      {
+        "id": 149,
+        "mkt_name": "Dhule APMC"
+      },
+      {
+        "id": 545,
+        "mkt_name": "Dondaicha APMC"
+      },
+      {
+        "id": 2133,
+        "mkt_name": "Dondaicha(Sindhkheda) APMC"
+      },
+      {
+        "id": 4029,
+        "mkt_name": "Janata Agri Market (DLS Agro Infrastructure Pvt Lt APMC"
+      },
+      {
+        "id": 3973,
+        "mkt_name": "Keshranand Cotex  APMC"
+      },
+      {
+        "id": 4034,
+        "mkt_name": "Pratap Nana Mahale Khajgi Bajar Samiti  APMC"
+      },
+      {
+        "id": 1288,
+        "mkt_name": "Sakri APMC"
+      },
+      {
+        "id": 1289,
+        "mkt_name": "Shirpur APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 354,
+    "markets": [
+      {
+        "id": 1302,
+        "mkt_name": "Gadhinglaj APMC"
+      },
+      {
+        "id": 1303,
+        "mkt_name": "Jaysingpur APMC"
+      },
+      {
+        "id": 152,
+        "mkt_name": "Kolhapur APMC"
+      },
+      {
+        "id": 2143,
+        "mkt_name": "Kolhapur(Laxmipuri) APMC"
+      },
+      {
+        "id": 2144,
+        "mkt_name": "Kolhapur(Malkapur) APMC"
+      },
+      {
+        "id": 1304,
+        "mkt_name": "Vadgaonpeth APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 372,
+    "markets": [
+      {
+        "id": 4030,
+        "mkt_name": "Jai Gajanan Krishi Bazar APMC"
+      },
+      {
+        "id": 568,
+        "mkt_name": "Karanja APMC"
+      },
+      {
+        "id": 4011,
+        "mkt_name": "Krushna Krishi Bazar  APMC"
+      },
+      {
+        "id": 1932,
+        "mkt_name": "Malegaon(Vashim) APMC"
+      },
+      {
+        "id": 1343,
+        "mkt_name": "Mangrulpeer APMC"
+      },
+      {
+        "id": 1344,
+        "mkt_name": "Manora APMC"
+      },
+      {
+        "id": 4001,
+        "mkt_name": "N N Mundhada Agriculture Market Produce  APMC"
+      },
+      {
+        "id": 1345,
+        "mkt_name": "Risod APMC"
+      },
+      {
+        "id": 4032,
+        "mkt_name": "Shetkari Krushi Bazar APMC"
+      },
+      {
+        "id": 4016,
+        "mkt_name": "Shri Balaji krishi Utpanna Bazar Samiti  APMC"
+      },
+      {
+        "id": 1632,
+        "mkt_name": "Washim APMC"
+      },
+      {
+        "id": 2162,
+        "mkt_name": "Washim(Ansing) APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 366,
+    "markets": [
+      {
+        "id": 1651,
+        "mkt_name": "Ratnagiri (Nachane) APMC"
+      }
+    ]
+  },
+  {
+    "district_id": 370,
+    "markets": [
+      {
+        "id": 1892,
+        "mkt_name": "Sindhudurg APMC"
+      }
+    ]
+  }
+]

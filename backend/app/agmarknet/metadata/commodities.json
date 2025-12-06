@@ -1,0 +1,32 @@
+[
+  {
+    "cmdt_id": 15,
+    "cmdt_name": "Cotton",
+    "cmdt_group_id": 4
+  },
+  {
+    "cmdt_id": 23,
+    "cmdt_name": "Onion",
+    "cmdt_group_id": 6
+  },
+  {
+    "cmdt_id": 3,
+    "cmdt_name": "Rice",
+    "cmdt_group_id": 1
+  },
+  {
+    "cmdt_id": 13,
+    "cmdt_name": "Soybean",
+    "cmdt_group_id": 3
+  },
+  {
+    "cmdt_id": 122,
+    "cmdt_name": "Sugarcane",
+    "cmdt_group_id": 10
+  },
+  {
+    "cmdt_id": 1,
+    "cmdt_name": "Wheat",
+    "cmdt_group_id": 1
+  }
+]

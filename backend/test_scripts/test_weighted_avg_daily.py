@@ -1,0 +1,146 @@
+"""
+Test script for Commodity-wise, Market-wise Daily Report (Weighted Average)
+Agmarknet Tier-1 Dataset
+"""
+import requests
+import pandas as pd
+import os
+from pathlib import Path
+
+# ============================================================================
+# CONFIGURATION VARIABLES - Modify these for testing
+# ============================================================================
+COMMODITY = "Cotton"
+DATE = "03-12-2025"  # dd-mm-yyyy
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def fetch_xlsx(url, output_path):
+    """
+    Downloads XLSX file from URL with error handling.
+    
+    Args:
+        url: URL to download from
+        output_path: Local path to save the file
+        
+    Returns:
+        bool: True if download successful, False otherwise
+    """
+    try:
+        print(f"Downloading from: {url}")
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        
+        # Ensure output directory exists
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        # Save file
+        with open(output_path, 'wb') as f:
+            f.write(response.content)
+        
+        print(f"File saved to: {output_path}")
+        return True
+    except requests.exceptions.RequestException as e:
+        print(f"Network error: {e}")
+        return False
+    except Exception as e:
+        print(f"Error saving file: {e}")
+        return False
+
+
+def main():
+    """Main test function"""
+    print("=" * 60)
+    print("Commodity-wise, Market-wise Daily Report (Weighted Average)")
+    print("=" * 60)
+    print(f"Commodity: {COMMODITY}")
+    print(f"Date: {DATE}")
+    print()
+    
+    # TODO: Replace <DOWNLOAD_URL> with the actual export URL once determined.
+    # URL should be constructed based on COMMODITY and DATE parameters
+    download_url = f"https://agmarknet.gov.in/api/report/weighted-avg-daily?commodity={COMMODITY}&date={DATE}"
+    
+    output_path = "/tmp/weighted_avg_daily.xlsx"
+    
+    # Step 1: Download file
+    print("Step 1: Downloading report...")
+    if not fetch_xlsx(download_url, output_path):
+        print("FAILED: Could not download file")
+        return
+    
+    # Step 2: Check if file exists
+    if not os.path.exists(output_path):
+        print("FAILED: Downloaded file not found")
+        return
+    
+    # Step 3: Load and parse with pandas
+    print("\nStep 2: Parsing XLSX file...")
+    try:
+        df = pd.read_excel(output_path)
+        
+        if df.empty:
+            print("FAILED: File is empty or has no data")
+            return
+        
+        # Step 4: Print statistics
+        print(f"\nNumber of rows: {len(df)}")
+        print(f"Number of columns: {len(df.columns)}")
+        print(f"\nColumn names:")
+        for i, col in enumerate(df.columns, 1):
+            print(f"  {i}. {col}")
+        
+        # Step 5: Validate expected columns
+        expected_columns = ["Commodity", "Weighted Average Price", "Markets Count"]
+        missing_columns = [col for col in expected_columns if col not in df.columns]
+        
+        if missing_columns:
+            print(f"\nWARNING: Missing expected columns: {missing_columns}")
+            # Try to find alternative column names
+            for col in df.columns:
+                if "weighted" in col.lower() or "average" in col.lower() or "avg" in col.lower():
+                    print(f"Found potential weighted average column: {col}")
+                if "market" in col.lower() and "count" in col.lower():
+                    print(f"Found potential markets count column: {col}")
+        
+        # Step 6: Display markets count if available
+        markets_count_col = None
+        for col in df.columns:
+            if "market" in col.lower() and ("count" in col.lower() or "number" in col.lower()):
+                markets_count_col = col
+                break
+        
+        if markets_count_col and markets_count_col in df.columns:
+            try:
+                total_markets = pd.to_numeric(df[markets_count_col], errors='coerce').sum()
+                print(f"\nTotal Markets Count: {int(total_markets)}")
+            except Exception as e:
+                print(f"\nWARNING: Could not calculate total markets: {e}")
+        
+        # Step 7: Display first 5 records
+        print("\nFirst 5 records:")
+        print(df.head().to_string())
+        
+        # Step 8: Validate data
+        if len(df) >= 1:
+            print("\n" + "=" * 60)
+            print("SUCCESS: File parsed and contains data")
+            print("=" * 60)
+        else:
+            print("\n" + "=" * 60)
+            print("FAILED: File has no data rows")
+            print("=" * 60)
+            
+    except pd.errors.EmptyDataError:
+        print("FAILED: File is empty or corrupted")
+    except Exception as e:
+        print(f"FAILED: Error parsing file - {e}")
+        import traceback
+        traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main()
+
