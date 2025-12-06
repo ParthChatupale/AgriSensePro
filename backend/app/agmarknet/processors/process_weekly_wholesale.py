@@ -38,56 +38,65 @@ def process_weekly_wholesale(
     print(f"\n📊 Processing Excel file: {excel_path}")
     print(f"Filtering by district: {district}")
     
-    # Load Excel file
+    # Load Excel file - use row index 1 (second row, 0-indexed) as header
     try:
-        df = pd.read_excel(filepath)
+        df = pd.read_excel(filepath, header=1)
     except Exception as e:
         raise ValueError(f"Failed to load Excel file: {str(e)}")
     
     if df.empty:
         raise ValueError("Excel file is empty")
     
+    # Normalize column names by stripping whitespace
+    df.columns = [str(c).strip() for c in df.columns]
+    
     print(f"\nOriginal data shape: {df.shape[0]} rows, {df.shape[1]} columns")
     print(f"Column names: {list(df.columns)}")
     
-    # Normalize column names (handle variations)
-    # Look for district-related column names
+    # Auto-detect district column by searching for column containing "district" (case-insensitive)
     district_col = None
     for col in df.columns:
         col_lower = str(col).lower()
-        if "district" in col_lower and "name" in col_lower:
-            district_col = col
-            break
-        elif col_lower == "district":
+        if "district" in col_lower:
             district_col = col
             break
     
+    # If no column with "district" in name, assume first column contains district names
+    # (This is common in Agmarknet Excel files where first column is district names)
     if district_col is None:
-        # Try to find any column that might contain district names
-        for col in df.columns:
-            if df[col].dtype == "object":  # String type
-                sample_values = df[col].dropna().head(10).astype(str).tolist()
-                # Check if any sample value looks like a district name
-                if any(len(str(v)) > 3 and str(v).isalpha() for v in sample_values):
-                    district_col = col
-                    print(f"⚠️  Using column '{col}' as district column (auto-detected)")
-                    break
-    
-    if district_col is None:
-        raise ValueError(
-            "Could not find district column in Excel file. "
-            f"Available columns: {list(df.columns)}"
+        first_col = df.columns[0]
+        first_col_values = df[first_col].dropna().astype(str).head(10)
+        
+        # Check if first column contains text values (district names are text, not numbers)
+        text_count = sum(
+            1 for val in first_col_values
+            if str(val).strip() and 
+            any(c.isalpha() for c in str(val).strip()) and 
+            len(str(val).strip()) > 2
         )
+        
+        # If at least 2 values are text (likely district names), use first column
+        if text_count >= 2:
+            district_col = first_col
+            print(f"⚠️  Auto-detected first column '{first_col}' as district column")
+            print(f"    Sample values: {list(first_col_values.head(5))}")
+        else:
+            raise ValueError(
+                "Could not find district column in Excel file. "
+                f"Available columns: {list(df.columns)}. "
+                f"First column values: {list(first_col_values.head(5))}"
+            )
     
     print(f"Using district column: '{district_col}'")
     
-    # Filter by district name
+    # Filter by district name - exact match
+    district_col_values = df[district_col].astype(str).str.strip()
+    district_search = district.strip()
+    
     if case_sensitive:
-        filtered_df = df[df[district_col].astype(str).str.contains(district, na=False)]
+        filtered_df = df[district_col_values == district_search]
     else:
-        filtered_df = df[
-            df[district_col].astype(str).str.contains(district, case=False, na=False)
-        ]
+        filtered_df = df[district_col_values.str.lower() == district_search.lower()]
     
     print(f"\nFiltered data shape: {filtered_df.shape[0]} rows, {filtered_df.shape[1]} columns")
     

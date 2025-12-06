@@ -116,11 +116,31 @@ def fetch_wholesale_weekly(
     filename = f"{year}_{month:02d}_week{week}.xlsx"
     filepath = DOWNLOADS_DIR / filename
     
+    # Remove existing file if it exists (to avoid permission errors if file is locked)
+    if filepath.exists():
+        try:
+            filepath.unlink()
+            print(f"⚠️  Removed existing file: {filepath}")
+        except PermissionError:
+            raise IOError(
+                f"Cannot overwrite file {filepath}. "
+                "The file is currently open in Excel or locked by another program. "
+                "Please close the file and try again."
+            )
+        except Exception as e:
+            raise IOError(f"Failed to remove existing file {filepath}: {str(e)}")
+    
     # Save file
     try:
         with open(filepath, "wb") as f:
             f.write(response.content)
         print(f"✅ File saved to: {filepath}")
+    except PermissionError as e:
+        raise IOError(
+            f"Permission denied when saving to {filepath}. "
+            "The file may be open in Excel or locked by another program. "
+            "Please close the file and try again."
+        )
     except IOError as e:
         raise IOError(f"Failed to save file to {filepath}: {str(e)}")
     
