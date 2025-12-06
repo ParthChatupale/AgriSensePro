@@ -1,6 +1,7 @@
 [
   {
     "district_id": 344,
+    "district_name": "Buldhana",
     "markets": [
       {
         "id": 4022,
@@ -94,6 +95,7 @@
   },
   {
     "district_id": 374,
+    "district_name": "Aarni",
     "markets": [
       {
         "id": 2048,
@@ -211,6 +213,7 @@
   },
   {
     "district_id": 367,
+    "district_name": "Sangli",
     "markets": [
       {
         "id": 1901,
@@ -252,6 +255,7 @@
   },
   {
     "district_id": 340,
+    "district_name": "Varud",
     "markets": [
       {
         "id": 570,
@@ -317,6 +321,7 @@
   },
   {
     "district_id": 351,
+    "district_name": "Basmat",
     "markets": [
       {
         "id": 3992,
@@ -378,6 +383,7 @@
   },
   {
     "district_id": 349,
+    "district_name": "Armori",
     "markets": [
       {
         "id": 1937,
@@ -407,6 +413,7 @@
   },
   {
     "district_id": 338,
+    "district_name": "Rahuri",
     "markets": [
       {
         "id": 4686,
@@ -512,6 +519,7 @@
   },
   {
     "district_id": 355,
+    "district_name": "Latur",
     "markets": [
       {
         "id": 1652,
@@ -573,6 +581,7 @@
   },
   {
     "district_id": 369,
+    "district_name": "Barshi",
     "markets": [
       {
         "id": 1636,
@@ -638,6 +647,7 @@
   },
   {
     "district_id": 360,
+    "district_name": "Akkalkuwa",
     "markets": [
       {
         "id": 1898,
@@ -671,6 +681,7 @@
   },
   {
     "district_id": 339,
+    "district_name": "Akola",
     "markets": [
       {
         "id": 146,
@@ -716,6 +727,7 @@
   },
   {
     "district_id": 365,
+    "district_name": "Alibagh",
     "markets": [
       {
         "id": 1276,
@@ -757,6 +769,7 @@
   },
   {
     "district_id": 356,
+    "district_name": "All India Cottonseed Crushers Association",
     "markets": [
       {
         "id": 2037,
@@ -786,6 +799,7 @@
   },
   {
     "district_id": 353,
+    "district_name": "Bodwad",
     "markets": [
       {
         "id": 546,
@@ -895,6 +909,7 @@
   },
   {
     "district_id": 352,
+    "district_name": "Bhokardan",
     "markets": [
       {
         "id": 1650,
@@ -944,6 +959,7 @@
   },
   {
     "district_id": 342,
+    "district_name": "Kada",
     "markets": [
       {
         "id": 1363,
@@ -1001,6 +1017,7 @@
   },
   {
     "district_id": 350,
+    "district_name": "Amgaon",
     "markets": [
       {
         "id": 578,
@@ -1034,6 +1051,7 @@
   },
   {
     "district_id": 373,
+    "district_name": "Ashti",
     "markets": [
       {
         "id": 3984,
@@ -1087,6 +1105,7 @@
   },
   {
     "district_id": 361,
+    "district_name": "Lasalgaon",
     "markets": [
       {
         "id": 4014,
@@ -1212,6 +1231,7 @@
   },
   {
     "district_id": 364,
+    "district_name": "Junnar",
     "markets": [
       {
         "id": 552,
@@ -1317,6 +1337,7 @@
   },
   {
     "district_id": 345,
+    "district_name": "Chandrapur",
     "markets": [
       {
         "id": 1935,
@@ -1378,6 +1399,7 @@
   },
   {
     "district_id": 346,
+    "district_name": "Sillod",
     "markets": [
       {
         "id": 4026,
@@ -1439,6 +1461,7 @@
   },
   {
     "district_id": 343,
+    "district_name": "Bhandara",
     "markets": [
       {
         "id": 1208,
@@ -1464,6 +1487,7 @@
   },
   {
     "district_id": 371,
+    "district_name": "Kalyan",
     "markets": [
       {
         "id": 1279,
@@ -1509,6 +1533,7 @@
   },
   {
     "district_id": 358,
+    "district_name": "Nagpur",
     "markets": [
       {
         "id": 1354,
@@ -1574,6 +1599,7 @@
   },
   {
     "district_id": 359,
+    "district_name": "Hadgaon",
     "markets": [
       {
         "id": 562,
@@ -1671,6 +1697,7 @@
   },
   {
     "district_id": 347,
+    "district_name": "Bhoom",
     "markets": [
       {
         "id": 1959,
@@ -1712,6 +1739,7 @@
   },
   {
     "district_id": 363,
+    "district_name": "Bori",
     "markets": [
       {
         "id": 3463,
@@ -1781,6 +1809,7 @@
   },
   {
     "district_id": 368,
+    "district_name": "Dahivadi",
     "markets": [
       {
         "id": 1309,
@@ -1826,6 +1855,7 @@
   },
   {
     "district_id": 348,
+    "district_name": "Dondaicha",
     "markets": [
       {
         "id": 149,
@@ -1863,6 +1893,7 @@
   },
   {
     "district_id": 354,
+    "district_name": "Kolhapur",
     "markets": [
       {
         "id": 1302,
@@ -1892,6 +1923,7 @@
   },
   {
     "district_id": 372,
+    "district_name": "Washim",
     "markets": [
       {
         "id": 4030,
@@ -1945,6 +1977,7 @@
   },
   {
     "district_id": 366,
+    "district_name": "Ratnagiri",
     "markets": [
       {
         "id": 1651,
@@ -1954,6 +1987,7 @@
   },
   {
     "district_id": 370,
+    "district_name": "Sindhudurg",
     "markets": [
       {
         "id": 1892,

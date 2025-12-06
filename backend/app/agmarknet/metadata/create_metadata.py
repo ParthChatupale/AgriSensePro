@@ -1,123 +1,67 @@
-"""
-create_metadata.py
-Extracts:
-- commodities (only your selected 6)
-- states (only Maharashtra)
-- markets for Maharashtra
-- district → markets mapping
-- all grade mappings
-"""
-
 import json
+import re
 from pathlib import Path
+from collections import Counter
 
-# --------------------------------------------------------------------
-# CONFIG
-# --------------------------------------------------------------------
-MASTER_FILE = Path("agMeta.txt")
-OUT_DIR = Path("agmarknet/metadata")
-OUT_DIR.mkdir(parents=True, exist_ok=True)
+DISTRICTS_FILE = Path("districts.json")
 
-TARGET_STATE_ID = 20  # Maharashtra
+def clean_text(name: str) -> str:
+    """
+    Convert market name into a probable district name.
+    """
+    # Step 1: Strip "APMC" and anything after
+    name = name.split("APMC")[0].strip()
 
-# your 6 crops
-TARGET_COMMODITIES = {
-    15: "Cotton",
-    1: "Wheat",
-    3: "Rice",
-    122: "Sugarcane",
-    13: "Soybean",
-    23: "Onion",
-}
+    # Step 2: Remove parentheses
+    name = re.sub(r"\(.*?\)", "", name)
 
+    # Step 3: Remove multiple spaces
+    name = re.sub(r"\s+", " ", name)
 
-# --------------------------------------------------------------------
-# LOAD MASTER JSON
-# --------------------------------------------------------------------
-def load_master():
-    raw = MASTER_FILE.read_text(encoding="utf-8")
-    root = json.loads(raw)
+    # Step 4: Remove generic words
+    blacklist = [
+        "Krushi", "Krishi", "Market", "Agro", "Agriculture",
+        "Private", "Produce", "Utpanna", "Bazar", "Bazaar",
+        "Farm", "Company", "Co", "Ltd", "Limited", "Khajgi",
+        "Samiti", "Yard"
+    ]
+    tokens = [t for t in name.split() if t not in blacklist]
+    name = " ".join(tokens).strip()
 
-    if "data" not in root:
-        raise RuntimeError("Missing `data` key in master file")
-
-    return root["data"]
+    # Step 5: Title case
+    return name.title()
 
 
-# --------------------------------------------------------------------
-# PROCESS AND SAVE FILES
-# --------------------------------------------------------------------
-def write_json(name, data):
-    path = OUT_DIR / name
-    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    print(f"✔ wrote {name} ({len(data)} records)")
+def main():
+    print("🔍 Loading districts.json...")
+    districts = json.loads(DISTRICTS_FILE.read_text())
 
+    updated = []
 
-def build_metadata(data):
+    for d in districts:
+        district_id = d["district_id"]
+        market_names = [m["mkt_name"] for m in d["markets"]]
 
-    # -------------------------------------------
-    # STATES → only Maharashtra
-    # -------------------------------------------
-    states = data["state_data"]
-    mh_state = [s for s in states if s["state_id"] == TARGET_STATE_ID]
-    write_json("states.json", mh_state)
+        # Clean each market name into a candidate district name
+        candidates = [clean_text(m) for m in market_names if clean_text(m)]
 
-    # -------------------------------------------
-    # MARKETS → only Maharashtra
-    # -------------------------------------------
-    markets = data["market_data"]
-    mh_markets = [m for m in markets if m["state_id"] == TARGET_STATE_ID]
-    write_json("markets.json", mh_markets)
+        if not candidates:
+            district_name = f"District {district_id}"
+        else:
+            # Use the MOST FREQUENT candidate
+            district_name = Counter(candidates).most_common(1)[0][0]
 
-    # -------------------------------------------
-    # DISTRICTS → build district → markets mapping
-    # -------------------------------------------
-    district_map = {}
+        print(f"✔ district_id={district_id} → {district_name}")
 
-    for m in mh_markets:
-        d = m["district_id"]
-        if d not in district_map:
-            district_map[d] = {
-                "district_id": d,
-                "markets": []
-            }
-        district_map[d]["markets"].append({
-            "id": m["id"],
-            "mkt_name": m["mkt_name"]
+        updated.append({
+            "district_id": district_id,
+            "district_name": district_name,
+            "markets": d["markets"]
         })
 
-    districts = list(district_map.values())
-    write_json("districts.json", districts)
+    # Save updated version
+    DISTRICTS_FILE.write_text(json.dumps(updated, indent=2, ensure_ascii=False))
+    print("\n🎉 districts.json updated with district_name for all entries!")
 
-    # -------------------------------------------
-    # COMMODITIES → only your 6 required
-    # -------------------------------------------
-    cmdts = data["cmdt_data"]
-    selected = []
-
-    for c in cmdts:
-        cid = c["cmdt_id"]
-        if cid in TARGET_COMMODITIES:
-            selected.append({
-                "cmdt_id": cid,
-                "cmdt_name": TARGET_COMMODITIES[cid],
-                "cmdt_group_id": c["cmdt_group_id"]
-            })
-
-    write_json("commodities.json", selected)
-
-    # -------------------------------------------
-    # GRADES → store FULL grade list (unchanged)
-    # -------------------------------------------
-    grades = data["grade_data"]
-    write_json("grades.json", grades)
-
-    print("\n✔ ALL METADATA FILES GENERATED SUCCESSFULLY\n")
-
-
-# --------------------------------------------------------------------
-# MAIN
-# --------------------------------------------------------------------
 if __name__ == "__main__":
-    data = load_master()
-    build_metadata(data)
+    main()
