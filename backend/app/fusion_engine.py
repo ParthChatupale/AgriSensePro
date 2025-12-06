@@ -474,7 +474,7 @@ async def get_dashboard_data(
         if crop:
             primary_crop = crop.lower()
             try:
-                market_price_data = await fetch_market_price(crop, geo_info.get("district"))
+            market_price_data = await fetch_market_price(crop, geo_info.get("district"))
                 if market_price_data:
                     all_market[primary_crop] = market_price_data
             except Exception:
