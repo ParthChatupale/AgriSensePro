@@ -20,10 +20,12 @@ def main():
     # ============================================================
     state = "Maharashtra"
     district = "Akola"       # <--- NEW: pass district name here
+    commodity = "cotton"   # <--- pass the commodity name from test inputs
     
     print(f"\n📋 Input Parameters:")
     print(f"  State: {state}")
     print(f"  District: {district}")
+    print(f"  Commodity: {commodity}")
     
     # ============================================================
     # STEP 1: Convert state name to ID
@@ -59,6 +61,7 @@ def main():
         df, parsed_rows, chosen_date = fetch_daily_state_report(
             state_id=state_id,
             district_name=district,
+            commodity_name=commodity,
             refresh_cache=False  # use cached file if present; set True to force download
         )
         

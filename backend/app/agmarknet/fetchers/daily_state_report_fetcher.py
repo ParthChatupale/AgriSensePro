@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from typing import Tuple, List, Dict, Optional
 import unicodedata
 import re
+from difflib import SequenceMatcher
 
 BASE_URL = "https://api.agmarknet.gov.in/v1/prices-and-arrivals/commodity-market/daily-report-state"
 
@@ -34,6 +35,44 @@ def normalize_market_name(s):
     s = re.sub(r"[^\w\s]", "", s)
     s = re.sub(r"\s+", " ", s)
     return s.strip()
+
+
+def _normalize_text(s: Optional[str]) -> str:
+    """Normalize text for matching: lower, strip, remove punctuation, collapse whitespace."""
+    if not s:
+        return ""
+    s = str(s).lower().strip()
+    s = re.sub(r"[^\w\s]", " ", s)   # replace punctuation with space
+    s = re.sub(r"\s+", " ", s)      # collapse multiple spaces
+    return s
+
+
+def _is_close_match(a: str, b: str, threshold: float = 0.85) -> bool:
+    """Optional fuzzy check — returns True if similarity >= threshold."""
+    if not a or not b:
+        return False
+    return SequenceMatcher(None, a, b).ratio() >= threshold
+
+
+def _commodity_matches(parsed_commodity: str, target_name: str) -> bool:
+    """
+    Decide whether parsed_commodity (from Excel) matches target_name (user).
+    Strategy:
+      1. Normalize both.
+      2. Exact equality -> True
+      3. Substring checks (parsed contains target OR target contains parsed) -> True
+      4. Fuzzy similarity check as last resort (optional)
+    """
+    p = _normalize_text(parsed_commodity)
+    t = _normalize_text(target_name)
+    if not p or not t:
+        return False
+    if p == t:
+        return True
+    if t in p or p in t:
+        return True
+    # fuzzy fallback (keeps false positives low for short strings)
+    return _is_close_match(p, t, threshold=0.87)
 
 
 def parse_daily_state_excel(file_path: Path) -> Tuple[pd.DataFrame, List[Dict]]:
@@ -139,6 +178,7 @@ def fetch_daily_state_report(
     state_id: int,
     target_date: Optional[str] = None,
     district_name: Optional[str] = None,
+    commodity_name: Optional[str] = None,
     refresh_cache: bool = False
 ) -> Tuple[pd.DataFrame, List[Dict], str]:
     """
@@ -243,11 +283,69 @@ def fetch_daily_state_report(
                             )
                             return pd.DataFrame(district_rows), district_rows, date_str
                         
-                        # Return filtered results
+                        # At this point `district_rows` is a list of parsed row dicts for the district.
+                        # If a commodity_name was provided, filter the district_rows further.
+                        if commodity_name:
+                            # Primary filter: match by 'commodity' field in parsed rows
+                            matches_by_name = [
+                                r for r in district_rows
+                                if _commodity_matches(r.get("commodity") or "", commodity_name)
+                            ]
+                            
+                            if matches_by_name:
+                                df_cleaned = pd.DataFrame(matches_by_name)
+                                print(f"✅ Filtered by commodity name '{commodity_name}': {len(matches_by_name)} rows matched.")
+                                return df_cleaned, matches_by_name, date_str
+                            
+                            # Fallback: try matching by commodity group (if user gave an ambiguous name)
+                            # e.g. user passes 'Pulses' or 'Oil Seeds' — try matching against parsed 'group'
+                            matches_by_group = [
+                                r for r in district_rows
+                                if _commodity_matches(r.get("group") or "", commodity_name)
+                            ]
+                            if matches_by_group:
+                                df_cleaned = pd.DataFrame(matches_by_group)
+                                print(f"⚠️ No exact commodity-name matches for '{commodity_name}', "
+                                      f"but matched by group: {len(matches_by_group)} rows returned.")
+                                return df_cleaned, matches_by_group, date_str
+                            
+                            # No matches found
+                            print(f"⚠️ No data found for commodity '{commodity_name}' in district '{district_name}' on {date_str}.")
+                            return pd.DataFrame([]), [], date_str
+                        
+                        # No commodity filter requested → return district_rows
                         df_cleaned = pd.DataFrame(district_rows)
                         return df_cleaned, district_rows, date_str
                     
-                    # No district filtering, return all parsed rows
+                    # No district filtering, but check for commodity filtering
+                    if commodity_name:
+                        # Primary filter: match by 'commodity' field in parsed rows
+                        matches_by_name = [
+                            r for r in parsed_rows
+                            if _commodity_matches(r.get("commodity") or "", commodity_name)
+                        ]
+                        
+                        if matches_by_name:
+                            df_cleaned = pd.DataFrame(matches_by_name)
+                            print(f"✅ Filtered by commodity name '{commodity_name}': {len(matches_by_name)} rows matched.")
+                            return df_cleaned, matches_by_name, date_str
+                        
+                        # Fallback: try matching by commodity group
+                        matches_by_group = [
+                            r for r in parsed_rows
+                            if _commodity_matches(r.get("group") or "", commodity_name)
+                        ]
+                        if matches_by_group:
+                            df_cleaned = pd.DataFrame(matches_by_group)
+                            print(f"⚠️ No exact commodity-name matches for '{commodity_name}', "
+                                  f"but matched by group: {len(matches_by_group)} rows returned.")
+                            return df_cleaned, matches_by_group, date_str
+                        
+                        # No matches found
+                        print(f"⚠️ No data found for commodity '{commodity_name}' on {date_str}.")
+                        return pd.DataFrame([]), [], date_str
+                    
+                    # No district or commodity filtering, return all parsed rows
                     return df_cleaned, parsed_rows, date_str
                 else:
                     # Cached file has no data, proceed to download
@@ -363,9 +461,67 @@ def fetch_daily_state_report(
                         )
                         return pd.DataFrame(district_rows), district_rows, date_str
                     
-                    # Return filtered results
+                    # At this point `district_rows` is a list of parsed row dicts for the district.
+                    # If a commodity_name was provided, filter the district_rows further.
+                    if commodity_name:
+                        # Primary filter: match by 'commodity' field in parsed rows
+                        matches_by_name = [
+                            r for r in district_rows
+                            if _commodity_matches(r.get("commodity") or "", commodity_name)
+                        ]
+                        
+                        if matches_by_name:
+                            df_cleaned = pd.DataFrame(matches_by_name)
+                            print(f"✅ Filtered by commodity name '{commodity_name}': {len(matches_by_name)} rows matched.")
+                            return df_cleaned, matches_by_name, date_str
+                        
+                        # Fallback: try matching by commodity group (if user gave an ambiguous name)
+                        # e.g. user passes 'Pulses' or 'Oil Seeds' — try matching against parsed 'group'
+                        matches_by_group = [
+                            r for r in district_rows
+                            if _commodity_matches(r.get("group") or "", commodity_name)
+                        ]
+                        if matches_by_group:
+                            df_cleaned = pd.DataFrame(matches_by_group)
+                            print(f"⚠️ No exact commodity-name matches for '{commodity_name}', "
+                                  f"but matched by group: {len(matches_by_group)} rows returned.")
+                            return df_cleaned, matches_by_group, date_str
+                        
+                        # No matches found
+                        print(f"⚠️ No data found for commodity '{commodity_name}' in district '{district_name}' on {date_str}.")
+                        return pd.DataFrame([]), [], date_str
+                    
+                    # No commodity filter requested → return district_rows
                     df_cleaned = pd.DataFrame(district_rows)
                     return df_cleaned, district_rows, date_str
+                
+                # No district filtering, but check for commodity filtering
+                if commodity_name:
+                    # Primary filter: match by 'commodity' field in parsed rows
+                    matches_by_name = [
+                        r for r in parsed_rows
+                        if _commodity_matches(r.get("commodity") or "", commodity_name)
+                    ]
+                    
+                    if matches_by_name:
+                        df_cleaned = pd.DataFrame(matches_by_name)
+                        print(f"✅ Filtered by commodity name '{commodity_name}': {len(matches_by_name)} rows matched.")
+                        return df_cleaned, matches_by_name, date_str
+                    
+                    # Fallback: try matching by commodity group
+                    matches_by_group = [
+                        r for r in parsed_rows
+                        if _commodity_matches(r.get("group") or "", commodity_name)
+                    ]
+                    if matches_by_group:
+                        df_cleaned = pd.DataFrame(matches_by_group)
+                        print(f"⚠️ No exact commodity-name matches for '{commodity_name}', "
+                              f"but matched by group: {len(matches_by_group)} rows returned.")
+                        return df_cleaned, matches_by_group, date_str
+                    
+                    # No matches found
+                    print(f"⚠️ No data found for commodity '{commodity_name}' on {date_str}.")
+                    return pd.DataFrame([]), [], date_str
                 
                 return df_cleaned, parsed_rows, date_str
             else:
