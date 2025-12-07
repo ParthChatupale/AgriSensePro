@@ -246,9 +246,9 @@
     ]
   },
 
-  "soybean": {
-    "crop_id": "soybean",
-    "name": "Soybean",
+  "soyabean": {
+    "crop_id": "soyabean",
+    "name": "Soyabean",
     "scientific_name": "Glycine max",
     "season": "kharif",
     "growing_period_days": 110,

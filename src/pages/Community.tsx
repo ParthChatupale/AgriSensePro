@@ -690,7 +690,7 @@ const Community = () => {
                   <SelectItem value="wheat">Wheat</SelectItem>
                   <SelectItem value="cotton">Cotton</SelectItem>
                   <SelectItem value="sugarcane">Sugarcane</SelectItem>
-                  <SelectItem value="soybean">Soybean</SelectItem>
+                  <SelectItem value="soyabean">Soyabean</SelectItem>
                   <SelectItem value="onion">Onion</SelectItem>
                 </SelectContent>
               </Select>
@@ -783,7 +783,7 @@ const Community = () => {
                 <SelectItem value="wheat">Wheat</SelectItem>
                 <SelectItem value="cotton">Cotton</SelectItem>
                 <SelectItem value="sugarcane">Sugarcane</SelectItem>
-                <SelectItem value="soybean">Soybean</SelectItem>
+                <SelectItem value="soyabean">Soyabean</SelectItem>
                 <SelectItem value="onion">Onion</SelectItem>
               </SelectContent>
             </Select>

@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
 from . import fusion_engine, auth, community, ai
 from .routes import advisory_pdf
+from .agmarknet.api import dashboard as agmarknet_dashboard
+from .agmarknet.api import metadata as agmarknet_metadata
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -40,6 +42,8 @@ app.include_router(fusion_engine.router)
 app.include_router(community.router)
 app.include_router(ai.router)
 app.include_router(advisory_pdf.router)
+app.include_router(agmarknet_dashboard.router)
+app.include_router(agmarknet_metadata.router)
 
 # -------------------------------------------------------------------
 # 🌐 Root Route

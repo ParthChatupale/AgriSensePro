@@ -32,18 +32,46 @@ const Dashboard = () => {
   const [userCrop, setUserCrop] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<string | null>(null);
   const [userCoords, setUserCoords] = useState<{ lat?: number; lon?: number }>({});
+  const [userState, setUserState] = useState<string | null>(null);
+  const [userDistrict, setUserDistrict] = useState<string | null>(null);
   const [advisory, setAdvisory] = useState<AdvisoryLite | null>(null);
   const navigate = useNavigate();
 
-  const fetchDashboardData = async (crop?: string | null, coords?: { lat?: number; lon?: number }, location?: string | null) => {
+  const fetchDashboardData = async (
+    crop?: string | null, 
+    coords?: { lat?: number; lon?: number }, 
+    location?: string | null,
+    state?: string | null,
+    district?: string | null
+  ) => {
     setIsLoading(true);
     setError(null);
     try {
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (crop) {
+        params.append("crop", crop);
+      }
+      
+      // If manual state/district are provided, use those; otherwise use coordinates/location
+      if (state && district) {
+        params.append("state", state);
+        params.append("district", district);
+      } else if (coords?.lat !== undefined && coords?.lon !== undefined) {
+        params.append("latitude", coords.lat.toString());
+        params.append("longitude", coords.lon.toString());
+      } else if (location) {
+        params.append("location", location);
+      }
+      
+      // Use the existing getDashboardData function which handles the API call properly
       const data = await getDashboardData(
         crop || undefined,
         coords?.lat,
         coords?.lon,
-        location || undefined
+        location || undefined,
+        state || undefined,
+        district || undefined
       );
       setDashboardData(data);
 
@@ -75,7 +103,19 @@ const Dashboard = () => {
         let location: string | null = null;
         
         if (user.crop) crop = user.crop;
-        if (user.location) {
+        
+        // Check if user has manual state/district selection
+        const manualState = user.state || null;
+        const manualDistrict = user.district || null;
+        
+        if (manualState && manualDistrict) {
+          // Manual selection mode: use state and district
+          setUserState(manualState);
+          setUserDistrict(manualDistrict);
+          setUserLocation(null);
+          setUserCoords({});
+        } else if (user.location) {
+          // Auto-detect mode: use location coordinates
           location = user.location;
           // Parse location string (format: "lat, lon" or "lat,lon")
           const locationStr = user.location.trim();
@@ -87,14 +127,16 @@ const Dashboard = () => {
               coords = { lat, lon };
             }
           }
+          setUserLocation(location);
+          setUserCoords(coords);
+          setUserState(null);
+          setUserDistrict(null);
         }
         
         setUserCrop(crop);
-        setUserLocation(location);
-        setUserCoords(coords);
         
         // Fetch dashboard data with loaded profile info
-        await fetchDashboardData(crop, coords, location);
+        await fetchDashboardData(crop, coords, location, manualState, manualDistrict);
       } catch {
         // If profile load fails, still fetch dashboard with defaults
         await fetchDashboardData(null, {}, null);
@@ -104,11 +146,11 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    // Refetch when userCrop or coordinates change (e.g., after profile update)
-    if (userCrop !== null || userCoords.lat !== undefined || userCoords.lon !== undefined) {
-      fetchDashboardData(userCrop, userCoords, userLocation);
+    // Refetch when userCrop, coordinates, or manual state/district change (e.g., after profile update)
+    if (userCrop !== null || userCoords.lat !== undefined || userCoords.lon !== undefined || userState || userDistrict) {
+      fetchDashboardData(userCrop, userCoords, userLocation, userState, userDistrict);
     }
-  }, [userCrop, userCoords.lat, userCoords.lon]);
+  }, [userCrop, userCoords.lat, userCoords.lon, userState, userDistrict]);
 
   const handleRefresh = () => fetchDashboardData();
 

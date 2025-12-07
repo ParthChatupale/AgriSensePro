@@ -21,7 +21,7 @@ CROP_MAPPING = {
     "cotton": "Cotton",
     "wheat": "Wheat",
     "rice": "Rice",
-    "soybean": "Soybean",
+    "soyabean": "Soyabean",
     "onion": "Onion",
     "sugarcane": "Sugarcane",
 }

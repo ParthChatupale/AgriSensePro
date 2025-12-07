@@ -76,13 +76,13 @@
         "timestamp": "2025-11-13T05:00:00Z",
         "weather": {"temperature": 31, "humidity": 50, "rainfall": 0, "wind_speed": 5},
         "crop_health": {
-          "crop": "soybean",
+          "crop": "soyabean",
           "ndvi": 0.58,
           "ndvi_change": -0.09,
           "soil_moisture": 38,
           "crop_stage_days": 45
         },
-        "market": {"crop": "soybean", "price": 4800, "price_change_percent": -3.2, "mandi": "Indore"}
+        "market": {"crop": "soyabean", "price": 4800, "price_change_percent": -3.2, "mandi": "Indore"}
       },
       {
         "state": "Gujarat",

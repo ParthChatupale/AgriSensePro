@@ -1,15 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Camera, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { getCurrentUser, getUser, isAuthenticated, updateProfile, User } from "../services/api";
+import { getCurrentUser, getUser, isAuthenticated, updateProfile, User, getDistricts, getStates } from "../services/api";
 
+
+interface District {
+  district_id: number;
+  district_name: string;
+  markets: Array<{ id: number; mkt_name: string }>;
+}
+
+interface State {
+  state_id: number;
+  state_name: string;
+}
 
 const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,6 +38,11 @@ const Profile = () => {
     village: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [useManualSelection, setUseManualSelection] = useState(false);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [states, setStates] = useState<State[]>([]);
+  const [availableDistricts, setAvailableDistricts] = useState<District[]>([]);
+  const savedLocationRef = useRef<string>(""); // Store location when switching to manual mode
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,6 +70,10 @@ const Profile = () => {
           district: userData.district || "",
           village: userData.village || "",
         });
+        // Initialize saved location ref with user's location
+        if (userData.location) {
+          savedLocationRef.current = userData.location;
+        }
       } catch (error: any) {
         // Fallback to stored user data
         const storedUser = getUser();
@@ -69,6 +90,10 @@ const Profile = () => {
             district: storedUser.district || "",
             village: storedUser.village || "",
           });
+          // Initialize saved location ref with stored user's location
+          if (storedUser.location) {
+            savedLocationRef.current = storedUser.location;
+          }
         } else {
           toast.error("Failed to load user data");
           navigate("/login");
@@ -81,16 +106,77 @@ const Profile = () => {
     loadUserData();
   }, [navigate]);
 
+  // Load districts and states metadata
+  useEffect(() => {
+    const loadMetadata = async () => {
+      try {
+        const [districtsData, statesData] = await Promise.all([
+          getDistricts(),
+          getStates(),
+        ]);
+        setDistricts(districtsData);
+        setStates(statesData);
+        
+        // If user has state selected, filter districts
+        if (formData.state) {
+          // For now, show all districts (districts.json only has Maharashtra districts)
+          setAvailableDistricts(districtsData);
+        } else {
+          setAvailableDistricts(districtsData);
+        }
+      } catch (error) {
+        console.error("Failed to load metadata:", error);
+      }
+    };
+    loadMetadata();
+  }, []);
+
+  // Update available districts when state changes
+  useEffect(() => {
+    if (formData.state && districts.length > 0) {
+      // For now, districts.json only has Maharashtra districts, so show all
+      // In future, if multiple states are added, filter by state here
+      setAvailableDistricts(districts);
+    } else {
+      setAvailableDistricts(districts);
+    }
+    
+    // Clear district if state changes
+    if (!formData.state) {
+      setFormData({ ...formData, district: "" });
+    }
+  }, [formData.state, districts]);
+
+  // Check if user has manual selection enabled (if state/district are set)
+  useEffect(() => {
+    if (formData.state || formData.district) {
+      setUseManualSelection(true);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const updatedUser = await updateProfile({
+      const updateData: any = {
         name: formData.name,
         phone: formData.phone || undefined,
         crop: formData.crop || undefined,
-        location: formData.location || undefined,
-      });
+      };
+      
+      if (useManualSelection) {
+        // Manual mode: use state and district
+        updateData.state = formData.state || undefined;
+        updateData.district = formData.district || undefined;
+        updateData.location = undefined; // Clear location in manual mode
+      } else {
+        // Auto-detect mode: use location
+        updateData.location = formData.location || undefined;
+        updateData.state = undefined;
+        updateData.district = undefined;
+      }
+      
+      const updatedUser = await updateProfile(updateData);
       setUser(updatedUser);
       toast.success("Profile updated successfully!");
     } catch (error: any) {
@@ -105,10 +191,8 @@ const Profile = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const coords = `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
-          setFormData({ ...formData, location: coords });
-          toast.success("Location detected!");
           
-          // Auto-save location to profile
+          // Auto-save location to profile (backend will reverse geocode automatically)
           try {
             const updatedUser = await updateProfile({
               name: formData.name,
@@ -116,10 +200,23 @@ const Profile = () => {
               crop: formData.crop || undefined,
               location: coords,
             });
+            
+            // Update formData with location and reverse geocoded results
+            setFormData({
+              ...formData,
+              location: coords,
+              state: updatedUser.state || "",
+              district: updatedUser.district || "",
+              village: updatedUser.village || "",
+            });
             setUser(updatedUser);
-            toast.success("Location saved automatically!");
+            // Update saved location ref
+            savedLocationRef.current = coords;
+            toast.success("Location detected and reverse geocoded!");
           } catch (error: any) {
-            // Silently fail - location is in form, user can save manually
+            // If auto-save fails, still update location in form
+            setFormData({ ...formData, location: coords });
+            toast.success("Location detected! Please save to update profile.");
             console.log("Auto-save location failed:", error);
           }
         },
@@ -219,46 +316,181 @@ const Profile = () => {
                     <SelectItem value="wheat">Wheat</SelectItem>
                     <SelectItem value="rice">Rice</SelectItem>
                     <SelectItem value="sugarcane">Sugarcane</SelectItem>
-                    <SelectItem value="soybean">Soybean</SelectItem>
+                    <SelectItem value="soyabean">Soyabean</SelectItem>
                     <SelectItem value="onion">Onion</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="location">Farm Location</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    id="location" 
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="Enter farm location or coordinates"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handleGeolocate}
-                    title="Auto-detect location"
-                  >
-                    <MapPin className="h-4 w-4" />
-                  </Button>
+              {/* Location Mode Toggle */}
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="location-mode">Location Selection Mode</Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {useManualSelection ? "Manual Selection" : "Auto-Detect"}
+                    </span>
+                    <Switch
+                      id="location-mode"
+                      checked={useManualSelection}
+                      onCheckedChange={async (checked) => {
+                        setUseManualSelection(checked);
+                        if (!checked) {
+                          // Switching to auto-detect: clear manual selections
+                          // Restore location from saved ref, formData, user profile, or keep existing
+                          const locationToUse = savedLocationRef.current || formData.location || user?.location || "";
+                          const newFormData = { 
+                            ...formData, 
+                            state: "", 
+                            district: "", 
+                            village: "",
+                            location: locationToUse
+                          };
+                          setFormData(newFormData);
+                          
+                          // If location exists, reverse geocode it to populate state, district, village
+                          if (locationToUse) {
+                            try {
+                              const locationStr = locationToUse.trim();
+                              const parts = locationStr.split(/[,\s]+/).filter(p => p);
+                              if (parts.length >= 2) {
+                                const lat = parseFloat(parts[0]);
+                                const lon = parseFloat(parts[1]);
+                                if (!isNaN(lat) && !isNaN(lon)) {
+                                  // Call backend to reverse geocode and update profile
+                                  // The backend's updateProfile automatically reverse geocodes location
+                                  const updatedUser = await updateProfile({
+                                    name: formData.name,
+                                    phone: formData.phone || undefined,
+                                    crop: formData.crop || undefined,
+                                    location: locationToUse,
+                                  });
+                                  
+                                  // Update formData with reverse geocoded results
+                                  setFormData({
+                                    ...newFormData,
+                                    state: updatedUser.state || "",
+                                    district: updatedUser.district || "",
+                                    village: updatedUser.village || "",
+                                  });
+                                  setUser(updatedUser);
+                                  // Update saved location ref
+                                  savedLocationRef.current = locationToUse;
+                                  toast.success("Location reverse geocoded successfully!");
+                                }
+                              }
+                            } catch (error: any) {
+                              console.error("Reverse geocoding failed:", error);
+                              // Don't show error toast, just log it - user can manually geolocate
+                            }
+                          }
+                        } else {
+                          // Switching to manual: save current location before clearing it
+                          if (formData.location) {
+                            savedLocationRef.current = formData.location;
+                          } else if (user?.location) {
+                            savedLocationRef.current = user.location;
+                          }
+                          // Clear location from form display (but keep it in savedLocationRef)
+                          setFormData({ ...formData, location: "" });
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  {useManualSelection 
+                    ? "Select your state and district manually" 
+                    : "Automatically detect location from GPS coordinates"}
+                </p>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {useManualSelection ? (
+                <>
+                  {/* Manual Selection Mode: State and District Dropdowns */}
+                  <div className="space-y-2">
+                    <Label htmlFor="state-select">State</Label>
+                    <Select
+                      value={formData.state}
+                      onValueChange={(value) => setFormData({ ...formData, state: value, district: "" })}
+                    >
+                      <SelectTrigger id="state-select">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {states.map((state) => (
+                          <SelectItem key={state.state_id} value={state.state_name}>
+                            {state.state_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="district-select">District</Label>
+                    <Select
+                      value={formData.district}
+                      onValueChange={(value) => setFormData({ ...formData, district: value })}
+                      disabled={!formData.state}
+                    >
+                      <SelectTrigger id="district-select">
+                        <SelectValue placeholder={formData.state ? "Select district" : "Select state first"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableDistricts.map((district) => (
+                          <SelectItem key={district.district_id} value={district.district_name}>
+                            {district.district_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Auto-Detect Mode: Location Input */}
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Farm Location</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        id="location" 
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        placeholder="Enter farm location or coordinates"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={handleGeolocate}
+                        title="Auto-detect location"
+                      >
+                        <MapPin className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Auto-detected fields (read-only) */}
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State (Auto-detected)</Label>
+                    <Input id="state" value={formData.state} disabled className="bg-muted" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="district">District (Auto-detected)</Label>
+                    <Input id="district" value={formData.district} disabled className="bg-muted" />
+                  </div>
+                </>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
-                <Input id="state" value={formData.state} disabled className="bg-muted" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="district">District</Label>
-                <Input id="district" value={formData.district} disabled className="bg-muted" />
-              </div>
-            <div className="space-y-2">
                 <Label htmlFor="village">Village / Town</Label>
-                <Input id="village" value={formData.village} disabled className="bg-muted" />
+                <Input 
+                  id="village" 
+                  value={formData.village}
+                  onChange={(e) => setFormData({ ...formData, village: e.target.value })}
+                  placeholder="Optional"
+                />
               </div>
             </div>
 

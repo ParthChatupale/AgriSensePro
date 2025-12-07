@@ -366,14 +366,21 @@ export const getDashboardData = async (
   crop?: string,
   latitude?: number,
   longitude?: number,
-  location?: string
+  location?: string,
+  state?: string,
+  district?: string
 ): Promise<DashboardResponse> => {
   try {
     const params = new URLSearchParams();
     if (crop) {
       params.append("crop", crop);
     }
-    if (latitude !== undefined && longitude !== undefined) {
+    // If state and district are provided (manual selection), use those
+    if (state && district) {
+      params.append("state", state);
+      params.append("district", district);
+    } else if (latitude !== undefined && longitude !== undefined) {
+      // Auto-detect mode: use coordinates
       params.append("latitude", latitude.toString());
       params.append("longitude", longitude.toString());
     } else if (location) {
@@ -407,6 +414,32 @@ export const getDashboardData = async (
  * Fetch advisory data for a specific crop from Fusion Engine
  * @param cropName - Name of the crop (e.g., "cotton", "wheat", "rice")
  */
+/**
+ * Fetch districts from Agmarknet metadata
+ */
+export const getDistricts = async (): Promise<Array<{ district_id: number; district_name: string; markets: Array<{ id: number; mkt_name: string }> }>> => {
+  try {
+    const response = await api.get<Array<{ district_id: number; district_name: string; markets: Array<{ id: number; mkt_name: string }> }>>("/agmarknet/metadata/districts");
+    return response.data;
+  } catch (error: any) {
+    console.error("Failed to fetch districts:", error);
+    return [];
+  }
+};
+
+/**
+ * Fetch states from Agmarknet metadata
+ */
+export const getStates = async (): Promise<Array<{ state_id: number; state_name: string }>> => {
+  try {
+    const response = await api.get<Array<{ state_id: number; state_name: string }>>("/agmarknet/metadata/states");
+    return response.data;
+  } catch (error: any) {
+    console.error("Failed to fetch states:", error);
+    return [];
+  }
+};
+
 export const getAdvisory = async (cropName: string): Promise<AdvisoryResponse> => {
   try {
     const response = await api.get<AdvisoryResponse>(`/fusion/advisory/${cropName.toLowerCase()}`);

@@ -30,7 +30,7 @@ const Advisory = () => {
     { value: "wheat", label: t("advisory.crops.wheat") },
     { value: "rice", label: t("advisory.crops.rice") },
     { value: "sugarcane", label: t("advisory.crops.sugarcane") },
-    { value: "soybean", label: t("advisory.crops.soybean") },
+    { value: "soyabean", label: t("advisory.crops.soyabean") },
     { value: "onion", label: t("advisory.crops.onion") },
   ];
 

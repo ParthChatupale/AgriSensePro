@@ -26,6 +26,8 @@ from app.services.weather import get_realtime_weather
 from app.services.geocode import reverse_geocode
 from app.services.ndvi_synthetic import synthetic_ndvi, synthetic_ndvi_history
 from app.services.market_service import fetch_market_price
+from app.agmarknet.fetchers.daily_state_report_fetcher import fetch_daily_state_report
+from app.agmarknet.utils.lookup_ids import MetadataLookup
 
 router = APIRouter(prefix="/fusion", tags=["Fusion Engine"])
 
@@ -452,14 +454,39 @@ async def get_dashboard_data(
     Combine weather, market, and alert mock data for dashboard.
     """
     try:
-        weather, geo_info, lat, lon = await resolve_weather_context(
-            location=location,
-            latitude=latitude,
-            longitude=longitude,
-            state=state,
-            district=district,
-            village=village,
-        )
+        # If state and district are provided directly (manual selection), use them
+        # Otherwise, use reverse geocoding from coordinates/location
+        if state and district:
+            # Manual selection mode: use provided state and district
+            geo_info = {
+                "state": state,
+                "district": district,
+                "village": village,
+            }
+            # Still get weather from coordinates if available, otherwise use defaults
+            if latitude is not None and longitude is not None:
+                lat, lon = latitude, longitude
+            elif location:
+                lat, lon = parse_lat_lon(location)
+            else:
+                lat, lon = INDIA_CENTROID_LAT, INDIA_CENTROID_LON
+            
+            weather = await get_realtime_weather(lat, lon)
+            if not weather:
+                fallback_weather = load_json_file(os.path.join(DATA_PATH, "weather_data.json"))
+                weather = _load_weather_from_fallback(fallback_weather, lat, lon)
+            weather.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
+            weather.setdefault("location", f"{lat},{lon}")
+        else:
+            # Auto-detect mode: use reverse geocoding
+            weather, geo_info, lat, lon = await resolve_weather_context(
+                location=location,
+                latitude=latitude,
+                longitude=longitude,
+                state=state,
+                district=district,
+                village=village,
+            )
         crop_name_for_ndvi = crop.lower() if crop else "cotton"
         ndvi_latest, ndvi_change, ndvi_history = await fetch_ndvi_context(lat, lon, crop_name_for_ndvi)
         
@@ -469,17 +496,84 @@ async def get_dashboard_data(
         if not isinstance(all_market, dict):
             all_market = {}
         
-        # Step 2: If crop param provided, fetch real-time price and replace that crop's entry
+        # Step 2: If crop param provided, fetch real-time price from Agmarknet Excel and replace that crop's entry
         primary_crop = None
         if crop:
             primary_crop = crop.lower()
-            try:
-                market_price_data = await fetch_market_price(crop, geo_info.get("district"))
-                if market_price_data:
-                    all_market[primary_crop] = market_price_data
-            except Exception:
-                # If fetch fails, keep fallback data
-                pass
+            district_name = geo_info.get("district")
+            state_name = geo_info.get("state")
+            
+            # Print input variables
+            print(f"\n📊 [Fusion Dashboard] Agmarknet Excel Fetcher:")
+            print(f"   State: {state_name or 'N/A'}")
+            print(f"   District: {district_name or 'N/A'}")
+            print(f"   Commodity: {primary_crop}")
+            
+            # Try Agmarknet Excel fetcher first
+            agmarknet_price = None
+            if state_name and district_name:
+                try:
+                    lookup = MetadataLookup()
+                    state_id = lookup.get_state_id(state_name)
+                    
+                    print(f"   🔍 Calling fetch_daily_state_report (state_id={state_id}, district={district_name}, commodity={primary_crop})...")
+                    
+                    # Call the Agmarknet Excel fetcher (synchronous, but we're in async context)
+                    df_cleaned, parsed_rows, chosen_date = fetch_daily_state_report(
+                        state_id=state_id,
+                        district_name=district_name,
+                        commodity_name=primary_crop,
+                        refresh_cache=False  # Use cached Excel files
+                    )
+                    
+                    print(f"   📊 Parsed {len(parsed_rows)} rows from Excel file (date: {chosen_date})")
+                    
+                    if parsed_rows:
+                        # Calculate average modal price
+                        modal_prices = [r.get("modal_price") for r in parsed_rows if r.get("modal_price") is not None]
+                        if modal_prices:
+                            agmarknet_price = sum(modal_prices) / len(modal_prices)
+                            print(f"   ✅ Modal Price from Excel: ₹{agmarknet_price:.2f}/Quintal")
+                            
+                            # Get markets
+                            markets = list(set(r.get("market") for r in parsed_rows if r.get("market")))
+                            
+                            # Format as market_price_data structure
+                            market_price_data = {
+                                "price": agmarknet_price,
+                                "unit": "₹/quintal",
+                                "market": markets[0] if markets else "N/A",
+                                "price_change_percent": 0.0,  # Can't calculate without previous data
+                                "change_percent": 0.0,
+                                "trend": "stable",
+                            }
+                            all_market[primary_crop] = market_price_data
+                        else:
+                            print(f"   ⚠️  No modal prices found in parsed rows")
+                    else:
+                        print(f"   ⚠️  No data found in Excel for {primary_crop} in {district_name}")
+                except Exception as e:
+                    print(f"   ❌ Agmarknet Excel fetcher error: {e}")
+                    import traceback
+                    traceback.print_exc()
+            
+            # Fallback to old API if Agmarknet Excel fetcher didn't work
+            if agmarknet_price is None:
+                print(f"   🔄 Falling back to market_service API...")
+                try:
+                    market_price_data = await fetch_market_price(crop, district_name)
+                    if market_price_data:
+                        all_market[primary_crop] = market_price_data
+                        price = market_price_data.get("price")
+                        if price:
+                            print(f"   ✅ Modal Price from API: ₹{price:.2f}/Quintal")
+                        else:
+                            print(f"   ⚠️  Modal Price: N/A")
+                    else:
+                        print(f"   ❌ No market data returned from API")
+                except Exception as e:
+                    print(f"   ❌ Error fetching market price from API: {e}")
+                    pass
         
         # Step 3: Build final_market as an ordered array
         final_market = []

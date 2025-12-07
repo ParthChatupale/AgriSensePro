@@ -19,7 +19,7 @@ def synthetic_ndvi(lat: float, lon: float, crop: str) -> float:
         "cotton": (0.35, 0.80),
         "wheat": (0.45, 0.85),
         "rice": (0.40, 0.90),
-        "soybean": (0.35, 0.80),
+        "soyabean": (0.35, 0.80),
         "onion": (0.30, 0.75),
         "sugarcane": (0.50, 0.90),
     }
