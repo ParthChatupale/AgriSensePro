@@ -529,27 +529,112 @@ async def get_dashboard_data(
                     print(f"   📊 Parsed {len(parsed_rows)} rows from Excel file (date: {chosen_date})")
                     
                     if parsed_rows:
-                        # Calculate average modal price
-                        modal_prices = [r.get("modal_price") for r in parsed_rows if r.get("modal_price") is not None]
-                        if modal_prices:
-                            agmarknet_price = sum(modal_prices) / len(modal_prices)
-                            print(f"   ✅ Modal Price from Excel: ₹{agmarknet_price:.2f}/Quintal")
+                        # Log all parsed rows for debugging
+                        print(f"   📋 Parsed rows details (total: {len(parsed_rows)}):")
+                        for idx, row in enumerate(parsed_rows, 1):
+                            print(f"      Row {idx}: Market='{row.get('market')}', Commodity='{row.get('commodity')}', "
+                                  f"Modal={row.get('modal_price')}, Min={row.get('min_price')}, Max={row.get('max_price')}, "
+                                  f"Variety='{row.get('variety')}', Arrivals={row.get('arrivals')}")
+                        
+                        # Find the specific market that matches the district name
+                        # Strategy: Look for market name that best matches the district name
+                        # e.g., "Akola APMC" for district "Akola", "Chattrapati Sambhajinagar APMC" for "Chhatrapati Sambhajinagar"
+                        from app.agmarknet.fetchers.daily_state_report_fetcher import normalize_market_name
+                        
+                        district_normalized = normalize_market_name(district_name)
+                        matching_row = None
+                        best_match_score = 0.0
+                        
+                        # Load districts.json to get the primary market for this district
+                        import json
+                        from pathlib import Path
+                        BASE_DIR_FETCHER = Path(__file__).resolve().parents[1]  # backend/app/
+                        district_file = BASE_DIR_FETCHER / "agmarknet" / "metadata" / "districts.json"
+                        primary_market_name = None
+                        
+                        if district_file.exists():
+                            districts_data = json.loads(district_file.read_text(encoding="utf-8"))
+                            for d in districts_data:
+                                if normalize_market_name(d.get("district_name", "")) == district_normalized:
+                                    markets_list = d.get("markets", [])
+                                    # Get the first market (usually the primary one, e.g., "Akola APMC")
+                                    if markets_list:
+                                        primary_market_name = markets_list[0].get("mkt_name")
+                                        print(f"   🔍 Primary market for district '{district_name}': '{primary_market_name}'")
+                                    break
+                        
+                        # Try to find the best matching market
+                        for row in parsed_rows:
+                            market_name = row.get("market", "")
+                            market_normalized = normalize_market_name(market_name)
                             
-                            # Get markets
-                            markets = list(set(r.get("market") for r in parsed_rows if r.get("market")))
+                            # Priority 1: Exact match with primary market from districts.json
+                            if primary_market_name and normalize_market_name(primary_market_name) == market_normalized:
+                                matching_row = row
+                                print(f"   🎯 Found exact primary market match: '{market_name}'")
+                                break
+                            
+                            # Priority 2: District name is at the start of market name (e.g., "Akola" in "Akola APMC")
+                            if market_normalized.startswith(district_normalized):
+                                # Calculate match score (prefer shorter market names for exact matches)
+                                score = len(district_normalized) / max(len(market_normalized), 1)
+                                if score > best_match_score:
+                                    best_match_score = score
+                                    matching_row = row
+                            
+                            # Priority 3: District name is contained in market name
+                            elif district_normalized in market_normalized:
+                                score = len(district_normalized) / max(len(market_normalized), 1) * 0.8
+                                if score > best_match_score:
+                                    best_match_score = score
+                                    matching_row = row
+                        
+                        # If we found a match, use it
+                        if matching_row and matching_row.get("modal_price") is not None:
+                            agmarknet_price = matching_row.get("modal_price")
+                            market_name = matching_row.get("market", "N/A")
+                            
+                            print(f"   🎯 Selected market: '{market_name}'")
+                            print(f"   📊 Modal Price: ₹{agmarknet_price:.2f}/Quintal")
+                            print(f"   📊 Min Price: ₹{matching_row.get('min_price', 'N/A')}/Quintal")
+                            print(f"   📊 Max Price: ₹{matching_row.get('max_price', 'N/A')}/Quintal")
                             
                             # Format as market_price_data structure
                             market_price_data = {
                                 "price": agmarknet_price,
                                 "unit": "₹/quintal",
-                                "market": markets[0] if markets else "N/A",
+                                "market": market_name,
                                 "price_change_percent": 0.0,  # Can't calculate without previous data
                                 "change_percent": 0.0,
                                 "trend": "stable",
                             }
                             all_market[primary_crop] = market_price_data
+                            print(f"   ✅ Modal Price from Excel: ₹{agmarknet_price:.2f}/Quintal")
                         else:
-                            print(f"   ⚠️  No modal prices found in parsed rows")
+                            # Fallback: calculate average if no single match found
+                            modal_prices = [r.get("modal_price") for r in parsed_rows if r.get("modal_price") is not None]
+                            if modal_prices:
+                                agmarknet_price = sum(modal_prices) / len(modal_prices)
+                                print(f"   ⚠️  No single market match found, calculated average modal price: ₹{agmarknet_price:.2f}/Quintal (from {len(modal_prices)} rows)")
+                                print(f"   📊 Individual modal prices: {modal_prices}")
+                                
+                                # Get markets
+                                markets = list(set(r.get("market") for r in parsed_rows if r.get("market")))
+                                print(f"   📊 Markets found: {markets}")
+                                
+                                # Format as market_price_data structure
+                                market_price_data = {
+                                    "price": agmarknet_price,
+                                    "unit": "₹/quintal",
+                                    "market": markets[0] if markets else "N/A",
+                                    "price_change_percent": 0.0,  # Can't calculate without previous data
+                                    "change_percent": 0.0,
+                                    "trend": "stable",
+                                }
+                                all_market[primary_crop] = market_price_data
+                                print(f"   ✅ Modal Price from Excel (averaged): ₹{agmarknet_price:.2f}/Quintal")
+                            else:
+                                print(f"   ⚠️  No modal prices found in parsed rows")
                     else:
                         print(f"   ⚠️  No data found in Excel for {primary_crop} in {district_name}")
                 except Exception as e:

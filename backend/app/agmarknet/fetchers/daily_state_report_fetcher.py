@@ -295,6 +295,17 @@ def fetch_daily_state_report(
                             if matches_by_name:
                                 df_cleaned = pd.DataFrame(matches_by_name)
                                 print(f"✅ Filtered by commodity name '{commodity_name}': {len(matches_by_name)} rows matched.")
+                                # Log detailed row information for debugging
+                                print(f"   📋 Detailed row data:")
+                                for idx, row in enumerate(matches_by_name, 1):
+                                    print(f"      Row {idx}: Market='{row.get('market')}', "
+                                          f"Commodity='{row.get('commodity')}', "
+                                          f"Modal={row.get('modal_price')}, Min={row.get('min_price')}, Max={row.get('max_price')}, "
+                                          f"Variety='{row.get('variety')}', Arrivals={row.get('arrivals')}")
+                                # Log all markets in district for comparison
+                                print(f"   🔍 District '{district_name}' markets in districts.json:")
+                                for mkt in markets_list[:5]:  # Show first 5
+                                    print(f"      - {mkt.get('mkt_name')}")
                                 return df_cleaned, matches_by_name, date_str
                             
                             # Fallback: try matching by commodity group (if user gave an ambiguous name)
