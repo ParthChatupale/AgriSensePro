@@ -117,18 +117,49 @@ const Dashboard = () => {
     else navigate("/advisory/cotton");
   };
 
-  const formatPrice = (price: number, changePercent: number) => {
-    const isUp = changePercent >= 0;
-    const TrendIcon = isUp ? ArrowUpRight : ArrowDownRight;
-    const color = isUp ? "text-success" : "text-destructive";
+  // Null-safe number formatters
+  const fmtNumber = (v: number | null | undefined): string => {
+    if (v != null && !isNaN(v) && typeof v === "number") {
+      return v.toLocaleString("en-IN");
+    }
+    return "—";
+  };
+
+  const fmtNumberFixed = (v: number | null | undefined, decimals: number = 2): string => {
+    if (v != null && !isNaN(v) && typeof v === "number") {
+      return v.toFixed(decimals);
+    }
+    return "—";
+  };
+
+  const fmtPercent = (v: number | null | undefined, decimals: number = 1): string => {
+    if (v != null && !isNaN(v) && typeof v === "number") {
+      return `${Math.abs(v).toFixed(decimals)}%`;
+    }
+    return "—";
+  };
+
+  const formatPrice = (price: number | null | undefined, changePercent: number | null | undefined) => {
+    const safePrice = price != null && !isNaN(price) && typeof price === "number" ? price : null;
+    const safeChangePercent = changePercent != null && !isNaN(changePercent) && typeof changePercent === "number" ? changePercent : null;
+    
+    if (safePrice === null) {
+      return <span className="font-medium text-muted-foreground">—</span>;
+    }
+
+    const isUp = safeChangePercent != null && safeChangePercent >= 0;
+    const TrendIcon = isUp ? ArrowUpRight : safeChangePercent != null ? ArrowDownRight : ArrowRight;
+    const color = isUp ? "text-success" : safeChangePercent != null ? "text-destructive" : "text-muted-foreground";
 
     return (
       <div className="flex items-center gap-2">
-        <span className="font-medium">₹{price.toLocaleString("en-IN")}</span>
-        <span className={`flex items-center gap-1 text-xs ${color}`}>
-          <TrendIcon className="h-3 w-3" />
-          {Math.abs(changePercent).toFixed(1)}%
-        </span>
+        <span className="font-medium">₹{fmtNumber(safePrice)}</span>
+        {safeChangePercent != null && (
+          <span className={`flex items-center gap-1 text-xs ${color}`}>
+            <TrendIcon className="h-3 w-3" />
+            {fmtPercent(safeChangePercent)}
+          </span>
+        )}
       </div>
     );
   };
@@ -263,7 +294,21 @@ const Dashboard = () => {
     );
   }
 
-  const weather = dashboardData?.weather || { temperature: 28, humidity: 65, rainfall: 5, wind_speed: 12 };
+  // Safely get weather values with null checks
+  const getWeatherValue = (value: number | null | undefined, fallback: number): number => {
+    if (value != null && !isNaN(value) && typeof value === "number") {
+      return value;
+    }
+    return fallback;
+  };
+  
+  const weatherData = dashboardData?.weather || {};
+  const weather = {
+    temperature: getWeatherValue(weatherData.temperature, 28),
+    humidity: getWeatherValue(weatherData.humidity, 65),
+    rainfall: getWeatherValue(weatherData.rainfall, 5),
+    wind_speed: getWeatherValue(weatherData.wind_speed, 12),
+  };
   const marketList = Array.isArray(dashboardData?.market) ? dashboardData.market : [];
   const alerts = dashboardData?.alerts || [];
   const cropHealth = dashboardData?.crop_health || {};
@@ -271,11 +316,24 @@ const Dashboard = () => {
   const ndviStatus = getNdviStatus(ndviLatest);
   const ndviTrend = getTrendInfo(ndviChange);
   const TrendIcon = ndviTrend.icon;
-  const formattedNdviChange = ndviChange != null ? `${ndviChange > 0 ? "+" : ""}${ndviChange.toFixed(3)}` : null;
+  const formattedNdviChange = ndviChange != null && !isNaN(ndviChange) && typeof ndviChange === "number" 
+    ? `${ndviChange > 0 ? "+" : ""}${fmtNumberFixed(ndviChange, 3)}` 
+    : null;
   const lastUpdated = formatTimestamp(dashboardData?.weather?.timestamp);
   const sparklineColor = ndviStatus.label === "Good" ? "text-success" : ndviStatus.label === "Moderate" ? "text-warning" : ndviStatus.label === "Poor" ? "text-destructive" : "text-muted-foreground";
 
-  const marketPrimaryPrice = dashboardData?.market_primary_price || (marketList.length > 0 ? marketList[0]?.price : 2450);
+  // Safely get market primary price with fallback
+  const getMarketPrimaryPrice = (): number | null => {
+    const fromData = dashboardData?.market_primary_price;
+    if (fromData != null && !isNaN(fromData) && typeof fromData === "number") {
+      return fromData;
+    }
+    if (marketList.length > 0 && marketList[0]?.price != null && !isNaN(marketList[0].price) && typeof marketList[0].price === "number") {
+      return marketList[0].price;
+    }
+    return null;
+  };
+  const marketPrimaryPrice = getMarketPrimaryPrice();
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -299,16 +357,16 @@ const Dashboard = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">{t("dashboard.weather.title")}</p>
-                <h3 className="text-2xl font-bold">{weather.temperature}°C</h3>
+                <h3 className="text-2xl font-bold">{fmtNumber(weather.temperature)}°C</h3>
               </div>
               <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
                 <CloudRain className="h-6 w-6 text-secondary" />
               </div>
             </div>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.humidity")}</span><span className="font-medium">{weather.humidity}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.wind_speed")}</span><span className="font-medium">{weather.wind_speed} km/h</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.rainfall")}</span><span className="font-medium">{weather.rainfall}mm</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.humidity")}</span><span className="font-medium">{fmtNumber(weather.humidity)}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.wind_speed")}</span><span className="font-medium">{fmtNumber(weather.wind_speed)} km/h</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.rainfall")}</span><span className="font-medium">{fmtNumber(weather.rainfall)}mm</span></div>
             </div>
           </Card>
 
@@ -317,7 +375,7 @@ const Dashboard = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">{t("dashboard.market.title")}</p>
-                <h3 className="text-2xl font-bold">₹{marketPrimaryPrice.toLocaleString("en-IN")}</h3>
+                <h3 className="text-2xl font-bold">₹{fmtNumber(marketPrimaryPrice)}</h3>
               </div>
               <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-success" />
@@ -344,7 +402,7 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground mb-1">{t("dashboard.ndvi.title")}</p>
                 {ndviLatest != null ? (
                   <div className="flex items-baseline gap-3">
-                    <h3 className="text-3xl font-bold">{ndviLatest.toFixed(2)}</h3>
+                    <h3 className="text-3xl font-bold">{fmtNumberFixed(ndviLatest, 2)}</h3>
                     <span className={`text-xs font-medium px-2 py-1 rounded-full tracking-wide ${ndviStatus.badgeClass}`}>
                       {ndviStatus.label}
                     </span>
@@ -407,7 +465,7 @@ const Dashboard = () => {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.ndvi_title", { crop: userCrop })}</p>
-                  <h3 className="text-2xl font-bold">{advisory.metrics?.ndvi?.toFixed(2) ?? "-"}</h3>
+                  <h3 className="text-2xl font-bold">{fmtNumberFixed(advisory.metrics?.ndvi, 2)}</h3>
                 </div>
                 <Satellite className="h-6 w-6 text-primary" />
               </div>
@@ -419,7 +477,11 @@ const Dashboard = () => {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.soil_moisture")}</p>
-                  <h3 className="text-2xl font-bold">{advisory.metrics?.soil_moisture != null ? `${Math.round((advisory.metrics?.soil_moisture ?? 0)*100)}%` : "-"}</h3>
+                  <h3 className="text-2xl font-bold">
+                    {advisory.metrics?.soil_moisture != null && !isNaN(advisory.metrics.soil_moisture) && typeof advisory.metrics.soil_moisture === "number"
+                      ? `${Math.round(advisory.metrics.soil_moisture * 100)}%`
+                      : "—"}
+                  </h3>
                 </div>
                 <Droplets className="h-6 w-6 text-info" />
               </div>
@@ -431,13 +493,13 @@ const Dashboard = () => {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.weather_snapshot")}</p>
-                  <h3 className="text-2xl font-bold">{advisory.metrics?.temperature ?? "-"}°C</h3>
+                  <h3 className="text-2xl font-bold">{fmtNumber(advisory.metrics?.temperature)}°C</h3>
                 </div>
                 <Thermometer className="h-6 w-6 text-secondary" />
               </div>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.humidity")}</span><span className="font-medium">{advisory.metrics?.humidity ?? "-"}%</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.rainfall")}</span><span className="font-medium">{advisory.metrics?.rainfall ?? "-"}mm</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.humidity")}</span><span className="font-medium">{fmtNumber(advisory.metrics?.humidity)}%</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.weather.rainfall")}</span><span className="font-medium">{fmtNumber(advisory.metrics?.rainfall)}mm</span></div>
               </div>
             </Card>
 
@@ -465,7 +527,7 @@ const Dashboard = () => {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">{t("dashboard.advisory.market_price")}</p>
-                  <h3 className="text-2xl font-bold">{advisory.metrics?.market_price ? `₹${advisory.metrics?.market_price.toLocaleString("en-IN")}` : "-"}</h3>
+                  <h3 className="text-2xl font-bold">₹{fmtNumber(advisory.metrics?.market_price)}</h3>
                 </div>
                 <TrendingUp className="h-6 w-6 text-success" />
               </div>
@@ -480,7 +542,9 @@ const Dashboard = () => {
             <h2 className="text-xl font-heading font-bold mb-4">{t("dashboard.crop_health.title")}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(cropHealth).map(([cropName, health]: [string, any]) => {
-                const healthScore = health.health_score || 0;
+                const healthScore = (health.health_score != null && !isNaN(health.health_score) && typeof health.health_score === "number") 
+                  ? health.health_score 
+                  : 0;
                 const healthColor = healthScore >= 80 ? "text-success" : healthScore >= 60 ? "text-warning" : "text-destructive";
                 const healthStatus = healthScore >= 80 ? t("dashboard.crop_health.status.good") : healthScore >= 60 ? t("dashboard.crop_health.status.warning") : t("dashboard.crop_health.status.risk");
                 const isUserCrop = userCrop && cropName.toLowerCase() === userCrop.toLowerCase();
@@ -499,8 +563,12 @@ const Dashboard = () => {
                       </Badge>
                     </div>
                     <div className="space-y-1.5 text-sm">
-                      <div className="flex justify-between"><span className="text-muted-foreground">NDVI</span><span className="font-medium">{health.ndvi?.toFixed(2) || "N/A"}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.advisory.soil_moisture")}</span><span className="font-medium">{health.soil_moisture || 0}%</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">NDVI</span><span className="font-medium">{fmtNumberFixed(health.ndvi, 2)}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.advisory.soil_moisture")}</span><span className="font-medium">
+                        {health.soil_moisture != null && !isNaN(health.soil_moisture) && typeof health.soil_moisture === "number"
+                          ? `${fmtNumber(health.soil_moisture < 1 ? health.soil_moisture * 100 : health.soil_moisture)}%`
+                          : "—"}
+                      </span></div>
                       <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.crop_health.stage")}</span><span className="font-medium capitalize">{health.crop_stage || "N/A"}</span></div>
                     </div>
                   </Card>
@@ -530,7 +598,7 @@ const Dashboard = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-muted-foreground">{t("dashboard.alerts.confidence")}</span>
-                        <span className="font-medium">{alert.confidence}%</span>
+                        <span className="font-medium">{fmtNumber(alert.confidence)}%</span>
                       </div>
                       {alert.description && (<p className="text-xs text-muted-foreground mt-2">{alert.description}</p>)}
                       <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => handleViewAdvisory(alert.crop)}>{t("dashboard.alerts.view_advisory")}</Button>

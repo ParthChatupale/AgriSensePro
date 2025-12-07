@@ -19,8 +19,8 @@ def main():
     # Input parameters
     # ============================================================
     state = "Maharashtra"
-    district = "Akola"       # <--- NEW: pass district name here
-    commodity = "cotton"   # <--- pass the commodity name from test inputs
+    district = "Chattrapati Sambhajinagar"       # <--- NEW: pass district name here
+    commodity = "soyabean"   # <--- pass the commodity name from test inputs
     
     print(f"\n📋 Input Parameters:")
     print(f"  State: {state}")
