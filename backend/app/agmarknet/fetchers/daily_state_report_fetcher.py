@@ -223,10 +223,15 @@ def fetch_daily_state_report(
     
     # Try each date
     last_error = None
+    initial_date = dates_to_try[0] if dates_to_try else None  # Store first date for fallback limit
     
-    for date_obj in dates_to_try:
+    for date_idx, date_obj in enumerate(dates_to_try):
         date_str = date_obj.strftime("%Y-%m-%d")
         file_path = DOWNLOADS_DIR / f"{date_str}.xlsx"
+        
+        # Only allow fallback dates for the first date in the main loop
+        # Fallback dates should only go back 3 days from the first date, not from each date
+        allow_fallback = (date_idx == 0) and (initial_date is not None)
         
         # Check if cached file exists and refresh_cache is False
         if file_path.exists() and not refresh_cache:
@@ -278,10 +283,84 @@ def fetch_daily_state_report(
                         
                         if not district_rows:
                             print(
-                                f"⚠️ No rows matched markets for district '{district_name}'.\n"
+                                f"⚠️ No rows matched markets for district '{district_name}' on {date_str}.\n"
                                 f"   Markets expected: {list(district_market_names)[:10]}"
                             )
-                            return pd.DataFrame(district_rows), district_rows, date_str
+                            # Try fallback dates: only for first date, go back up to 3 days from initial date
+                            if not allow_fallback:
+                                print(f"❌ No data found for district '{district_name}' on {date_str}. Skipping fallback (only allowed for first date).")
+                                continue
+                            
+                            print(f"🔄 Trying fallback dates (up to 3 days before {date_str})...")
+                            fallback_found = False
+                            
+                            for fallback_days in range(1, 4):  # Try 1, 2, 3 days before
+                                fallback_date = initial_date - timedelta(days=fallback_days)
+                                fallback_date_str = fallback_date.strftime("%Y-%m-%d")
+                                fallback_file_path = DOWNLOADS_DIR / f"{fallback_date_str}.xlsx"
+                                
+                                print(f"   📥 Trying fallback date: {fallback_date_str}")
+                                
+                                # Download fallback file if not cached
+                                if not fallback_file_path.exists() or refresh_cache:
+                                    try:
+                                        fallback_params = {
+                                            "liveDate": fallback_date_str,
+                                            "date": fallback_date_str,
+                                            "state": state_id,
+                                            "includeExcel": "true"
+                                        }
+                                        print(f"   🔗 Downloading from URL with date: {fallback_date_str}")
+                                        fallback_resp = requests.get(
+                                            BASE_URL,
+                                            params=fallback_params,
+                                            timeout=45,
+                                            headers={"User-Agent": "AgriSenseBot/1.0"}
+                                        )
+                                        fallback_resp.raise_for_status()
+                                        
+                                        content_type = fallback_resp.headers.get("Content-Type", "").lower()
+                                        if "excel" not in content_type and "spreadsheet" not in content_type:
+                                            print(f"   ⚠️  Skipping {fallback_date_str}: not an Excel file")
+                                            continue
+                                        
+                                        with open(fallback_file_path, "wb") as f:
+                                            f.write(fallback_resp.content)
+                                        print(f"   ✅ Downloaded fallback file: {fallback_date_str}.xlsx")
+                                    except Exception as e:
+                                        print(f"   ❌ Failed to download fallback file for {fallback_date_str}: {e}")
+                                        continue
+                                
+                                # Parse fallback file
+                                try:
+                                    fallback_df, fallback_parsed = parse_daily_state_excel(fallback_file_path)
+                                    
+                                    if len(fallback_parsed) > 5:
+                                        # Filter by district
+                                        fallback_district_rows = [
+                                            r for r in fallback_parsed
+                                            if normalize_market_name(r.get("market")) in district_market_names
+                                        ]
+                                        
+                                        if fallback_district_rows:
+                                            print(f"   ✅ Found {len(fallback_district_rows)} rows for district '{district_name}' on {fallback_date_str}")
+                                            district_rows = fallback_district_rows
+                                            parsed_rows = fallback_parsed  # Update parsed_rows for commodity filtering
+                                            date_str = fallback_date_str  # Update to use fallback date
+                                            fallback_found = True
+                                            break
+                                        else:
+                                            print(f"   ⚠️  No district data in fallback file {fallback_date_str}")
+                                    else:
+                                        print(f"   ⚠️  Fallback file {fallback_date_str} has insufficient data")
+                                except Exception as e:
+                                    print(f"   ❌ Error parsing fallback file {fallback_date_str}: {e}")
+                                    continue
+                            
+                            if not fallback_found:
+                                print(f"❌ No data found for district '{district_name}' after trying fallback dates from {date_str}")
+                                # Continue to next date in main loop instead of returning
+                                continue
                         
                         # At this point `district_rows` is a list of parsed row dicts for the district.
                         # If a commodity_name was provided, filter the district_rows further.
@@ -320,9 +399,91 @@ def fetch_daily_state_report(
                                       f"but matched by group: {len(matches_by_group)} rows returned.")
                                 return df_cleaned, matches_by_group, date_str
                             
-                            # No matches found
+                            # No matches found - try fallback dates (only for first date)
                             print(f"⚠️ No data found for commodity '{commodity_name}' in district '{district_name}' on {date_str}.")
-                            return pd.DataFrame([]), [], date_str
+                            # Try fallback dates: only for first date, go back up to 3 days from initial date
+                            if not allow_fallback:
+                                print(f"❌ No data found for commodity '{commodity_name}' in district '{district_name}' on {date_str}. Skipping fallback (only allowed for first date).")
+                                continue
+                            
+                            print(f"🔄 Trying fallback dates for commodity (up to 3 days before {date_str})...")
+                            fallback_found = False
+                            
+                            for fallback_days in range(1, 4):  # Try 1, 2, 3 days before
+                                fallback_date = initial_date - timedelta(days=fallback_days)
+                                fallback_date_str = fallback_date.strftime("%Y-%m-%d")
+                                fallback_file_path = DOWNLOADS_DIR / f"{fallback_date_str}.xlsx"
+                                
+                                print(f"   📥 Trying fallback date: {fallback_date_str}")
+                                
+                                # Download fallback file if not cached
+                                if not fallback_file_path.exists() or refresh_cache:
+                                    try:
+                                        fallback_params = {
+                                            "liveDate": fallback_date_str,
+                                            "date": fallback_date_str,
+                                            "state": state_id,
+                                            "includeExcel": "true"
+                                        }
+                                        print(f"   🔗 Downloading from URL with date: {fallback_date_str}")
+                                        fallback_resp = requests.get(
+                                            BASE_URL,
+                                            params=fallback_params,
+                                            timeout=45,
+                                            headers={"User-Agent": "AgriSenseBot/1.0"}
+                                        )
+                                        fallback_resp.raise_for_status()
+                                        
+                                        content_type = fallback_resp.headers.get("Content-Type", "").lower()
+                                        if "excel" not in content_type and "spreadsheet" not in content_type:
+                                            print(f"   ⚠️  Skipping {fallback_date_str}: not an Excel file")
+                                            continue
+                                        
+                                        with open(fallback_file_path, "wb") as f:
+                                            f.write(fallback_resp.content)
+                                        print(f"   ✅ Downloaded fallback file: {fallback_date_str}.xlsx")
+                                    except Exception as e:
+                                        print(f"   ❌ Failed to download fallback file for {fallback_date_str}: {e}")
+                                        continue
+                                
+                                # Parse fallback file
+                                try:
+                                    fallback_df, fallback_parsed = parse_daily_state_excel(fallback_file_path)
+                                    
+                                    if len(fallback_parsed) > 5:
+                                        # Filter by district first
+                                        fallback_district_rows = [
+                                            r for r in fallback_parsed
+                                            if normalize_market_name(r.get("market")) in district_market_names
+                                        ]
+                                        
+                                        if fallback_district_rows:
+                                            # Then filter by commodity
+                                            fallback_commodity_rows = [
+                                                r for r in fallback_district_rows
+                                                if _commodity_matches(r.get("commodity") or "", commodity_name)
+                                            ]
+                                            
+                                            if fallback_commodity_rows:
+                                                print(f"   ✅ Found {len(fallback_commodity_rows)} rows for commodity '{commodity_name}' in district '{district_name}' on {fallback_date_str}")
+                                                df_cleaned = pd.DataFrame(fallback_commodity_rows)
+                                                date_str = fallback_date_str  # Update to use fallback date
+                                                fallback_found = True
+                                                return df_cleaned, fallback_commodity_rows, date_str
+                                            else:
+                                                print(f"   ⚠️  No commodity data in fallback file {fallback_date_str}")
+                                        else:
+                                            print(f"   ⚠️  No district data in fallback file {fallback_date_str}")
+                                    else:
+                                        print(f"   ⚠️  Fallback file {fallback_date_str} has insufficient data")
+                                except Exception as e:
+                                    print(f"   ❌ Error parsing fallback file {fallback_date_str}: {e}")
+                                    continue
+                            
+                            if not fallback_found:
+                                print(f"❌ No data found for commodity '{commodity_name}' in district '{district_name}' after trying fallback dates from {date_str}")
+                                # Continue to next date in main loop instead of returning
+                                continue
                         
                         # No commodity filter requested → return district_rows
                         df_cleaned = pd.DataFrame(district_rows)
@@ -467,10 +628,86 @@ def fetch_daily_state_report(
                     
                     if not district_rows:
                         print(
-                            f"⚠️ No rows matched markets for district '{district_name}'.\n"
+                            f"⚠️ No rows matched markets for district '{district_name}' on {date_str}.\n"
                             f"   Markets expected: {list(district_market_names)[:10]}"
                         )
-                        return pd.DataFrame(district_rows), district_rows, date_str
+                        # Try fallback dates: only for first date, go back up to 3 days from initial date
+                        if not allow_fallback:
+                            print(f"❌ No data found for district '{district_name}' on {date_str}. Skipping fallback (only allowed for first date).")
+                            last_error = f"No district data found for '{district_name}' on {date_str}"
+                            continue
+                        
+                        print(f"🔄 Trying fallback dates (up to 3 days before {date_str})...")
+                        fallback_found = False
+                        
+                        for fallback_days in range(1, 4):  # Try 1, 2, 3 days before
+                            fallback_date = initial_date - timedelta(days=fallback_days)
+                            fallback_date_str = fallback_date.strftime("%Y-%m-%d")
+                            fallback_file_path = DOWNLOADS_DIR / f"{fallback_date_str}.xlsx"
+                            
+                            print(f"   📥 Trying fallback date: {fallback_date_str}")
+                            
+                            # Download fallback file if not cached
+                            if not fallback_file_path.exists() or refresh_cache:
+                                try:
+                                    fallback_params = {
+                                        "liveDate": fallback_date_str,
+                                        "date": fallback_date_str,
+                                        "state": state_id,
+                                        "includeExcel": "true"
+                                    }
+                                    print(f"   🔗 Downloading from URL with date: {fallback_date_str}")
+                                    fallback_resp = requests.get(
+                                        BASE_URL,
+                                        params=fallback_params,
+                                        timeout=45,
+                                        headers={"User-Agent": "AgriSenseBot/1.0"}
+                                    )
+                                    fallback_resp.raise_for_status()
+                                    
+                                    content_type = fallback_resp.headers.get("Content-Type", "").lower()
+                                    if "excel" not in content_type and "spreadsheet" not in content_type:
+                                        print(f"   ⚠️  Skipping {fallback_date_str}: not an Excel file")
+                                        continue
+                                    
+                                    with open(fallback_file_path, "wb") as f:
+                                        f.write(fallback_resp.content)
+                                    print(f"   ✅ Downloaded fallback file: {fallback_date_str}.xlsx")
+                                except Exception as e:
+                                    print(f"   ❌ Failed to download fallback file for {fallback_date_str}: {e}")
+                                    continue
+                            
+                            # Parse fallback file
+                            try:
+                                fallback_df, fallback_parsed = parse_daily_state_excel(fallback_file_path)
+                                
+                                if len(fallback_parsed) > 5:
+                                    # Filter by district
+                                    fallback_district_rows = [
+                                        r for r in fallback_parsed
+                                        if normalize_market_name(r.get("market")) in district_market_names
+                                    ]
+                                    
+                                    if fallback_district_rows:
+                                        print(f"   ✅ Found {len(fallback_district_rows)} rows for district '{district_name}' on {fallback_date_str}")
+                                        district_rows = fallback_district_rows
+                                        parsed_rows = fallback_parsed  # Update parsed_rows for commodity filtering
+                                        date_str = fallback_date_str  # Update to use fallback date
+                                        fallback_found = True
+                                        break
+                                    else:
+                                        print(f"   ⚠️  No district data in fallback file {fallback_date_str}")
+                                else:
+                                    print(f"   ⚠️  Fallback file {fallback_date_str} has insufficient data")
+                            except Exception as e:
+                                print(f"   ❌ Error parsing fallback file {fallback_date_str}: {e}")
+                                continue
+                        
+                        if not fallback_found:
+                            print(f"❌ No data found for district '{district_name}' after trying fallback dates from {date_str}")
+                            # Continue to next date in main loop instead of returning
+                            last_error = f"No district data found for '{district_name}' on {date_str} and fallback dates"
+                            continue
                     
                     # At this point `district_rows` is a list of parsed row dicts for the district.
                     # If a commodity_name was provided, filter the district_rows further.
@@ -498,9 +735,93 @@ def fetch_daily_state_report(
                                   f"but matched by group: {len(matches_by_group)} rows returned.")
                             return df_cleaned, matches_by_group, date_str
                         
-                        # No matches found
+                        # No matches found - try fallback dates (only for first date)
                         print(f"⚠️ No data found for commodity '{commodity_name}' in district '{district_name}' on {date_str}.")
-                        return pd.DataFrame([]), [], date_str
+                        # Try fallback dates: only for first date, go back up to 3 days from initial date
+                        if not allow_fallback:
+                            print(f"❌ No data found for commodity '{commodity_name}' in district '{district_name}' on {date_str}. Skipping fallback (only allowed for first date).")
+                            last_error = f"No commodity data found for '{commodity_name}' in district '{district_name}' on {date_str}"
+                            continue
+                        
+                        print(f"🔄 Trying fallback dates for commodity (up to 3 days before {date_str})...")
+                        fallback_found = False
+                        
+                        for fallback_days in range(1, 4):  # Try 1, 2, 3 days before
+                            fallback_date = initial_date - timedelta(days=fallback_days)
+                            fallback_date_str = fallback_date.strftime("%Y-%m-%d")
+                            fallback_file_path = DOWNLOADS_DIR / f"{fallback_date_str}.xlsx"
+                            
+                            print(f"   📥 Trying fallback date: {fallback_date_str}")
+                            
+                            # Download fallback file if not cached
+                            if not fallback_file_path.exists() or refresh_cache:
+                                try:
+                                    fallback_params = {
+                                        "liveDate": fallback_date_str,
+                                        "date": fallback_date_str,
+                                        "state": state_id,
+                                        "includeExcel": "true"
+                                    }
+                                    print(f"   🔗 Downloading from URL with date: {fallback_date_str}")
+                                    fallback_resp = requests.get(
+                                        BASE_URL,
+                                        params=fallback_params,
+                                        timeout=45,
+                                        headers={"User-Agent": "AgriSenseBot/1.0"}
+                                    )
+                                    fallback_resp.raise_for_status()
+                                    
+                                    content_type = fallback_resp.headers.get("Content-Type", "").lower()
+                                    if "excel" not in content_type and "spreadsheet" not in content_type:
+                                        print(f"   ⚠️  Skipping {fallback_date_str}: not an Excel file")
+                                        continue
+                                    
+                                    with open(fallback_file_path, "wb") as f:
+                                        f.write(fallback_resp.content)
+                                    print(f"   ✅ Downloaded fallback file: {fallback_date_str}.xlsx")
+                                except Exception as e:
+                                    print(f"   ❌ Failed to download fallback file for {fallback_date_str}: {e}")
+                                    continue
+                            
+                            # Parse fallback file
+                            try:
+                                fallback_df, fallback_parsed = parse_daily_state_excel(fallback_file_path)
+                                
+                                if len(fallback_parsed) > 5:
+                                    # Filter by district first
+                                    fallback_district_rows = [
+                                        r for r in fallback_parsed
+                                        if normalize_market_name(r.get("market")) in district_market_names
+                                    ]
+                                    
+                                    if fallback_district_rows:
+                                        # Then filter by commodity
+                                        fallback_commodity_rows = [
+                                            r for r in fallback_district_rows
+                                            if _commodity_matches(r.get("commodity") or "", commodity_name)
+                                        ]
+                                        
+                                        if fallback_commodity_rows:
+                                            print(f"   ✅ Found {len(fallback_commodity_rows)} rows for commodity '{commodity_name}' in district '{district_name}' on {fallback_date_str}")
+                                            df_cleaned = pd.DataFrame(fallback_commodity_rows)
+                                            date_str = fallback_date_str  # Update to use fallback date
+                                            fallback_found = True
+                                            return df_cleaned, fallback_commodity_rows, date_str
+                                        else:
+                                            print(f"   ⚠️  No commodity data in fallback file {fallback_date_str}")
+                                    else:
+                                        print(f"   ⚠️  No district data in fallback file {fallback_date_str}")
+                                else:
+                                    print(f"   ⚠️  Fallback file {fallback_date_str} has insufficient data")
+                            except Exception as e:
+                                print(f"   ❌ Error parsing fallback file {fallback_date_str}: {e}")
+                                continue
+                        
+                        if not fallback_found:
+                            print(f"❌ No data found for commodity '{commodity_name}' in district '{district_name}' after trying fallback dates from {date_str}")
+                            # Continue to next date in main loop instead of returning
+                            last_error = f"No commodity data found for '{commodity_name}' in district '{district_name}' on {date_str} and fallback dates"
+                            continue
                     
                     # No commodity filter requested → return district_rows
                     df_cleaned = pd.DataFrame(district_rows)
@@ -557,9 +878,11 @@ def fetch_daily_state_report(
             print(f"❌ {last_error}")
             continue
     
-    # All attempts failed
-    raise requests.RequestException(
-        f"Failed to fetch Daily State Report after trying {len(dates_to_try)} date(s). "
-        f"Last error: {last_error}"
-    )
+    # All attempts failed - return empty data gracefully
+    error_msg = f"Failed to fetch Daily State Report after trying {len(dates_to_try)} date(s)"
+    if last_error:
+        error_msg += f". Last error: {last_error}"
+    print(f"⚠️ {error_msg}")
+    print(f"   Returning empty data instead of raising exception")
+    return pd.DataFrame([]), [], dates_to_try[0].strftime("%Y-%m-%d") if dates_to_try else datetime.now().strftime("%Y-%m-%d")
 
