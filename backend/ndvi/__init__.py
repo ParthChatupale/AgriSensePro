@@ -1,0 +1,2 @@
+# NDVI module package
+
