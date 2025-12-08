@@ -1,0 +1,59 @@
+{
+    "request": {
+        "headers": {
+            "accept": "image/tiff",
+            "content-type": "application/json"
+        },
+        "payload": {
+            "evalscript": "\n    function setup() {\n        return {\n            input: [\"B02\"],\n            output: { id: \"default\", bands: 1, sampleType: \"FLOAT32\" }\n        };\n    }\n    function evaluatePixel(sample) {\n        return [sample.B02];\n    }\n    ",
+            "input": {
+                "bounds": {
+                    "bbox": [
+                        14.505,
+                        46.05,
+                        14.51,
+                        46.055
+                    ],
+                    "properties": {
+                        "crs": "http://www.opengis.net/def/crs/EPSG/0/4326"
+                    }
+                },
+                "data": [
+                    {
+                        "type": "sentinel-2-l2a"
+                    }
+                ]
+            },
+            "output": {
+                "height": 20,
+                "responses": [
+                    {
+                        "format": {
+                            "type": "image/tiff"
+                        },
+                        "identifier": "default"
+                    }
+                ],
+                "width": 20
+            }
+        },
+        "timestamp": "2025-12-08T13:57:35.923502",
+        "url": "https://services.sentinel-hub.com/api/v1/process"
+    },
+    "response": {
+        "elapsed": 1.137802,
+        "headers": {
+            "Connection": "keep-alive",
+            "Content-Length": "1767",
+            "Content-Type": "image/tiff",
+            "Date": "Mon, 08 Dec 2025 08:27:35 GMT",
+            "access-control-allow-credentials": "true",
+            "access-control-allow-headers": "origin,content-type,accept,accept-crs,authorization,cache-control",
+            "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+            "access-control-allow-origin": "*",
+            "access-control-max-age": "3600",
+            "x-processingunits-spent": "0.006666666865348816"
+        },
+        "status_code": 200
+    }
+}
