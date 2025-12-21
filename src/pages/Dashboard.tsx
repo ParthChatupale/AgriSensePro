@@ -3,11 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CloudRain, TrendingUp, Satellite, AlertTriangle, RefreshCw, Sprout, Thermometer, Droplets, Bug, ArrowUpRight, ArrowDownRight, ArrowRight } from "lucide-react";
+import { CloudRain, TrendingUp, Satellite, AlertTriangle, RefreshCw, Sprout, Thermometer, Droplets, Bug, ArrowUpRight, ArrowDownRight, ArrowRight, Map } from "lucide-react";
 import { getDashboardData, getCurrentUser } from "@/services/api";
 import type { DashboardResponse, Alert } from "@/types/fusion";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { NdviModal } from "@/components/NdviModal";
 
 // Lightweight advisory type to read new fields if present
 type AdvisoryLite = {
@@ -35,6 +36,11 @@ const Dashboard = () => {
   const [userState, setUserState] = useState<string | null>(null);
   const [userDistrict, setUserDistrict] = useState<string | null>(null);
   const [advisory, setAdvisory] = useState<AdvisoryLite | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [ndviImage, setNdviImage] = useState<string | null>(null);
+  const [ndviStats, setNdviStats] = useState<any>(null);
+  const [ndviLoading, setNdviLoading] = useState(false);
+  const [ndviError, setNdviError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const fetchDashboardData = async (
@@ -153,6 +159,59 @@ const Dashboard = () => {
   }, [userCrop, userCoords.lat, userCoords.lon, userState, userDistrict]);
 
   const handleRefresh = () => fetchDashboardData();
+
+  const runNdvi = async () => {
+    // Check if we have coordinates
+    if (!userCoords.lat || !userCoords.lon) {
+      setNdviError("Please set your location coordinates first");
+      setModalOpen(true);
+      return;
+    }
+
+    setModalOpen(true);
+    setNdviLoading(true);
+    setNdviError(null);
+    setNdviImage(null);
+    setNdviStats(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_URL}/api/ndvi/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lat: userCoords.lat,
+          lon: userCoords.lon,
+          radius: 250,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (data.status === "no_valid_data") {
+        setNdviError(data.message || "No valid NDVI pixels found at this location (clouds, snow, water, or no data).");
+        setNdviLoading(false);
+        return;
+      }
+
+      if (data.status === "ok" && data.job) {
+        const job = data.job;
+        const imgUrl = `${API_URL}/static/ndvi/${job}/${job}_visual.png`;
+        setNdviImage(imgUrl);
+        setNdviStats(data.stats || null);
+      } else {
+        throw new Error("Unexpected response format");
+      }
+    } catch (err: any) {
+      setNdviError(err.message || "Failed to generate NDVI map. Please try again.");
+    } finally {
+      setNdviLoading(false);
+    }
+  };
 
   const handleViewAdvisory = (crop?: string) => {
     if (crop) navigate(`/advisory/${crop.toLowerCase()}`);
@@ -496,6 +555,25 @@ const Dashboard = () => {
                 <p className="text-xs text-muted-foreground">{t("dashboard.ndvi.last_updated", { time: lastUpdated })}</p>
               </div>
             )}
+
+            {/* Generate NDVI Map Button - Always visible at bottom of card */}
+            <div className="mt-4 pt-4 border-t">
+              <Button
+                onClick={runNdvi}
+                className="w-full"
+                variant="outline"
+                size="sm"
+                disabled={!userCoords.lat || !userCoords.lon}
+              >
+                <Map className="h-4 w-4 mr-2" />
+                Generate NDVI Map
+              </Button>
+              {(!userCoords.lat || !userCoords.lon) && (
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Set your location to generate NDVI map
+                </p>
+              )}
+            </div>
           </Card>
         </div>
 
@@ -659,6 +737,19 @@ const Dashboard = () => {
           <p className="text-sm opacity-90 mt-2">{t("dashboard.motivational.subtitle")}</p>
         </Card>
       </div>
+
+      {/* NDVI Modal */}
+      <NdviModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setNdviError(null);
+        }}
+        imageUrl={ndviImage}
+        stats={ndviStats}
+        loading={ndviLoading}
+        error={ndviError}
+      />
     </div>
   );
 };
