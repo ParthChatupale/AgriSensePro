@@ -98,7 +98,7 @@ async def compute_ndvi_timeseries(
                 # Response format: {"outputs": [{"default": {"values": [...]}}]}
                 ndvi_scl_pairs = _extract_ndvi_scl_pairs(response_data)
 
-# Keep NDVI only where SCL == 4 (vegetation)
+                # Keep NDVI only where SCL == 4 (vegetation)
                 valid_values = [
                     ndvi for ndvi, scl in ndvi_scl_pairs
                     if ndvi is not None
@@ -107,22 +107,9 @@ async def compute_ndvi_timeseries(
                     and not math.isinf(ndvi)
                     and -1.0 <= ndvi <= 1.0
                 ]
-
-                
-                if not ndvi_values:
-                    logger.debug(f"No valid NDVI values for {date_str}")
-                    continue
-                
-                # Filter out invalid values (NaN, None, out of range)
-                valid_values = [
-                    v for v in ndvi_values
-                    if v is not None
-                    and not (isinstance(v, float) and (math.isnan(v) or math.isinf(v)))
-                    and -1.0 <= v <= 1.0
-                ]
                 
                 if not valid_values:
-                    logger.debug(f"No valid NDVI values after filtering for {date_str}")
+                    logger.debug(f"No valid NDVI values for {date_str} (after SCL filtering)")
                     continue
                 
                 # Compute statistics

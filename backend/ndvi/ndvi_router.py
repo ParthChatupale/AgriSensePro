@@ -1,15 +1,20 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import math
 import os
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from ndvi.pipeline.ndvi_pipeline import run_ndvi
+from ndvi.pipeline.ndvi_pipeline import run_ndvi, fetch_bands, compute_ndvi, apply_scl_mask
+import numpy as np
+import json
+
+# Import VALID_SCL from pipeline (needed for apply_scl_mask to work correctly)
+# The apply_scl_mask function uses VALID_SCL from the pipeline module
 
 
 router = APIRouter()
@@ -125,4 +130,173 @@ def get_ndvi_image(job_id: str, filename: str):
         logger = logging.getLogger(__name__)
         logger.error(f"Error serving image: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error serving image: {str(e)}")
+
+
+def _compute_ndvi_mean_only(lat: float, lon: float, radius_m: float, date: str) -> Optional[Dict[str, Any]]:
+    """
+    Lightweight function to compute NDVI mean for a single date without generating files.
+    Returns stats dict with mean, min, max, valid_pixels or None if no data.
+    """
+    try:
+        # Fetch bands (this downloads data from Sentinel)
+        red, nir, scl, bbox = fetch_bands(lat, lon, radius_m, date)
+        
+        # Compute NDVI
+        ndvi = compute_ndvi(red, nir)
+        
+        # Apply SCL mask (keep only vegetation pixels)
+        ndvi_masked, mask = apply_scl_mask(ndvi, scl)
+        
+        # Compute statistics (same logic as write_stats but without saving)
+        valid_mask = ~np.isnan(ndvi_masked)
+        valid_pixels = int(np.sum(valid_mask))
+        total_pixels = int(ndvi_masked.size)
+        
+        if valid_pixels == 0:
+            return None
+        
+        def safe_num(x):
+            try:
+                xf = float(x)
+                return None if math.isnan(xf) or math.isinf(xf) else xf
+            except:
+                return None
+        
+        stats = {
+            "min": safe_num(np.nanmin(ndvi_masked)),
+            "max": safe_num(np.nanmax(ndvi_masked)),
+            "mean": safe_num(np.nanmean(ndvi_masked)),
+            "valid_pixels": valid_pixels,
+            "total_pixels": total_pixels
+        }
+        
+        return stats
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Error computing NDVI for date {date}: {e}", exc_info=True)
+        return None
+
+
+@router.get("/timeseries")
+def get_ndvi_timeseries(
+    lat: float = Query(..., description="Latitude in decimal degrees", ge=-90, le=90),
+    lon: float = Query(..., description="Longitude in decimal degrees", ge=-180, le=180),
+    days: int = Query(7, description="Number of days to look back", ge=1, le=30)
+) -> Dict[str, Any]:
+    """
+    Get NDVI time series for past N days (lightweight - no file generation).
+    
+    Returns mean NDVI values for each date with available satellite data.
+    Stores timeseries data in ndvi_timeseries folder.
+    
+    Args:
+        lat: Latitude in decimal degrees (-90 to 90)
+        lon: Longitude in decimal degrees (-180 to 180)
+        days: Number of days to look back (1 to 30, default: 7)
+    
+    Returns:
+        JSON response with location, range_days, and ndvi array:
+        {
+            "location": {"lat": float, "lon": float},
+            "range_days": int,
+            "ndvi": [
+                {"date": "YYYY-MM-DD", "mean": float},
+                ...
+            ]
+        }
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Validate parameters
+    if not (-90 <= lat <= 90):
+        raise HTTPException(status_code=400, detail=f"Latitude must be between -90 and 90, got {lat}")
+    if not (-180 <= lon <= 180):
+        raise HTTPException(status_code=400, detail=f"Longitude must be between -180 and 180, got {lon}")
+    if not (1 <= days <= 30):
+        raise HTTPException(status_code=400, detail=f"Days must be between 1 and 30, got {days}")
+    
+    print(f"[TIMESERIES] Starting request: lat={lat}, lon={lon}, days={days}")
+    logger.info(f"NDVI timeseries request: lat={lat}, lon={lon}, days={days}")
+    
+    # Create timeseries storage directory
+    BASE_DIR = Path(__file__).parent  # backend/ndvi/
+    TIMESERIES_DIR = BASE_DIR / "ndvi" / "data" / "ndvi_timeseries"
+    TIMESERIES_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # Generate dates (past N days, backwards from today in UTC)
+    today = datetime.utcnow().date()
+    print(f"[TIMESERIES] Generating dates from {today - timedelta(days=days-1)} to {today}")
+    results: List[Dict[str, Any]] = []
+    
+    # Loop through dates (oldest to newest)
+    for day_offset in range(days - 1, -1, -1):  # From (days-1) days ago to today
+        check_date = today - timedelta(days=day_offset)
+        date_str = check_date.strftime("%Y-%m-%d")
+        
+        try:
+            print(f"[TIMESERIES] Processing date: {date_str} ({days - day_offset}/{days})")
+            logger.info(f"[TIMESERIES] Processing date: {date_str} ({days - day_offset}/{days})")
+            
+            # Compute NDVI mean (lightweight - no file generation)
+            stats = _compute_ndvi_mean_only(lat, lon, radius_m=250, date=date_str)
+            
+            if stats and stats.get("mean") is not None and stats.get("valid_pixels", 0) > 0:
+                mean_ndvi = stats["mean"]
+                valid_pixels = stats["valid_pixels"]
+                
+                # Store this date's data
+                date_result = {
+                    "date": date_str,
+                    "mean": round(float(mean_ndvi), 4)
+                }
+                results.append(date_result)
+                
+                # Save individual date data to timeseries folder
+                date_file = TIMESERIES_DIR / f"{date_str}_{lat:.4f}_{lon:.4f}.json"
+                date_data = {
+                    "date": date_str,
+                    "location": {"lat": lat, "lon": lon},
+                    "stats": stats
+                }
+                with open(date_file, 'w') as f:
+                    json.dump(date_data, f, indent=2)
+                
+                print(f"[TIMESERIES] ✓ {date_str}: mean={mean_ndvi:.4f}, valid_pixels={valid_pixels}")
+                logger.info(f"[TIMESERIES] ✓ {date_str}: mean={mean_ndvi:.4f}, valid_pixels={valid_pixels}")
+            else:
+                print(f"[TIMESERIES] ✗ {date_str}: No valid data")
+                logger.debug(f"[TIMESERIES] ✗ {date_str}: No valid data")
+                
+        except Exception as e:
+            # Log error but continue with other dates
+            print(f"[TIMESERIES] ✗ Error processing {date_str}: {e}")
+            logger.warning(f"[TIMESERIES] Error processing date {date_str}: {e}", exc_info=True)
+            continue
+    
+    # Sort results by date (should already be sorted, but ensure it)
+    results.sort(key=lambda x: x["date"])
+    
+    # Save complete timeseries to a single file
+    timeseries_file = TIMESERIES_DIR / f"timeseries_{lat:.4f}_{lon:.4f}_{days}days.json"
+    timeseries_data = {
+        "location": {"lat": lat, "lon": lon},
+        "range_days": days,
+        "request_date": datetime.utcnow().isoformat(),
+        "ndvi": results
+    }
+    with open(timeseries_file, 'w') as f:
+        json.dump(timeseries_data, f, indent=2)
+    
+    print(f"[TIMESERIES] Request completed: {len(results)}/{days} data points retrieved")
+    print(f"[TIMESERIES] Data saved to: {timeseries_file}")
+    logger.info(f"Timeseries request completed: {len(results)}/{days} data points")
+    
+    return {
+        "location": {"lat": lat, "lon": lon},
+        "range_days": days,
+        "ndvi": results
+    }
 
