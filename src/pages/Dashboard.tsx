@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CloudRain, TrendingUp, Satellite, AlertTriangle, RefreshCw, Sprout, Thermometer, Droplets, Bug, ArrowUpRight, ArrowDownRight, ArrowRight, Map } from "lucide-react";
+import { CloudRain, TrendingUp, Satellite, AlertTriangle, RefreshCw, Sprout, Thermometer, Droplets, Bug, ArrowUpRight, ArrowDownRight, ArrowRight, Map, Loader2 } from "lucide-react";
 import { getDashboardData, getCurrentUser } from "@/services/api";
 import type { DashboardResponse, Alert } from "@/types/fusion";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +41,86 @@ const Dashboard = () => {
   const [ndviStats, setNdviStats] = useState<any>(null);
   const [ndviLoading, setNdviLoading] = useState(false);
   const [ndviError, setNdviError] = useState<string | null>(null);
+  // Real NDVI stats from API (for dashboard display)
+  const [realNdviStats, setRealNdviStats] = useState<{ mean?: number; min?: number; max?: number; valid_pixels?: number } | null>(null);
+  const [realNdviLoading, setRealNdviLoading] = useState(false);
+  // Store job ID and image URL from initial NDVI fetch to reuse in modal
+  const [realNdviJobId, setRealNdviJobId] = useState<string | null>(null);
+  const [realNdviImageUrl, setRealNdviImageUrl] = useState<string | null>(null);
+  // Flag to prevent multiple NDVI requests
+  const ndviRequestInProgress = useRef(false);
+  // Track last coordinates we fetched NDVI for to prevent duplicate requests
+  const lastNdviCoords = useRef<{ lat: number; lon: number } | null>(null);
   const navigate = useNavigate();
+
+  // Fetch real NDVI data from API (runs in parallel)
+  const fetchNdviData = async (coords: { lat?: number; lon?: number }) => {
+    // Only fetch if we have valid coordinates
+    if (!coords.lat || !coords.lon) {
+      setRealNdviStats(null);
+      return;
+    }
+
+    // Check if we already fetched for these exact coordinates
+    if (lastNdviCoords.current && 
+        lastNdviCoords.current.lat === coords.lat && 
+        lastNdviCoords.current.lon === coords.lon) {
+      // Already fetched for these coordinates, skip
+      return;
+    }
+
+    // Prevent multiple simultaneous requests
+    if (ndviRequestInProgress.current) {
+      return;
+    }
+
+    ndviRequestInProgress.current = true;
+    setRealNdviLoading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_URL}/api/ndvi/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lat: coords.lat,
+          lon: coords.lon,
+          radius: 250,
+        }),
+      });
+
+      if (!res.ok) {
+        // Don't show error for NDVI - it's optional data
+        setRealNdviStats(null);
+        setRealNdviJobId(null);
+        setRealNdviImageUrl(null);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.status === "ok" && data.stats && data.job) {
+        setRealNdviStats(data.stats);
+        setRealNdviJobId(data.job);
+        // Store image URL for later use
+        const imgUrl = `${API_URL}/api/ndvi/image/${data.job}/${data.job}_visual.png`;
+        setRealNdviImageUrl(imgUrl);
+        // Update last fetched coordinates
+        lastNdviCoords.current = { lat: coords.lat, lon: coords.lon };
+      } else {
+        setRealNdviStats(null);
+        setRealNdviJobId(null);
+        setRealNdviImageUrl(null);
+      }
+    } catch (err) {
+      // Silently fail - NDVI is optional, don't block dashboard
+      setRealNdviStats(null);
+      setRealNdviJobId(null);
+      setRealNdviImageUrl(null);
+    } finally {
+      setRealNdviLoading(false);
+      ndviRequestInProgress.current = false;
+    }
+  };
 
   const fetchDashboardData = async (
     crop?: string | null, 
@@ -53,45 +132,57 @@ const Dashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Build query parameters
-      const params = new URLSearchParams();
-      if (crop) {
-        params.append("crop", crop);
-      }
-      
-      // If manual state/district are provided, use those; otherwise use coordinates/location
-      if (state && district) {
-        params.append("state", state);
-        params.append("district", district);
-      } else if (coords?.lat !== undefined && coords?.lon !== undefined) {
-        params.append("latitude", coords.lat.toString());
-        params.append("longitude", coords.lon.toString());
-      } else if (location) {
-        params.append("location", location);
-      }
-      
-      // Use the existing getDashboardData function which handles the API call properly
-      const data = await getDashboardData(
-        crop || undefined,
-        coords?.lat,
-        coords?.lon,
-        location || undefined,
-        state || undefined,
-        district || undefined
-      );
-      setDashboardData(data);
+      // Fetch dashboard data and NDVI data in parallel
+      const [dashboardResult, advisoryResult] = await Promise.all([
+        // Main dashboard data
+        (async () => {
+          const params = new URLSearchParams();
+          if (crop) {
+            params.append("crop", crop);
+          }
+          
+          // If manual state/district are provided, use those; otherwise use coordinates/location
+          if (state && district) {
+            params.append("state", state);
+            params.append("district", district);
+          } else if (coords?.lat !== undefined && coords?.lon !== undefined) {
+            params.append("latitude", coords.lat.toString());
+            params.append("longitude", coords.lon.toString());
+          } else if (location) {
+            params.append("location", location);
+          }
+          
+          return await getDashboardData(
+            crop || undefined,
+            coords?.lat,
+            coords?.lon,
+            location || undefined,
+            state || undefined,
+            district || undefined
+          );
+        })(),
+        // Advisory data (if crop is set)
+        crop ? (async () => {
+          try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/fusion/advisory/${encodeURIComponent(crop)}`);
+            if (res.ok) {
+              return (await res.json()) as AdvisoryLite;
+            }
+            return null;
+          } catch {
+            return null;
+          }
+        })() : Promise.resolve(null),
+      ]);
 
-      // Fetch advisory for user's crop if set
-      if (crop) {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/fusion/advisory/${encodeURIComponent(crop)}`);
-        if (res.ok) {
-          const adv = (await res.json()) as AdvisoryLite;
-          setAdvisory(adv);
-        } else {
-          setAdvisory(null);
-        }
-      } else {
-        setAdvisory(null);
+      setDashboardData(dashboardResult);
+      setAdvisory(advisoryResult);
+
+      // Fetch NDVI data in parallel (non-blocking)
+      if (coords?.lat && coords?.lon) {
+        fetchNdviData(coords).catch(() => {
+          // Silently fail - NDVI is optional
+        });
       }
     } catch (err: any) {
       setError(err.message || t("dashboard.error.load_failed"));
@@ -114,16 +205,9 @@ const Dashboard = () => {
         const manualState = user.state || null;
         const manualDistrict = user.district || null;
         
-        if (manualState && manualDistrict) {
-          // Manual selection mode: use state and district
-          setUserState(manualState);
-          setUserDistrict(manualDistrict);
-          setUserLocation(null);
-          setUserCoords({});
-        } else if (user.location) {
-          // Auto-detect mode: use location coordinates
+        // Parse coordinates from user.location if available (works for both auto-detect and manual mode)
+        if (user.location) {
           location = user.location;
-          // Parse location string (format: "lat, lon" or "lat,lon")
           const locationStr = user.location.trim();
           const parts = locationStr.split(/[,\s]+/).filter(p => p);
           if (parts.length >= 2) {
@@ -133,6 +217,17 @@ const Dashboard = () => {
               coords = { lat, lon };
             }
           }
+        }
+        
+        if (manualState && manualDistrict) {
+          // Manual selection mode: use state and district
+          setUserState(manualState);
+          setUserDistrict(manualDistrict);
+          // Keep location and coords if they exist (for NDVI functionality)
+          setUserLocation(location);
+          setUserCoords(coords);
+        } else {
+          // Auto-detect mode: use location coordinates
           setUserLocation(location);
           setUserCoords(coords);
           setUserState(null);
@@ -153,7 +248,22 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Refetch when userCrop, coordinates, or manual state/district change (e.g., after profile update)
-    if (userCrop !== null || userCoords.lat !== undefined || userCoords.lon !== undefined || userState || userDistrict) {
+    // Skip initial render to prevent duplicate calls (initial load is handled by first useEffect)
+    const hasData = userCrop !== null || 
+                    (userCoords.lat !== undefined && userCoords.lon !== undefined) || 
+                    userState || 
+                    userDistrict;
+    
+    if (hasData) {
+      // Reset NDVI coordinates tracking when coordinates change to allow new fetch
+      if (userCoords.lat !== undefined && userCoords.lon !== undefined) {
+        const coordsChanged = !lastNdviCoords.current || 
+                            lastNdviCoords.current.lat !== userCoords.lat || 
+                            lastNdviCoords.current.lon !== userCoords.lon;
+        if (coordsChanged) {
+          lastNdviCoords.current = null; // Reset to allow new fetch
+        }
+      }
       fetchDashboardData(userCrop, userCoords, userLocation, userState, userDistrict);
     }
   }, [userCrop, userCoords.lat, userCoords.lon, userState, userDistrict]);
@@ -169,8 +279,49 @@ const Dashboard = () => {
     }
 
     setModalOpen(true);
-    setNdviLoading(true);
     setNdviError(null);
+
+    // If we already have NDVI data from the initial fetch, reuse it
+    if (realNdviJobId && realNdviImageUrl && realNdviStats) {
+      setNdviStats(realNdviStats);
+      setNdviImage(realNdviImageUrl);
+      setNdviLoading(false);
+      
+      // Check if image is available (with retry)
+      let retries = 0;
+      const maxRetries = 10;
+      const retryDelay = 1000;
+      
+      const checkImageAvailability = async (): Promise<void> => {
+        try {
+          const imgRes = await fetch(realNdviImageUrl, { method: "HEAD" });
+          if (imgRes.ok) {
+            // Image is available
+            setNdviImage(realNdviImageUrl);
+            setNdviLoading(false);
+          } else if (retries < maxRetries) {
+            retries++;
+            setTimeout(checkImageAvailability, retryDelay);
+          } else {
+            // Max retries reached, but still show the modal with stats
+            setNdviLoading(false);
+          }
+        } catch (imgErr) {
+          if (retries < maxRetries) {
+            retries++;
+            setTimeout(checkImageAvailability, retryDelay);
+          } else {
+            setNdviLoading(false);
+          }
+        }
+      };
+      
+      checkImageAvailability();
+      return;
+    }
+
+    // If no cached data, make a new request (fallback case)
+    setNdviLoading(true);
     setNdviImage(null);
     setNdviStats(null);
 
@@ -200,15 +351,44 @@ const Dashboard = () => {
 
       if (data.status === "ok" && data.job) {
         const job = data.job;
-        const imgUrl = `${API_URL}/static/ndvi/${job}/${job}_visual.png`;
-        setNdviImage(imgUrl);
+        const imgUrl = `${API_URL}/api/ndvi/image/${job}/${job}_visual.png`;
         setNdviStats(data.stats || null);
+        
+        // Wait for image to be available (retry with delay)
+        let retries = 0;
+        const maxRetries = 10;
+        const retryDelay = 1000;
+        
+        const checkImageAvailability = async (): Promise<void> => {
+          try {
+            const imgRes = await fetch(imgUrl, { method: "HEAD" });
+            if (imgRes.ok) {
+              setNdviImage(imgUrl);
+              setNdviLoading(false);
+            } else if (retries < maxRetries) {
+              retries++;
+              setTimeout(checkImageAvailability, retryDelay);
+            } else {
+              setNdviError("Image is taking longer than expected. Please try again in a moment.");
+              setNdviLoading(false);
+            }
+          } catch (imgErr) {
+            if (retries < maxRetries) {
+              retries++;
+              setTimeout(checkImageAvailability, retryDelay);
+            } else {
+              setNdviError("Failed to load NDVI image. Please try again.");
+              setNdviLoading(false);
+            }
+          }
+        };
+        
+        checkImageAvailability();
       } else {
         throw new Error("Unexpected response format");
       }
     } catch (err: any) {
       setNdviError(err.message || "Failed to generate NDVI map. Please try again.");
-    } finally {
       setNdviLoading(false);
     }
   };
@@ -501,76 +681,113 @@ const Dashboard = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">{t("dashboard.ndvi.title")}</p>
-                {ndviLatest != null ? (
-                  <div className="flex items-baseline gap-3">
-                    <h3 className="text-3xl font-bold">{fmtNumberFixed(ndviLatest, 2)}</h3>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full tracking-wide ${ndviStatus.badgeClass}`}>
-                      {ndviStatus.label}
-                    </span>
-                  </div>
-                ) : (
-                  <h3 className="text-2xl font-bold text-muted-foreground">{t("dashboard.ndvi.unavailable")}</h3>
-                )}
+                {(() => {
+                  // Use real NDVI stats if available, otherwise fall back to dashboard NDVI
+                  const displayValue = realNdviStats?.mean ?? ndviLatest;
+                  const displayStatus = getNdviStatus(displayValue);
+                  
+                  return displayValue != null ? (
+                    <div className="flex items-baseline gap-3">
+                      <h3 className="text-3xl font-bold">{fmtNumberFixed(displayValue, 2)}</h3>
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full tracking-wide ${displayStatus.badgeClass}`}>
+                        {displayStatus.label}
+                      </span>
+                      {realNdviLoading && (
+                        <span className="text-xs text-muted-foreground">(Loading...)</span>
+                      )}
+                    </div>
+                  ) : (
+                    <h3 className="text-2xl font-bold text-muted-foreground">
+                      {realNdviLoading ? "Loading..." : t("dashboard.ndvi.unavailable")}
+                    </h3>
+                  );
+                })()}
               </div>
               <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
                 <Satellite className="h-6 w-6 text-primary" />
               </div>
             </div>
 
-            {ndviLatest != null ? (
-              <>
-                <div className="flex items-center gap-2 text-sm mb-4">
-                  <TrendIcon className={`h-4 w-4 ${ndviTrend.color}`} />
-                  <span className="font-medium">{ndviTrend.label}</span>
-                  {formattedNdviChange && <span className="text-muted-foreground">({formattedNdviChange})</span>}
-                </div>
-                <div className="h-16 mb-4">
-                  {sparklinePoints ? (
-                    <svg viewBox="0 0 100 40" className="w-full h-full">
-                      <polyline
-                        fill="none"
-                        vectorEffect="non-scaling-stroke"
-                        strokeWidth={2.5}
-                        className={sparklineColor}
-                        stroke="currentColor"
-                        points={sparklinePoints}
-                      />
-                      <line x1="0" y1="36" x2="100" y2="36" stroke="currentColor" strokeWidth={0.75} strokeOpacity={0.2} className="text-muted-foreground" />
-                    </svg>
-                  ) : (
-                    <div className="w-full h-full rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                      {t("dashboard.ndvi.no_history")}
+            {(() => {
+              // Use real NDVI stats if available, otherwise fall back to dashboard NDVI
+              const displayValue = realNdviStats?.mean ?? ndviLatest;
+              
+              if (displayValue != null) {
+                const displayStatus = getNdviStatus(displayValue);
+                
+                return (
+                  <>
+                    {/* Show trend if available from dashboard data */}
+                    {ndviLatest != null && ndviChange != null && (
+                      <>
+                        <div className="flex items-center gap-2 text-sm mb-4">
+                          <TrendIcon className={`h-4 w-4 ${ndviTrend.color}`} />
+                          <span className="font-medium">{ndviTrend.label}</span>
+                          {formattedNdviChange && <span className="text-muted-foreground">({formattedNdviChange})</span>}
+                        </div>
+                        <div className="h-16 mb-4">
+                          {sparklinePoints ? (
+                            <svg viewBox="0 0 100 40" className="w-full h-full">
+                              <polyline
+                                fill="none"
+                                vectorEffect="non-scaling-stroke"
+                                strokeWidth={2.5}
+                                className={sparklineColor}
+                                stroke="currentColor"
+                                points={sparklinePoints}
+                              />
+                              <line x1="0" y1="36" x2="100" y2="36" stroke="currentColor" strokeWidth={0.75} strokeOpacity={0.2} className="text-muted-foreground" />
+                            </svg>
+                          ) : (
+                            <div className="w-full h-full rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                              {t("dashboard.ndvi.no_history")}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{realNdviStats ? "Real-time NDVI" : t("dashboard.ndvi.last_updated", { time: lastUpdated })}</span>
+                      {ndviLatest != null && <span>{t("dashboard.ndvi.trend_7day")}</span>}
                     </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{t("dashboard.ndvi.last_updated", { time: lastUpdated })}</span>
-                  <span>{t("dashboard.ndvi.trend_7day")}</span>
-                </div>
-              </>
-            ) : (
-              <div className="space-y-3">
-                <div className="w-full h-16 rounded-md bg-muted" />
-                <p className="text-sm text-muted-foreground">{t("dashboard.ndvi.unavailable")}</p>
-                <p className="text-xs text-muted-foreground">{t("dashboard.ndvi.last_updated", { time: lastUpdated })}</p>
-              </div>
-            )}
+                  </>
+                );
+              } else {
+                return (
+                  <div className="space-y-3">
+                    <div className="w-full h-16 rounded-md bg-muted" />
+                    <p className="text-sm text-muted-foreground">{t("dashboard.ndvi.unavailable")}</p>
+                    <p className="text-xs text-muted-foreground">{t("dashboard.ndvi.last_updated", { time: lastUpdated })}</p>
+                  </div>
+                );
+              }
+            })()}
 
-            {/* Generate NDVI Map Button - Always visible at bottom of card */}
+            {/* View Crop Health Map Button - Always visible at bottom of card */}
             <div className="mt-4 pt-4 border-t">
               <Button
                 onClick={runNdvi}
                 className="w-full"
                 variant="outline"
                 size="sm"
-                disabled={!userCoords.lat || !userCoords.lon}
+                disabled={ndviLoading || !userCoords.lat || !userCoords.lon}
               >
-                <Map className="h-4 w-4 mr-2" />
-                Generate NDVI Map
+                {ndviLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Map className="h-4 w-4 mr-2" />
+                    View Crop Health Map
+                  </>
+                )}
               </Button>
               {(!userCoords.lat || !userCoords.lon) && (
                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Set your location to generate NDVI map
+                  Set your location to view NDVI map
                 </p>
               )}
             </div>

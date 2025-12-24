@@ -79,6 +79,22 @@ const Profile = () => {
           district: userData.district || "",
           village: userData.village || "",
         });
+        // Set manual selection mode based on user data
+        // Since we now clear location in manual mode, the logic is simpler:
+        // - Manual mode: Has state/district, NO location (we clear it on save)
+        // - Auto mode: Has location (backend reverse geocodes to populate state/district)
+        // So if user has state/district but NO location, it's manual mode
+        // If user has location (even if state/district exist from reverse geocode), it's auto mode
+        if (userData.location) {
+          // User has location coordinates - auto mode (backend may have reverse geocoded state/district)
+          setUseManualSelection(false);
+        } else if (userData.state || userData.district) {
+          // User has state/district but NO location - manual mode (we cleared location on save)
+          setUseManualSelection(true);
+        } else {
+          // No location, no state/district - default to auto mode
+          setUseManualSelection(false);
+        }
         // Initialize saved location ref with user's location
         if (userData.location) {
           savedLocationRef.current = userData.location;
@@ -99,6 +115,18 @@ const Profile = () => {
             district: storedUser.district || "",
             village: storedUser.village || "",
           });
+          // Set manual selection mode based on stored user data
+          // Same logic as above: manual mode has state/district but NO location
+          if (storedUser.location) {
+            // User has location coordinates - auto mode
+            setUseManualSelection(false);
+          } else if (storedUser.state || storedUser.district) {
+            // User has state/district but NO location - manual mode
+            setUseManualSelection(true);
+          } else {
+            // No location, no state/district - default to auto mode
+            setUseManualSelection(false);
+          }
           // Initialize saved location ref with stored user's location
           if (storedUser.location) {
             savedLocationRef.current = storedUser.location;
@@ -259,12 +287,8 @@ const Profile = () => {
     iconAnchor: [8, 8],
   });
 
-  // Check if user has manual selection enabled (if state/district are set)
-  useEffect(() => {
-    if (formData.state || formData.district) {
-      setUseManualSelection(true);
-    }
-  }, []);
+  // Note: useManualSelection is initialized in loadUserData() based on user.state/district
+  // We don't use useEffect here to avoid conflicts with manual toggle actions
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -277,10 +301,12 @@ const Profile = () => {
       };
       
       if (useManualSelection) {
-        // Manual mode: use state and district
+        // Manual mode: use state and district, DO NOT save location
+        // This prevents backend from reverse geocoding and overwriting manual selection
         updateData.state = formData.state || undefined;
         updateData.district = formData.district || undefined;
-        updateData.location = undefined; // Clear location in manual mode
+        // Explicitly clear location in manual mode to prevent reverse geocoding
+        updateData.location = undefined;
       } else {
         // Auto-detect mode: use location
         updateData.location = formData.location || undefined;
@@ -290,6 +316,17 @@ const Profile = () => {
       
       const updatedUser = await updateProfile(updateData);
       setUser(updatedUser);
+      // Update formData to reflect the saved state (especially for state/district/location)
+      setFormData(prev => ({
+        ...prev,
+        state: updatedUser.state || "",
+        district: updatedUser.district || "",
+        location: updatedUser.location || "",
+      }));
+      // Update savedLocationRef if location was saved
+      if (updatedUser.location) {
+        savedLocationRef.current = updatedUser.location;
+      }
       toast.success("Profile updated successfully!");
     } catch (error: any) {
       toast.error(error.message || "Failed to update profile. Please try again.");
@@ -456,9 +493,10 @@ const Profile = () => {
                           const locationToUse = savedLocationRef.current || formData.location || user?.location || "";
                           const newFormData = { 
                             ...formData, 
-                            state: "", 
-                            district: "", 
-                            village: "",
+                            // Keep state/district/village from user object for display (read-only in auto mode)
+                            state: user?.state || "", 
+                            district: user?.district || "", 
+                            village: user?.village || "",
                             location: locationToUse
                           };
                           setFormData(newFormData);
@@ -482,10 +520,11 @@ const Profile = () => {
                                   });
                                   
                                   // Update formData with reverse geocoded results
+                                  // Store state/district/village from backend for display (read-only in auto mode)
                                   setFormData({
                                     ...newFormData,
-                                    state: updatedUser.state || "",
-                                    district: updatedUser.district || "",
+                                    state: updatedUser.state || "", // Store for display
+                                    district: updatedUser.district || "", // Store for display
                                     village: updatedUser.village || "",
                                   });
                                   setUser(updatedUser);

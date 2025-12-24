@@ -14,8 +14,8 @@ export function NdviModal({ isOpen, onClose, imageUrl, stats, loading, error }) 
         {loading && (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="text-lg text-muted-foreground">Fetching NDVI data...</p>
-            <p className="text-sm text-muted-foreground">This may take a few moments</p>
+            <p className="text-lg text-muted-foreground">Generating NDVI map...</p>
+            <p className="text-sm text-muted-foreground">Processing satellite data and generating visualization. This may take a few moments.</p>
           </div>
         )}
 
