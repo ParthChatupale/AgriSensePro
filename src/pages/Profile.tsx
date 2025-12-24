@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Camera, MapPin } from "lucide-react";
+import { Camera, MapPin, X } from "lucide-react";
 import { toast } from "sonner";
 import { getCurrentUser, getUser, isAuthenticated, updateProfile, User, getDistricts, getStates } from "../services/api";
 import type { Map as LeafletMap } from "leaflet";
@@ -620,6 +620,8 @@ const Profile = () => {
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                         placeholder="Enter farm location or coordinates"
+                        disabled={!!formData.location}
+                        className={formData.location ? "bg-muted" : ""}
                       />
                       <Button
                         type="button"
@@ -630,8 +632,58 @@ const Profile = () => {
                       >
                         <MapPin className="h-4 w-4" />
                       </Button>
+                      {formData.location && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            setFormData({ ...formData, location: "", state: "", district: "", village: "" });
+                            savedLocationRef.current = "";
+                            toast.info("Location cleared. You can now enter coordinates manually or use GPS to detect.");
+                          }}
+                          title="Clear location"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
+                    {formData.location && (
+                      <p className="text-xs text-muted-foreground">
+                        Location is auto-detected. Click the GPS button to re-detect or clear to enter manually.
+                      </p>
+                    )}
                   </div>
+
+                  {/* Display coordinates when location exists */}
+                  {formData.location && (() => {
+                    const coords = parseLocationString(formData.location);
+                    return coords ? (
+                      <div className="space-y-2">
+                        <Label>Coordinates (Auto-detected)</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <Label htmlFor="latitude" className="text-xs text-muted-foreground">Latitude</Label>
+                            <Input 
+                              id="latitude" 
+                              value={coords.lat.toFixed(6)} 
+                              disabled 
+                              className="bg-muted" 
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="longitude" className="text-xs text-muted-foreground">Longitude</Label>
+                            <Input 
+                              id="longitude" 
+                              value={coords.lon.toFixed(6)} 
+                              disabled 
+                              className="bg-muted" 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
 
                   {/* Auto-detected fields (read-only) */}
                   <div className="space-y-2">
