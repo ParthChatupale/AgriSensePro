@@ -96,7 +96,18 @@ async def compute_ndvi_timeseries(
                 
                 # Extract NDVI values from response
                 # Response format: {"outputs": [{"default": {"values": [...]}}]}
-                ndvi_values = _extract_ndvi_values(response_data)
+                ndvi_scl_pairs = _extract_ndvi_scl_pairs(response_data)
+
+# Keep NDVI only where SCL == 4 (vegetation)
+                valid_values = [
+                    ndvi for ndvi, scl in ndvi_scl_pairs
+                    if ndvi is not None
+                    and scl == 4
+                    and not math.isnan(ndvi)
+                    and not math.isinf(ndvi)
+                    and -1.0 <= ndvi <= 1.0
+                ]
+
                 
                 if not ndvi_values:
                     logger.debug(f"No valid NDVI values for {date_str}")
@@ -237,4 +248,32 @@ def _flatten_values(values: Any) -> List[float]:
                     continue
     
     return flattened
+
+def _extract_ndvi_scl_pairs(response_data: Dict[str, Any]) -> List[tuple]:
+    """
+    Extract (NDVI, SCL) pairs from SentinelHub response.
+    """
+    try:
+        values = []
+
+        if "outputs" in response_data:
+            outputs = response_data.get("outputs", [])
+            if outputs:
+                default_data = outputs[0].get("default", {})
+                raw_values = default_data.get("values", [])
+                values = raw_values
+
+        elif "default" in response_data:
+            values = response_data.get("default", {}).get("values", [])
+
+        pairs = []
+        for v in _flatten_values(values):
+            if isinstance(v, (list, tuple)) and len(v) == 2:
+                pairs.append((float(v[0]), int(v[1])))
+
+        return pairs
+
+    except Exception as e:
+        logger.error(f"Error extracting NDVI+SCL pairs: {e}", exc_info=True)
+        return []
 

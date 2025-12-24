@@ -9,8 +9,12 @@ import time
 import logging
 from typing import Optional, Dict, Any
 import httpx
+from dotenv import load_dotenv
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+BASE_DIR = Path(__file__).resolve().parents[2]  # backend/
+load_dotenv(BASE_DIR / ".env")
 
 # Token cache
 _token_cache: Optional[Dict[str, Any]] = None

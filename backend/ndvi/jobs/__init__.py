@@ -1,2 +1,0 @@
-# NDVI jobs package
-
