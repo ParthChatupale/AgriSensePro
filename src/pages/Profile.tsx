@@ -49,6 +49,7 @@ const Profile = () => {
   const [states, setStates] = useState<State[]>([]);
   const [availableDistricts, setAvailableDistricts] = useState<District[]>([]);
   const savedLocationRef = useRef<string>(""); // Store location when switching to manual mode
+  const autoGeolocateAttemptedRef = useRef<boolean>(false); // Track if auto-geolocate was attempted
   const [mapVisible, setMapVisible] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<{ lat: number; lon: number } | null>(null);
   const [districtAreas, setDistrictAreas] = useState<Record<string, [number, number, number, number]> | null>(null);
@@ -80,25 +81,27 @@ const Profile = () => {
           village: userData.village || "",
         });
         // Set manual selection mode based on user data
-        // Since we now clear location in manual mode, the logic is simpler:
-        // - Manual mode: Has state/district, NO location (we clear it on save)
-        // - Auto mode: Has location (backend reverse geocodes to populate state/district)
-        // So if user has state/district but NO location, it's manual mode
-        // If user has location (even if state/district exist from reverse geocode), it's auto mode
-        if (userData.location) {
-          // User has location coordinates - auto mode (backend may have reverse geocoded state/district)
-          setUseManualSelection(false);
-        } else if (userData.state || userData.district) {
-          // User has state/district but NO location - manual mode (we cleared location on save)
+        // Updated logic:
+        // - Manual mode: Has state/district (manually selected) AND may have location (map-selected coordinates)
+        //   Backend respects manually provided state/district and doesn't reverse geocode
+        // - Auto mode: Has location but state/district come from reverse geocoding (or no state/district)
+        // Detection: If user has state/district, it's manual mode (even if location exists)
+        //           If user has location but NO state/district, it's auto mode
+        if (userData.state || userData.district) {
+          // User has manually selected state/district - manual mode
+          // Location may exist (from map selection) or not
           setUseManualSelection(true);
+          savedLocationRef.current = userData.location || "";
+        } else if (userData.location) {
+          // User has location but NO manually selected state/district - auto mode
+          setUseManualSelection(false);
+          savedLocationRef.current = userData.location;
         } else {
           // No location, no state/district - default to auto mode
           setUseManualSelection(false);
+          savedLocationRef.current = "";
         }
-        // Initialize saved location ref with user's location
-        if (userData.location) {
-          savedLocationRef.current = userData.location;
-        }
+        autoGeolocateAttemptedRef.current = false; // Reset for new session
       } catch (error: any) {
         // Fallback to stored user data
         const storedUser = getUser();
@@ -116,21 +119,21 @@ const Profile = () => {
             village: storedUser.village || "",
           });
           // Set manual selection mode based on stored user data
-          // Same logic as above: manual mode has state/district but NO location
-          if (storedUser.location) {
-            // User has location coordinates - auto mode
-            setUseManualSelection(false);
-          } else if (storedUser.state || storedUser.district) {
-            // User has state/district but NO location - manual mode
+          // Same logic as above: manual mode has state/district (may or may not have location)
+          if (storedUser.state || storedUser.district) {
+            // User has manually selected state/district - manual mode
             setUseManualSelection(true);
+            savedLocationRef.current = storedUser.location || "";
+          } else if (storedUser.location) {
+            // User has location but NO manually selected state/district - auto mode
+            setUseManualSelection(false);
+            savedLocationRef.current = storedUser.location;
           } else {
             // No location, no state/district - default to auto mode
             setUseManualSelection(false);
+            savedLocationRef.current = "";
           }
-          // Initialize saved location ref with stored user's location
-          if (storedUser.location) {
-            savedLocationRef.current = storedUser.location;
-          }
+          autoGeolocateAttemptedRef.current = false; // Reset for new session
         } else {
           toast.error("Failed to load user data");
           navigate("/login");
@@ -142,6 +145,58 @@ const Profile = () => {
 
     loadUserData();
   }, [navigate]);
+
+  // Auto-geolocate on page load if in auto mode and no location exists
+  useEffect(() => {
+    // Only run this effect after initial load is complete
+    if (loading || !user) return;
+    
+    // Only in auto-detect mode
+    if (!useManualSelection) {
+      // If no location exists, automatically try to geolocate (only once per session)
+      if (!formData.location && !user.location && navigator.geolocation && !autoGeolocateAttemptedRef.current) {
+        console.log("[Profile] Auto mode with no location - attempting auto-geolocate");
+        autoGeolocateAttemptedRef.current = true; // Prevent multiple attempts
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const coords = `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
+            // Update formData with detected location (don't auto-save, let user save)
+            setFormData((prev) => ({
+              ...prev,
+              location: coords,
+            }));
+            savedLocationRef.current = coords;
+            // Silently reverse geocode to populate state/district for display
+            try {
+              const updatedUser = await updateProfile({
+                name: formData.name,
+                phone: formData.phone || undefined,
+                crop: formData.crop || undefined,
+                location: coords,
+              });
+              setFormData((prev) => ({
+                ...prev,
+                state: updatedUser.state || "",
+                district: updatedUser.district || "",
+                village: updatedUser.village || "",
+              }));
+              setUser(updatedUser);
+              savedLocationRef.current = coords;
+            } catch (error: any) {
+              console.error("Auto reverse geocoding failed:", error);
+              // Don't show error - location is still detected, just not reverse geocoded yet
+            }
+          },
+          (error) => {
+            console.log("[Profile] Auto-geolocate failed (user may need to click GPS button):", error);
+            // Silently fail - user can click GPS button manually
+            autoGeolocateAttemptedRef.current = false; // Allow retry on next visit
+          },
+          { timeout: 5000, enableHighAccuracy: false }
+        );
+      }
+    }
+  }, [loading, user, useManualSelection]); // Only run when these change, NOT formData.location to avoid loops
 
   // Load districts and states metadata
   useEffect(() => {
@@ -187,15 +242,16 @@ const Profile = () => {
     }
   }, [formData.state, districts]);
 
-  // Clear selected map point when district changes
+  // Clear selected map point when district changes (only in manual mode)
   useEffect(() => {
-    setSelectedPoint(null);
-    setMapVisible(false);
-    // Hide any saved manual location preview when district changes
-    savedLocationRef.current = "";
-    // Clear saved manual location from form when district changes
-    setFormData((prev) => ({ ...prev, location: "" }));
-  }, [formData.district]);
+    if (useManualSelection) {
+      setSelectedPoint(null);
+      setMapVisible(false);
+      // Only clear form location in manual mode, don't clear savedLocationRef
+      // (savedLocationRef is for auto mode restoration)
+      setFormData((prev) => ({ ...prev, location: "" }));
+    }
+  }, [formData.district, useManualSelection]);
 
   // Helper: parse a location string like "lat, lon" into a point
   const parseLocationString = (loc?: string | null) => {
@@ -301,14 +357,15 @@ const Profile = () => {
       };
       
       if (useManualSelection) {
-        // Manual mode: use state and district, DO NOT save location
-        // This prevents backend from reverse geocoding and overwriting manual selection
+        // Manual mode: use state and district, AND save manually selected coordinates
+        // Backend will respect manually provided state/district and not overwrite them
         updateData.state = formData.state || undefined;
         updateData.district = formData.district || undefined;
-        // Explicitly clear location in manual mode to prevent reverse geocoding
-        updateData.location = undefined;
+        // Save manually selected coordinates (from map selection) for NDVI purposes
+        // Backend will NOT reverse geocode if state/district are provided
+        updateData.location = formData.location || undefined;
       } else {
-        // Auto-detect mode: use location
+        // Auto-detect mode: use location (backend will reverse geocode)
         updateData.location = formData.location || undefined;
         updateData.state = undefined;
         updateData.district = undefined;
@@ -322,10 +379,17 @@ const Profile = () => {
         state: updatedUser.state || "",
         district: updatedUser.district || "",
         location: updatedUser.location || "",
+        village: updatedUser.village || "",
       }));
-      // Update savedLocationRef if location was saved
-      if (updatedUser.location) {
-        savedLocationRef.current = updatedUser.location;
+      // Update savedLocationRef based on mode
+      if (useManualSelection) {
+        // Manual mode: clear saved location ref since location is not saved
+        savedLocationRef.current = "";
+      } else {
+        // Auto mode: save location to ref
+        if (updatedUser.location) {
+          savedLocationRef.current = updatedUser.location;
+        }
       }
       toast.success("Profile updated successfully!");
     } catch (error: any) {
@@ -485,74 +549,49 @@ const Profile = () => {
                     <Switch
                       id="location-mode"
                       checked={useManualSelection}
-                      onCheckedChange={async (checked) => {
+                      onCheckedChange={(checked) => {
                         setUseManualSelection(checked);
                         if (!checked) {
-                          // Switching to auto-detect: clear manual selections
-                          // Restore location from saved ref, formData, user profile, or keep existing
+                          // Switching to auto-detect mode
+                          // Restore location from saved ref, formData, or user profile
                           const locationToUse = savedLocationRef.current || formData.location || user?.location || "";
-                          const newFormData = { 
+                          setFormData({ 
                             ...formData, 
                             // Keep state/district/village from user object for display (read-only in auto mode)
                             state: user?.state || "", 
                             district: user?.district || "", 
                             village: user?.village || "",
                             location: locationToUse
-                          };
-                          setFormData(newFormData);
+                          });
                           
-                          // If location exists, reverse geocode it to populate state, district, village
-                          if (locationToUse) {
-                            try {
-                              const locationStr = locationToUse.trim();
-                              const parts = locationStr.split(/[,\s]+/).filter(p => p);
-                              if (parts.length >= 2) {
-                                const lat = parseFloat(parts[0]);
-                                const lon = parseFloat(parts[1]);
-                                if (!isNaN(lat) && !isNaN(lon)) {
-                                  // Call backend to reverse geocode and update profile
-                                  // The backend's updateProfile automatically reverse geocodes location
-                                  const updatedUser = await updateProfile({
-                                    name: formData.name,
-                                    phone: formData.phone || undefined,
-                                    crop: formData.crop || undefined,
-                                    location: locationToUse,
-                                  });
-                                  
-                                  // Update formData with reverse geocoded results
-                                  // Store state/district/village from backend for display (read-only in auto mode)
-                                  setFormData({
-                                    ...newFormData,
-                                    state: updatedUser.state || "", // Store for display
-                                    district: updatedUser.district || "", // Store for display
-                                    village: updatedUser.village || "",
-                                  });
-                                  setUser(updatedUser);
-                                  // Update saved location ref
-                                  savedLocationRef.current = locationToUse;
-                                  toast.success("Location reverse geocoded successfully!");
-                                }
-                              }
-                            } catch (error: any) {
-                              console.error("Reverse geocoding failed:", error);
-                              // Don't show error toast, just log it - user can manually geolocate
-                            }
-                          } else {
-                            // No saved location available — attempt to auto-detect now
-                            try {
-                              handleGeolocate();
-                            } catch (e) {
-                              // ignore failures here; user can click the geolocate button
-                            }
+                          // If no location exists, attempt to auto-detect (but don't auto-save)
+                          if (!locationToUse && navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                              (position) => {
+                                const coords = `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
+                                // Update formData with detected location (user must click Save to persist)
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  location: coords,
+                                }));
+                                savedLocationRef.current = coords;
+                                toast.success("Location detected! Click 'Save Changes' to update your profile.");
+                              },
+                              (error) => {
+                                console.log("Auto-geolocate failed:", error);
+                                // Don't show error - user can click GPS button manually
+                              },
+                              { timeout: 5000, enableHighAccuracy: false }
+                            );
                           }
                         } else {
-                          // Switching to manual: save current location before clearing it
+                          // Switching to manual mode: save current location to ref before clearing it
                           if (formData.location) {
                             savedLocationRef.current = formData.location;
                           } else if (user?.location) {
                             savedLocationRef.current = user.location;
                           }
-                          // Clear location from form display (but keep it in savedLocationRef)
+                          // Clear location from form display (but keep it in savedLocationRef for restoration)
                           setFormData({ ...formData, location: "" });
                         }
                       }}

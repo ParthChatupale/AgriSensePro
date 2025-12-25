@@ -183,15 +183,23 @@ async def update_profile(
             pass
     
     # If we have valid coordinates, reverse geocode to get state/district/village
+    # BUT: If state/district are already provided (manual selection), don't overwrite them
+    # This allows users to manually select state/district and still save coordinates for NDVI
     if lat is not None and lon is not None:
-        geo = await reverse_geocode(lat, lon)
-        # Update user_update with geocoded data
-        if geo.get("state"):
-            user_update.state = geo["state"]
-        if geo.get("district"):
-            user_update.district = geo["district"]
-        if geo.get("village"):
-            user_update.village = geo["village"]
+        # Only reverse geocode if state/district are NOT already provided (auto-detect mode)
+        # If state/district are provided, user is in manual mode - respect their selection
+        if not (user_update.state or user_update.district):
+            # Auto-detect mode: reverse geocode to populate state/district
+            geo = await reverse_geocode(lat, lon)
+            # Update user_update with geocoded data
+            if geo.get("state"):
+                user_update.state = geo["state"]
+            if geo.get("district"):
+                user_update.district = geo["district"]
+            if geo.get("village"):
+                user_update.village = geo["village"]
+        # If state/district are provided, we're in manual mode - don't reverse geocode
+        # The location coordinates are saved for NDVI purposes, but state/district remain as manually selected
     
     updated_user = crud.update_user(db, current_user.id, user_update)
     if not updated_user:

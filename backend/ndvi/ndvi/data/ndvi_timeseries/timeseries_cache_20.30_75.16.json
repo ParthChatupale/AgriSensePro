@@ -1,0 +1,18 @@
+{
+  "location": {
+    "lat": 20.300326,
+    "lon": 75.157862
+  },
+  "grid_location": {
+    "lat": 20.3,
+    "lon": 75.16
+  },
+  "last_updated": "2025-12-25",
+  "range_days": 7,
+  "ndvi": [
+    {
+      "date": "2025-12-19",
+      "mean": 0.7124
+    }
+  ]
+}

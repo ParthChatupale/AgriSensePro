@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CloudRain, TrendingUp, Satellite, AlertTriangle, RefreshCw, Sprout, Thermometer, Droplets, Bug, ArrowUpRight, ArrowDownRight, ArrowRight, Map, Loader2 } from "lucide-react";
+import { CloudRain, TrendingUp, Satellite, AlertTriangle, RefreshCw, Sprout, Thermometer, Droplets, Bug, ArrowUpRight, ArrowDownRight, ArrowRight, Map as MapIcon, Loader2 } from "lucide-react";
 import { getDashboardData, getCurrentUser } from "@/services/api";
 import type { DashboardResponse, Alert } from "@/types/fusion";
 import { useNavigate } from "react-router-dom";
@@ -47,11 +47,183 @@ const Dashboard = () => {
   // Store job ID and image URL from initial NDVI fetch to reuse in modal
   const [realNdviJobId, setRealNdviJobId] = useState<string | null>(null);
   const [realNdviImageUrl, setRealNdviImageUrl] = useState<string | null>(null);
+  // Real NDVI time series history (for graph)
+  const [realNdviHistory, setRealNdviHistory] = useState<Array<{ date: string; mean: number }>>([]);
+  const [realNdviHistoryLoading, setRealNdviHistoryLoading] = useState(false);
   // Flag to prevent multiple NDVI requests
   const ndviRequestInProgress = useRef(false);
   // Track last coordinates we fetched NDVI for to prevent duplicate requests
   const lastNdviCoords = useRef<{ lat: number; lon: number } | null>(null);
+  // Track last coordinates we fetched timeseries for to prevent duplicate requests
+  const lastTimeseriesCoords = useRef<{ lat: number; lon: number } | null>(null);
+  // Flag to prevent multiple timeseries requests
+  const timeseriesRequestInProgress = useRef(false);
   const navigate = useNavigate();
+
+  // Interpolate missing dates in NDVI timeseries using linear interpolation
+  const interpolateNdviTimeseries = (
+    data: Array<{ date: string; mean: number }>,
+    days: number = 7
+  ): Array<{ date: string; mean: number }> => {
+    if (data.length === 0) return [];
+    
+    // Generate all dates for the past N days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const allDates: string[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      allDates.push(date.toISOString().split('T')[0]);
+    }
+    
+    // Create a map of available data points
+    const dataMap = new Map<string, number>();
+    data.forEach(item => {
+      dataMap.set(item.date, item.mean);
+    });
+    
+    // Interpolate missing dates
+    const interpolated: Array<{ date: string; mean: number }> = [];
+    
+    for (let i = 0; i < allDates.length; i++) {
+      const currentDate = allDates[i];
+      
+      // If we have data for this date, use it
+      if (dataMap.has(currentDate)) {
+        interpolated.push({ date: currentDate, mean: dataMap.get(currentDate)! });
+        continue;
+      }
+      
+      // Otherwise, find the nearest data points before and after
+      let beforeDate: string | null = null;
+      let beforeValue: number | null = null;
+      let afterDate: string | null = null;
+      let afterValue: number | null = null;
+      
+      // Look backwards for the nearest data point
+      for (let j = i - 1; j >= 0; j--) {
+        const checkDate = allDates[j];
+        if (dataMap.has(checkDate)) {
+          beforeDate = checkDate;
+          beforeValue = dataMap.get(checkDate)!;
+          break;
+        }
+      }
+      
+      // Look forwards for the nearest data point
+      for (let j = i + 1; j < allDates.length; j++) {
+        const checkDate = allDates[j];
+        if (dataMap.has(checkDate)) {
+          afterDate = checkDate;
+          afterValue = dataMap.get(checkDate)!;
+          break;
+        }
+      }
+      
+      // Interpolate based on available neighbors
+      if (beforeValue !== null && afterValue !== null && beforeDate && afterDate) {
+        // Linear interpolation between two points
+        const beforeTime = new Date(beforeDate).getTime();
+        const afterTime = new Date(afterDate).getTime();
+        const currentTime = new Date(currentDate).getTime();
+        const ratio = (currentTime - beforeTime) / (afterTime - beforeTime);
+        const interpolatedValue = beforeValue + (afterValue - beforeValue) * ratio;
+        interpolated.push({ date: currentDate, mean: interpolatedValue });
+      } else if (beforeValue !== null) {
+        // Only have data before - forward fill
+        interpolated.push({ date: currentDate, mean: beforeValue });
+      } else if (afterValue !== null) {
+        // Only have data after - backward fill
+        interpolated.push({ date: currentDate, mean: afterValue });
+      } else {
+        // No data at all - skip this date (shouldn't happen if we have at least one data point)
+        continue;
+      }
+    }
+    
+    return interpolated;
+  };
+
+  // Fetch real NDVI time series data from API (runs in parallel)
+  const fetchNdviTimeSeries = async (coords: { lat?: number; lon?: number }, days: number = 7) => {
+    console.log("[Dashboard] fetchNdviTimeSeries called with coords:", coords);
+    
+    // Only fetch if we have valid coordinates
+    if (!coords.lat || !coords.lon) {
+      console.log("[Dashboard] ❌ No coordinates provided, skipping timeseries fetch");
+      setRealNdviHistory([]);
+      return;
+    }
+
+    // Check if we already fetched for these exact coordinates
+    if (lastTimeseriesCoords.current && 
+        lastTimeseriesCoords.current.lat === coords.lat && 
+        lastTimeseriesCoords.current.lon === coords.lon) {
+      console.log("[Dashboard] ⏭️ Already fetched for these coordinates, skipping");
+      return;
+    }
+
+    // Prevent multiple simultaneous requests
+    if (timeseriesRequestInProgress.current) {
+      console.log("[Dashboard] ⏭️ Request already in progress, skipping");
+      return;
+    }
+
+    timeseriesRequestInProgress.current = true;
+    setRealNdviHistoryLoading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const url = `${API_URL}/api/ndvi/timeseries?lat=${coords.lat}&lon=${coords.lon}&days=${days}`;
+      console.log("[Dashboard] 🌐 Fetching NDVI timeseries from:", url);
+      
+      const res = await fetch(url);
+
+      console.log("[Dashboard] 📡 API Response status:", res.status, res.statusText);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("[Dashboard] ❌ API request failed:", res.status, errorText);
+        setRealNdviHistory([]);
+        return;
+      }
+
+      const data = await res.json();
+      console.log("[Dashboard] 📦 API Response data:", data);
+      
+      if (data.ndvi && Array.isArray(data.ndvi)) {
+        console.log("[Dashboard] ✅ Received", data.ndvi.length, "raw NDVI data points");
+        // Interpolate missing dates to get exactly 7 values
+        const interpolated = interpolateNdviTimeseries(data.ndvi, days);
+        console.log("[Dashboard] NDVI timeseries - Raw:", data.ndvi.length, "Interpolated:", interpolated.length);
+        console.log("[Dashboard] Interpolated values:", interpolated.map(i => `${i.date}: ${i.mean.toFixed(4)}`).join(", "));
+        if (interpolated.length >= 7) {
+          const first = interpolated[0].mean;
+          const last = interpolated[interpolated.length - 1].mean;
+          const change = last - first;
+          console.log("[Dashboard] Calculated change:", change.toFixed(4), `(${last.toFixed(4)} - ${first.toFixed(4)})`);
+        }
+        setRealNdviHistory(interpolated);
+        console.log("[Dashboard] ✅ Successfully stored", interpolated.length, "interpolated values in realNdviHistory");
+        // Update last fetched coordinates
+        lastTimeseriesCoords.current = { lat: coords.lat, lon: coords.lon };
+      } else {
+        console.log("[Dashboard] ❌ No NDVI timeseries data in response. Response structure:", Object.keys(data));
+        setRealNdviHistory([]);
+      }
+    } catch (err) {
+      // Log error instead of silently failing
+      console.error("[Dashboard] ❌ Error fetching NDVI timeseries:", err);
+      if (err instanceof Error) {
+        console.error("[Dashboard] Error message:", err.message);
+        console.error("[Dashboard] Error stack:", err.stack);
+      }
+      setRealNdviHistory([]);
+    } finally {
+      setRealNdviHistoryLoading(false);
+      timeseriesRequestInProgress.current = false;
+    }
+  };
 
   // Fetch real NDVI data from API (runs in parallel)
   const fetchNdviData = async (coords: { lat?: number; lon?: number }) => {
@@ -179,10 +351,26 @@ const Dashboard = () => {
       setAdvisory(advisoryResult);
 
       // Fetch NDVI data in parallel (non-blocking)
+      console.log("[Dashboard] fetchDashboardData - Checking coords for NDVI fetch:", {
+        coords,
+        hasLat: !!coords?.lat,
+        hasLon: !!coords?.lon,
+        latValue: coords?.lat,
+        lonValue: coords?.lon
+      });
+      
       if (coords?.lat && coords?.lon) {
-        fetchNdviData(coords).catch(() => {
-          // Silently fail - NDVI is optional
-        });
+        console.log("[Dashboard] ✅ Coordinates available, calling fetchNdviTimeSeries");
+        Promise.all([
+          fetchNdviData(coords).catch((err) => {
+            console.error("[Dashboard] ❌ fetchNdviData failed:", err);
+          }),
+          fetchNdviTimeSeries(coords, 7).catch((err) => {
+            console.error("[Dashboard] ❌ fetchNdviTimeSeries failed:", err);
+          })
+        ]);
+      } else {
+        console.log("[Dashboard] ❌ No coordinates available, skipping NDVI fetch. Coords:", coords);
       }
     } catch (err: any) {
       setError(err.message || t("dashboard.error.load_failed"));
@@ -262,6 +450,14 @@ const Dashboard = () => {
                             lastNdviCoords.current.lon !== userCoords.lon;
         if (coordsChanged) {
           lastNdviCoords.current = null; // Reset to allow new fetch
+        }
+        
+        // Also reset timeseries coordinates tracking
+        const timeseriesCoordsChanged = !lastTimeseriesCoords.current || 
+                                       lastTimeseriesCoords.current.lat !== userCoords.lat || 
+                                       lastTimeseriesCoords.current.lon !== userCoords.lon;
+        if (timeseriesCoordsChanged) {
+          lastTimeseriesCoords.current = null; // Reset to allow new fetch
         }
       }
       fetchDashboardData(userCrop, userCoords, userLocation, userState, userDistrict);
@@ -495,13 +691,82 @@ const Dashboard = () => {
   const ndviLatest = typeof ndviData?.latest === "number" ? ndviData.latest : null;
   const ndviChange = typeof ndviData?.change === "number" ? ndviData.change : null;
   const ndviHistoryRaw = Array.isArray(ndviData?.history) ? ndviData.history : [];
-  const ndviHistory = useMemo(
-    () =>
-      ndviHistoryRaw
-        .filter((entry: any) => entry && typeof entry.ndvi === "number")
-        .slice(-7),
-    [ndviHistoryRaw]
-  );
+  
+  // Use real NDVI history if available (with interpolation), otherwise fall back to synthetic data
+  // Ensure we always have exactly 7 values for the sparkline
+  const ndviHistory = useMemo(() => {
+    // If we have real NDVI history data, use it (already interpolated to 7 days)
+    if (realNdviHistory.length > 0) {
+      // Convert format from {date, mean} to {date, ndvi} for compatibility
+      // Ensure we have exactly 7 values (should already be interpolated, but slice to be safe)
+      return realNdviHistory.slice(0, 7).map(item => ({
+        date: item.date,
+        ndvi: item.mean
+      }));
+    }
+    
+    // Fallback to synthetic data
+    return ndviHistoryRaw
+      .filter((entry: any) => entry && typeof entry.ndvi === "number")
+      .slice(-7);
+  }, [realNdviHistory, ndviHistoryRaw]);
+
+  // Calculate real NDVI change from interpolated history (matching backend logic)
+  // Change = last value - first value (Day 7 - Day 1)
+  // Must have exactly 7 interpolated values for accurate calculation
+  const realNdviChange = useMemo(() => {
+    // Ensure we have at least 7 interpolated values (full week)
+    if (realNdviHistory.length >= 7) {
+      const firstValue = realNdviHistory[0].mean;
+      const lastValue = realNdviHistory[realNdviHistory.length - 1].mean;
+      if (typeof firstValue === "number" && typeof lastValue === "number" && !isNaN(firstValue) && !isNaN(lastValue)) {
+        const change = lastValue - firstValue;
+        console.log("[Dashboard] Real NDVI change calculated:", {
+          firstValue,
+          lastValue,
+          change,
+          historyLength: realNdviHistory.length,
+          history: realNdviHistory.map(h => ({ date: h.date, mean: h.mean }))
+        });
+        return change;
+      }
+    } else if (realNdviHistory.length >= 2) {
+      // Fallback: if we have at least 2 values, calculate change
+      const firstValue = realNdviHistory[0].mean;
+      const lastValue = realNdviHistory[realNdviHistory.length - 1].mean;
+      if (typeof firstValue === "number" && typeof lastValue === "number" && !isNaN(firstValue) && !isNaN(lastValue)) {
+        const change = lastValue - firstValue;
+        console.log("[Dashboard] Real NDVI change (partial data):", {
+          firstValue,
+          lastValue,
+          change,
+          historyLength: realNdviHistory.length
+        });
+        return change;
+      }
+    }
+    console.log("[Dashboard] No real NDVI change - history length:", realNdviHistory.length);
+    return null;
+  }, [realNdviHistory]);
+
+  // Use real change if available, otherwise fall back to synthetic change
+  const displayNdviChange =
+  realNdviChange !== null ? realNdviChange : ndviChange;
+  
+  // Debug: Log which change value is being used
+  useEffect(() => {
+    if (realNdviChange !== null) {
+      console.log("[Dashboard] ✅ Using REAL NDVI change:", realNdviChange.toFixed(4), "from", realNdviHistory.length, "interpolated values");
+      if (realNdviHistory.length >= 7) {
+        console.log("[Dashboard] First (Day 1):", realNdviHistory[0]?.mean.toFixed(4), "Last (Day 7):", realNdviHistory[6]?.mean.toFixed(4));
+      }
+    } else if (realNdviHistory.length > 0) {
+      console.log("[Dashboard] ⚠️ Real NDVI history exists but change is NULL. History length:", realNdviHistory.length);
+      console.log("[Dashboard] History:", realNdviHistory.map(h => `${h.date}: ${h.mean.toFixed(4)}`).join(", "));
+    } else {
+      console.log("[Dashboard] ⚠️ Real NDVI history is EMPTY, falling back to synthetic:", ndviChange);
+    }
+  }, [realNdviChange, ndviChange, realNdviHistory]);
 
   const sparklinePoints = useMemo(() => {
     const values = ndviHistory.map((entry: any) => entry.ndvi as number);
@@ -593,12 +858,18 @@ const Dashboard = () => {
   const marketList = Array.isArray(dashboardData?.market) ? dashboardData.market : [];
   const alerts = dashboardData?.alerts || [];
   const cropHealth = dashboardData?.crop_health || {};
+  console.log("NDVI DEBUG", {
+    realNdviChange,
+    ndviChange,
+    displayNdviChange,
+  });
+
 
   const ndviStatus = getNdviStatus(ndviLatest);
-  const ndviTrend = getTrendInfo(ndviChange);
+  const ndviTrend = getTrendInfo(displayNdviChange);
   const TrendIcon = ndviTrend.icon;
-  const formattedNdviChange = ndviChange != null && !isNaN(ndviChange) && typeof ndviChange === "number" 
-    ? `${ndviChange > 0 ? "+" : ""}${fmtNumberFixed(ndviChange, 3)}` 
+  const formattedNdviChange = displayNdviChange != null && !isNaN(displayNdviChange) && typeof displayNdviChange === "number" 
+    ? `${displayNdviChange > 0 ? "+" : ""}${fmtNumberFixed(displayNdviChange, 3)}` 
     : null;
   const lastUpdated = formatTimestamp(dashboardData?.weather?.timestamp);
   const sparklineColor = ndviStatus.label === "Good" ? "text-success" : ndviStatus.label === "Moderate" ? "text-warning" : ndviStatus.label === "Poor" ? "text-destructive" : "text-muted-foreground";
@@ -717,8 +988,8 @@ const Dashboard = () => {
                 
                 return (
                   <>
-                    {/* Show trend if available from dashboard data */}
-                    {ndviLatest != null && ndviChange != null && (
+                    {/* Show trend if available (from real interpolated data or dashboard data) */}
+                    {ndviHistory.length > 0 && displayNdviChange != null && (
                       <>
                         <div className="flex items-center gap-2 text-sm mb-4">
                           <TrendIcon className={`h-4 w-4 ${ndviTrend.color}`} />
@@ -780,7 +1051,7 @@ const Dashboard = () => {
                   </>
                 ) : (
                   <>
-                    <Map className="h-4 w-4 mr-2" />
+                    <MapIcon className="h-4 w-4 mr-2" />
                     View Crop Health Map
                   </>
                 )}
@@ -970,5 +1241,6 @@ const Dashboard = () => {
     </div>
   );
 };
+
 
 export default Dashboard;
